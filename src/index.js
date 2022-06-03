@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import PubNub from "pubnub"
 
 var pubnub = new PubNub({
   publishKey : "pub-c-f6860906-b4ba-4702-8e65-2b88b0026fdf",
