@@ -29,7 +29,6 @@ var publishPayload = {
 pubnub.publish(publishPayload, function(status, response) {
   console.log(status, response);
 })
-console.log("dude wtf is going on ever");
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
