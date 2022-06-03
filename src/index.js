@@ -8,7 +8,7 @@ import PubNub from "pubnub"
 var pubnub = new PubNub({
   publishKey : "pub-c-f6860906-b4ba-4702-8e65-2b88b0026fdf",
   subscribeKey : "sub-c-253627e6-df37-4bd4-ba07-57e843d14d3d",
-  uuid: Date.now().toString()
+  uuid: Date.now().toString() + " " + Math.random().toString() + " " + Math.random().toString()
 });
 pubnub.subscribe({
   channels: ["hello_world"]
@@ -25,10 +25,10 @@ var publishPayload = {
       title: "greeting",
       description: "This is my first message!"
   }
-}
+};
 pubnub.publish(publishPayload, function(status, response) {
   console.log(status, response);
-})
+});
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
