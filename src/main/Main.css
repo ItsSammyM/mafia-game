@@ -1,6 +1,12 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 .Main {
     text-align: center;
-    background-color: #282c34;
+    background-color: #2d3646;
     height: 100vh;
     align-items: center;
 }
@@ -9,15 +15,26 @@
     /*justify-content: center;*/
     font-size: calc(40px + 2vmin);
     font-weight: 900;
-    -webkit-text-stroke: 3px black;
+    -webkit-text-stroke: 3px rgb(0, 0, 0);
 
-    color: rgb(255, 0, 0);
+    color: rgb(255, 255, 255);
 }
 .Main-body {
     align-items: center;
     font-size: calc(20px + 2vmin);
     -webkit-text-stroke: 1px rgb(0, 0, 0);
-    color: rgb(0, 174, 255);
+    font-weight: 500;
+    color: rgb(143, 143, 143);
+}
+.Main-button-exclamation {
+    color: rgb(253, 221, 78);
+    font-size: calc(15px + 2vmin);
+    font-weight: 1000;
+    text-align: center;
+    align-items: center;
+    width: 90%;
+    height: 50px;
+    border: 5px solid black;    
 }
 .Main-button {
     color: #000000;

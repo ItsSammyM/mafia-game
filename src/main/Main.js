@@ -1,36 +1,23 @@
 import React from "react";
 import "./Main.css"
-import TextInput from "./TextInput";
-import Button from "./Button";
+import { OpenMenu } from "./openMenu/OpenMenu";
+import { MainMenu } from "./mainMenu/MainMenu";
+
 
 class Main extends React.Component
 {
   constructor(props)
   {
     super(props);
-
+    this.state = {
+        currentMenu : <OpenMenu onHostStart={()=>{}} onJoin={()=>{}}/>
+    };
+    this.instance = this;
   }
+  static instance;
   render()
   {
-    return (
-        <div className = "Main">
-            <p className = "Main-header">
-                <br/>
-                Mafia
-            </p>
-            <p className = "Main-body">
-                Name
-                <br/>
-                <TextInput/>
-                <br/>
-                <br/><br/>
-                <Button name="Host New Game"/>
-                
-                <br/><br/>
-                <Button name="Join Game"/>
-            </p>
-        </div>
-    );
+    return (this.state.currentMenu);
   }
 }
 

@@ -6,9 +6,6 @@ import reportWebVitals from './reportWebVitals';
 import GameManager from './GameManager.';
 import Main from "./main/Main"
 
-GameManager.instance.createPubNub();
-GameManager.instance.testPubNub();
-
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode >
