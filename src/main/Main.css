@@ -3,49 +3,33 @@
     padding: 0;
     box-sizing: border-box;
 }
-
 .Main {
-    text-align: center;
+    align-items: center;
+    /* text-align: center; */
     background-color: #2d3646;
     height: 100vh;
     align-items: center;
 }
 .Main-header {
     align-items: center;
-    /*justify-content: center;*/
+    text-align: center; 
+    justify-content: center;
     font-size: calc(40px + 2vmin);
     font-weight: 900;
     -webkit-text-stroke: 3px rgb(0, 0, 0);
 
-    color: rgb(255, 255, 255);
+    color: rgb(143, 143, 143);
 }
 .Main-body {
+    padding: 0;
+    text-align: center;
     align-items: center;
     font-size: calc(20px + 2vmin);
     -webkit-text-stroke: 1px rgb(0, 0, 0);
     font-weight: 500;
     color: rgb(143, 143, 143);
 }
-.Main-button-exclamation {
-    color: rgb(253, 221, 78);
-    font-size: calc(15px + 2vmin);
-    font-weight: 1000;
-    text-align: center;
-    align-items: center;
-    width: 90%;
-    height: 50px;
-    border: 5px solid black;    
-}
 .Main-button {
-    color: #000000;
-    font-size: calc(12px + 2vmin);
-    text-align: center;
-    align-items: center;
-    width: 90%;
-    height: 50px;
-    border: 5px solid black;
-}
-.Main-lineTextInput {
     color: #000000;
     font-size: calc(12px + 2vmin);
     text-align: center;

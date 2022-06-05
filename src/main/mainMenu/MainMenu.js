@@ -4,13 +4,17 @@ export function MainMenu(props)
 {
     return(
         <div className = "Main">
-            <p className = "Main-header">
+            <div className = "Main-header">
                 <br/>
                 Main
-            </p>
-            <p className = "Main-body">
+            </div>
+            <div className = "Main-body">
                 <br/>
-                <Button text="Self"/>
+                <div style={{display: "inline-block", width:"100%"}}>
+                    <div style={{display: "inline-block", width:"30%"}}><Button style={{width:"100%", margin: 0, padding: 0, boarder: 0}} text="Self"/></div>
+                    <div style={{display: "inline-block", width:"30%"}}><Button style={{width:"100%", margin: 0, padding: 0, boarder: 0}} text="Will"/></div>
+                    <div style={{display: "inline-block", width:"30%"}}><Button style={{width:"100%", margin: 0, padding: 0, boarder: 0}} text="Target"/></div>
+                </div>
                 <br/>
                 <Button text="Announcements"/>
                 <br/>
@@ -31,7 +35,11 @@ export function MainMenu(props)
                 <br/>
                 <Button text="Thomas"/>
                 <br/>
-            </p>
+
+                <br/>
+                <Button text="Wiki"/>
+                <br/>
+            </div>
         </div>
     );
 }

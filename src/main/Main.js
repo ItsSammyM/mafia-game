@@ -1,8 +1,7 @@
 import React from "react";
 import "./Main.css"
 import { OpenMenu, HostMenu, JoinMenu } from "./openMenu/OpenMenu";
-import { MainMenu } from "./mainMenu/MainMenu";
-import GameManager from "../GameManager.";
+import GameManager from "../game/GameManager.";
 
 
 class Main extends React.Component
@@ -10,10 +9,12 @@ class Main extends React.Component
   constructor(props)
   {
     super(props);
+    Main.instance = this;
+
     this.state = {
         currentMenu : <OpenMenu 
             onHost={()=>{
-                this.setState({currentMenu: <HostMenu onStart={()=>alert("s")}/>})
+                this.setState({currentMenu: <HostMenu onStart={()=>{}}/>})
                 GameManager.instance.startHost();
             }} 
             onJoin={()=>{
@@ -22,6 +23,7 @@ class Main extends React.Component
         />
     };
   }
+  static instance = null;
   render()
   {
     return (this.state.currentMenu);

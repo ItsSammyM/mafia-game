@@ -1,7 +1,7 @@
 import { LineTextInput, TextInput } from "../TextInput";
 import Button  from "../Button";
 import React from "react";
-import GameManager from "../../GameManager.";
+import GameManager from "../../game/GameManager.";
 
 export class OpenMenu extends React.Component
 {
@@ -54,7 +54,7 @@ export function JoinMenu(props){
                 <br/>
                 Room Code
                 <br/>
-                <LineTextInput/>
+                <LineTextInput onChange={(e)=>GameManager.instance.roomCode = e}/>
                 <br/><br/>
                 <Button text="Join Game" onClick={
                     () => props.onStart()
