@@ -2,6 +2,7 @@ import { LineTextInput, TextInput } from "../TextInput";
 import Button  from "../Button";
 import React from "react";
 import GameManager from "../../game/GameManager.";
+import Main from "../Main";
 
 export class OpenMenu extends React.Component
 {
@@ -30,13 +31,14 @@ export class OpenMenu extends React.Component
                     <br/>
                     <Button text="Host New Game" onClick={() => {
                         GameManager.instance.name = this.state.enteredName;
-                        this.props.onHost();
+                        Main.instance.setState({currentMenu: <HostMenu/>})
+                        GameManager.instance.startHost();
                     }}/>
                     
                     <br/><br/>
                     <Button text="Join Game" onClick={() => {
                         GameManager.instance.name = this.state.enteredName;
-                        this.props.onJoin();
+                        Main.instance.setState({currentMenu: <JoinMenu/>})
                     }}/>
                 </div>
             </div>
@@ -57,7 +59,7 @@ export function JoinMenu(props){
                 <LineTextInput onChange={(e)=>GameManager.instance.roomCode = e}/>
                 <br/><br/>
                 <Button text="Join Game" onClick={
-                    () => props.onStart()
+                    () => {GameManager.instance.joinGame()}
                 }/>
             </div>
         </div>
@@ -85,9 +87,40 @@ export function HostMenu(props){
                 </div>
                 <br/>
                 <Button text="Start Game" onClick={
-                    () => props.onStart()
+                    () => {}
                 }/>
             </div>
         </div>
     );
+}
+export class WaitGameStartMenu extends React.Component{
+    constructor(props){
+        super(props);
+    }
+    renderPlayer(player){return(
+        <div className = "Main-header">
+            {player.name}
+        </div>
+    );}
+    render(){return(
+        <div className = "Main">
+            <div className = "Main-header">
+                <br/>
+                Mafia
+            </div>
+            <div className="Main-body">
+                Name: {GameManager.instance.name}
+                <br/>
+                Room Code : {GameManager.instance.roomCode}
+                <br/>
+                <br/>
+                Players
+                <br/>
+                <br/>
+                {GameManager.instance.gameState.players.map((p)=>{
+                    renderPlayer(p)
+                })}
+            </div>
+        </div>
+    );}
 }

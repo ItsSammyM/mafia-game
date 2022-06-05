@@ -12,15 +12,7 @@ class Main extends React.Component
     Main.instance = this;
 
     this.state = {
-        currentMenu : <OpenMenu 
-            onHost={()=>{
-                this.setState({currentMenu: <HostMenu onStart={()=>{}}/>})
-                GameManager.instance.startHost();
-            }} 
-            onJoin={()=>{
-                this.setState({currentMenu: <JoinMenu onStart={()=>{GameManager.instance.joinGame()}}/>})
-            }}
-        />
+        currentMenu : <OpenMenu/>
     };
   }
   static instance = null;

@@ -1,6 +1,7 @@
 import PubNub from "pubnub"
 import Main from "../main/Main";
 import {MainMenu} from "../main/mainMenu/MainMenu"
+import { OpenMenu, WaitGameStartMenu } from "../main/openMenu/OpenMenu";
 import {GameState} from "./GameState"
 import {Player, PlayerState} from "./Player"
 
@@ -17,35 +18,56 @@ class GameManager
     }
     static instance = new GameManager();
 
-    pubNubListener(){return{
-        message: function (m)
-        {
-            console.log("Recieved");
-            console.log(m.message);
-            switch(m.message.type){
-                case "test":
-                    console.log(m.message);
+    setState(state){
+        for(let property in state){
+            //do the set state shit so things can update
+        }
+    }
+
+    pubNubMessage(m){
+        console.log("Recieved");
+        console.log(m.message);
+        switch(m.message.type){
+            case "test":
+                break;
+            case "joinRequest":
+                if(!this.host){
                     break;
-                case "joinRequest":
-                    console.log("request Ackknowledged");
-                    if(GameManager.instance.host){
-                        console.log("request Ack2323232knowledged");
-                        GameManager.instance.gameState.players.push(new Player(m.message.contents.name));
-                        console.log("request asdasdas");
-                        GameManager.instance.pubNubPublish(GameManager.instance.pubNubCreatePayLoad(GameManager.instance.roomCode, "joinResponse"), 
-                            {
-                                name: m.message.contents.name,
-                                success: true,
-                                text: "No Implemented Exeptions"
-                            }
-                        );
+                }
+                this.gameState.players.push(new Player(m.message.contents.name));
+                this.pubNubPublish(this.pubNubCreatePayLoad(this.roomCode, "joinResponse",
+                    {
+                        name: m.message.contents.name,
+                        success: true,
+                        text: "No Implemented Exeptions"
                     }
+                ));
+                this.sendGameState();
+                break;
+            case "joinResponse":
+                if(m.message.contents.name != this.name){
                     break;
-                case "joinResponse":
-                    Main.instance.setState({currentMenu: (<MainMenu/>)});
+                }
+                if(!m.message.contents.success){
+                    alert("Join Failed: "+m.message.contents.text);
                     break;
-            };
-        },
+                }
+                if(!this.host){
+                    Main.instance.setState({
+                        currentMenu: <WaitGameStartMenu/>
+                    });
+                }
+
+                break;
+            case "gameState":
+                if(!this.host) break;
+                this.gameState = m.message.contents.state;
+                Main.instance.setState();
+                break;
+        };
+    }
+    pubNubListener(){return{
+        message: (m) => GameManager.instance.pubNubMessage(m)
     };}
     pubNubPublish(publishPayload){
         this.pubnub.publish(publishPayload, function(status, response) {
@@ -66,6 +88,13 @@ class GameManager
         );
     }
 
+    sendGameState(){
+        if(!this.host) return;
+
+        this.pubNubPublish(this.pubNubCreatePayLoad(this.roomCode, "gameState", {
+            state: this.gameState
+        }));
+    }
     startGame(){
         this.gameState.started = true;
     }
@@ -89,7 +118,8 @@ class GameManager
 
     }
     joinGame(){
-        //this.roomCode = this.roomCode.toLowerCase();
+        if(!this.roomCode||this.roomCode==""){alert("No room code entered"); return;}
+        this.roomCode = this.roomCode.toLowerCase();
         this.initPubNub(this.roomCode);
         let publishPayload = this.pubNubCreatePayLoad(this.roomCode, "joinRequest",
             {
