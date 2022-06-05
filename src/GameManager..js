@@ -6,7 +6,7 @@ class GameManager
     {
         this.roomCode = 0;
         this.host = false;
-        this.joinedGame;
+        this.joinedGame = null;
         this.name = "";
 
         this.gameState = {};
@@ -54,6 +54,7 @@ class GameManager
         this.pubNubPublish(publishPayload);
     }
     joinGame(){
+        this.roomCode = this.roomCode.toLowerCase();
         let publishPayload = this.pubNubCreatePayLoad(this.roomCode, "joinRequest",
             {
                 name: this.name
