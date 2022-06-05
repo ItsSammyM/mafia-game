@@ -6,7 +6,7 @@ export function LineTextInput(props)
         <input 
         type="text" 
         defaultValue="" 
-        onChange={(e) => props.onChange(e.target.value)} 
+        onChange={(e) => {if(props.onChange) props.onChange(e.target.value)}}
         className="Main-lineTextInput"
         ></input>
     );
@@ -17,7 +17,7 @@ export function TextInput(props)
         <textarea 
         type="text"
         defaultValue=""
-        onChange={(e) => props.onChange(e.target.value)}
+        onChange={(e) => {if(props.onChange) props.onChange(e.target.value)}}
         className="Main-lineTextInput"
         ></textarea>
     );

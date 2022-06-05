@@ -6,39 +6,61 @@ class GameManager
     {
         this.roomCode = 0;
         this.host = false;
+        this.joinedGame;
+        this.name = "";
 
         this.gameState = {};
     }
     static instance = new GameManager();
+
+    pubNubListener(){return{
+        message: function (m)
+        {
+            console.log("Recieved");
+            switch(m.type){
+                case "test":
+                    console.log(m.message);
+                    break;
+                case "joinRequest":
+                    console.log(m.message);
+                    break;
+            }
+        },
+    };}
+    pubNubPublish(publishPayload){
+        this.pubnub.publish(publishPayload, function(status, response) {
+            // console.log(status, response);
+            // console.log(publishPayload);
+        });
+    };
+    pubNubCreatePayLoad(msgChannel, msgType, msg){
+        return(
+            {
+                channel : msgChannel,
+                type: msgType,
+                message: msg
+            }
+        );
+    }
     startHost()
     {
         this.roomCode = GameManager.generateRandomString(4);
         this.initPubNub(this.roomCode);
-        
 
-        this.pubnub.addListener({
-            message: function (m)
-            {
-                if(m.message.type == "test"){
-                    console.log(m.message.type);
-                }
-            },
-        });
-        
-        var publishPayload = {
-            channel : this.roomCode,
-            message: {
-                type: "test",
-                text: "This is my first message!"
-            }
-        };
-        this.pubnub.publish(publishPayload, function(status, response) {
-            console.log(status, response);
-            console.log(publishPayload);
-        });
+        let publishPayload = this.pubNubCreatePayLoad(this.roomCode, "test",
+            {text: "Host started"}
+        );
+
+        this.pubNubPublish(publishPayload);
     }
     joinGame(){
-        
+        let publishPayload = this.pubNubCreatePayLoad(this.roomCode, "joinRequest",
+            {
+                name: this.name
+            }
+        );
+
+        this.pubNubPublish(publishPayload);
     }
     initPubNub(channel){
         this.pubnub = new PubNub({
@@ -50,30 +72,9 @@ class GameManager
         this.pubnub.subscribe({
             channels: [channel]
         });
+
+        this.pubnub.addListener(this.pubNubListener());
     }
-    // static testPubNub()
-    // {
-    //     var publishPayload = {
-    //     channel : "hello_world",
-    //     message: {
-    //         title: "greeting",
-    //         description: "This is my first message!"
-    //     }
-    //     };
-    //     this.pubnub.publish(publishPayload, function(status, response) {
-    //         console.log(status, response);
-    //     });
-    // }
-    // static createPubNub()
-    // {
-        
-    //     this.pubnub.addListener({
-    //         message: function (m)
-    //         {
-    //           console.log(m.message.title)
-    //         },
-    //     });
-    // }
 
     static generateRandomString(length){
         let allChars = "abcdefghijklmnopqrstuvwxyz1234567890";

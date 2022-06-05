@@ -1,41 +1,76 @@
 import { LineTextInput, TextInput } from "../TextInput";
 import Button  from "../Button";
-import { render } from "@testing-library/react";
 import React from "react";
 import GameManager from "../../GameManager.";
-import Main from "../Main";
 
 export class OpenMenu extends React.Component
 {
     constructor(props){
         super(props);
         
-        
         this.state = {
-            subMenu : this.renderOpen(),
             enteredName : ""
         };
     }
-    renderOpen(){
+    render()
+    {
         return(
-            <p className = "Main-body">
-                <br/>
-                <Button text="Host New Game" onClick={() => {
-                    GameManager.instance.startHost();
-                    this.setState({subMenu: this.renderHost()});
-                }}/>
-                
-                <br/><br/>
-                <Button text="Join Game" onClick={() => {
-                    this.setState({subMenu: this.renderJoin()});
-                }}/>
-            </p>
+            <div className = "Main">
+                <div className = "Main-header">
+                    <br/>
+                    Mafia
+                </div>
+                <div className="Main-body">
+                    Name: {this.state.enteredName}
+                    <br/>
+                    <LineTextInput onChange={(e)=>{
+                        this.setState({enteredName : e});
+                    }} />
+                    <br/>
+                    <br/>
+                    <Button text="Host New Game" onClick={() => {
+                        GameManager.instance.name = this.state.enteredName;
+                        this.props.onHost();
+                    }}/>
+                    
+                    <br/><br/>
+                    <Button text="Join Game" onClick={() => {
+                        GameManager.instance.name = this.state.enteredName;
+                        this.props.onJoin();
+                    }}/>
+                </div>
+            </div>
         );
     }
-    renderHost(){
-        return(
+}
+export function JoinMenu(props){
+    return(
+        <div className = "Main">
+            <div className = "Main-header">
+                <br/>
+                {GameManager.instance.name}
+            </div>
             <div className = "Main-body">
-                
+                <br/>
+                Room Code
+                <br/>
+                <LineTextInput/>
+                <br/><br/>
+                <Button text="Join Game" onClick={
+                    () => props.onStart()
+                }/>
+            </div>
+        </div>
+    );
+}
+export function HostMenu(props){
+    return(
+        <div className = "Main">
+            <div className = "Main-header">
+                <br/>
+                {GameManager.instance.name}
+            </div>
+            <div className = "Main-body">
                 <br/>
                 Room Code
                 <br/>
@@ -50,39 +85,9 @@ export class OpenMenu extends React.Component
                 </div>
                 <br/>
                 <Button text="Start Game" onClick={
-                    this.props.onHostStart()
+                    () => props.onStart()
                 }/>
             </div>
-        );
-    }
-    renderJoin(){
-        return(
-            <div className = "Main-body">
-                <br/>
-                Room Code
-                <br/>
-                <LineTextInput/>
-            </div>
-        );
-    }
-    render()
-    {
-        return(
-            <div className = "Main">
-                <p className = "Main-header">
-                    <br/>
-                    Mafia
-                </p>
-                <div className="Main-body">
-                    Name: {this.state.enteredName}
-                    <br/>
-                    <LineTextInput onChange={(e)=>{
-                        this.setState({enteredName : e});
-                    }} />
-                    <br/>
-                </div>
-                {this.state.subMenu}
-            </div>
-        );
-    }
+        </div>
+    );
 }
