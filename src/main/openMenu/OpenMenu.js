@@ -3,6 +3,7 @@ import Button  from "../Button";
 import React from "react";
 import GameManager from "../../game/GameManager.";
 import Main from "../Main";
+import { Player } from "../../game/Player";
 
 export class OpenMenu extends React.Component
 {
@@ -98,7 +99,7 @@ export class WaitGameStartMenu extends React.Component{
         super(props);
     }
     renderPlayer(player){return(
-        <div className = "Main-header">
+        <div className = "Main-header" key={player.name}>
             {player.name}
         </div>
     );}
@@ -118,7 +119,7 @@ export class WaitGameStartMenu extends React.Component{
                 <br/>
                 <br/>
                 {GameManager.instance.gameState.players.map((p)=>{
-                    renderPlayer(p)
+                    return this.renderPlayer(p)
                 })}
             </div>
         </div>

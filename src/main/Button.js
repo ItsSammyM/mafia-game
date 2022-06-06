@@ -7,6 +7,7 @@ function Button(props)
 
     let text = props.text;
     let style = {};
+    
 
     if(props.exclamation == true){
         style = {
@@ -16,7 +17,7 @@ function Button(props)
         }
         text = "! ! ! " + text + " ! ! !";
     }
-
+    if(props.style) style = props.style
     return (
         <button style={style}
         className = {css} 

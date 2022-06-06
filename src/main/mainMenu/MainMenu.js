@@ -9,10 +9,10 @@ export class MainMenu extends React.Component
     }
     renderPlayer(player){
         return (
-            <div key={player.name} style={{display: "inline-block", width:"100%"}}>
-                <div style={{display: "inline-block", width:"30%"}}><Button style={{width:"100%", margin: 0, padding: 0, boarder: 0}} text={player.name}/></div>
-                <div style={{display: "inline-block", width:"30%"}}><Button style={{width:"100%", margin: 0, padding: 0, boarder: 0}} text="Vote"/></div>
-                <div style={{display: "inline-block", width:"30%"}}><Button style={{width:"100%", margin: 0, padding: 0, boarder: 0}} text="Target"/></div>
+            <div key={player.name} style={{display: "inline-block", width:"90.7%"}}>
+                <div style={{display: "inline-block", width:"33%"}}><Button style={{width:"100%"}} text={player.name}/></div>
+                <div style={{display: "inline-block", width:"33%"}}><Button style={{width:"100%"}} text="Vote"/></div>
+                <div style={{display: "inline-block", width:"33%"}}><Button style={{width:"100%"}} text="Target"/></div>
             </div>
         );
     }
@@ -26,10 +26,10 @@ export class MainMenu extends React.Component
                 {"Room Code: "+GameManager.instance.roomCode}
                 <br/>
                 <br/>
-                <div style={{display: "inline-block", width:"100%"}}>
-                    <div style={{display: "inline-block", width:"30%"}}><Button style={{width:"100%", margin: 0, padding: 0, boarder: 0}} text="Self"/></div>
-                    <div style={{display: "inline-block", width:"30%"}}><Button style={{width:"100%", margin: 0, padding: 0, boarder: 0}} text="Will"/></div>
-                    <div style={{display: "inline-block", width:"30%"}}><Button style={{width:"100%", margin: 0, padding: 0, boarder: 0}} text="Target"/></div>
+                <div style={{display: "inline-block", width:"90.7%"}}>
+                    <div style={{display: "inline-block", width:"33%"}}><Button style={{width:"100%"}} text="Self"/></div>
+                    <div style={{display: "inline-block", width:"33%"}}><Button style={{width:"100%"}} text="Will"/></div>
+                    <div style={{display: "inline-block", width:"33%"}}><Button style={{width:"100%"}} text="Target"/></div>
                 </div>
                 <br/>
                 <Button text="Announcements"/>

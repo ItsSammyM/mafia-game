@@ -2,6 +2,7 @@ import React from "react";
 import "./Main.css"
 import { OpenMenu, HostMenu, JoinMenu } from "./openMenu/OpenMenu";
 import GameManager from "../game/GameManager.";
+import { MainMenu } from "./mainMenu/MainMenu";
 
 
 class Main extends React.Component
@@ -12,9 +13,10 @@ class Main extends React.Component
     Main.instance = this;
 
     this.state = {
-        currentMenu : <OpenMenu/>
+      currentMenu : <OpenMenu/>
     };
   }
+  
   static instance = null;
   render()
   {

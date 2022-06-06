@@ -18,15 +18,10 @@ class GameManager
     }
     static instance = new GameManager();
 
-    setState(state){
-        for(let property in state){
-            //do the set state shit so things can update
-        }
-    }
-
     pubNubMessage(m){
         console.log("Recieved");
         console.log(m.message);
+
         switch(m.message.type){
             case "test":
                 break;
@@ -60,9 +55,12 @@ class GameManager
 
                 break;
             case "gameState":
-                if(!this.host) break;
+                if(this.host) break;
                 this.gameState = m.message.contents.state;
-                Main.instance.setState();
+                // setInterval(() => {
+                //     Main.instance.state.currentMenu.forceUpdate();
+                // }, 1000);
+                
                 break;
         };
     }
@@ -71,7 +69,7 @@ class GameManager
     };}
     pubNubPublish(publishPayload){
         this.pubnub.publish(publishPayload, function(status, response) {
-            console.log("Sending");
+            console.log("Sending " + publishPayload.message.type);
             // console.log(status, response);
             // console.log(publishPayload);
         });
