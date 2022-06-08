@@ -13,7 +13,9 @@ export class OpenMenu extends React.Component
         this.state = {
             enteredName : ""
         };
+        
     }
+    
     render()
     {
         return(
@@ -97,6 +99,18 @@ export function HostMenu(props){
 export class WaitGameStartMenu extends React.Component{
     constructor(props){
         super(props);
+        this.state = {
+            gameState : GameManager.instance.gameState
+        };
+    }
+    componentDidMount(){
+        this.gameManagerListener = {
+            stateUpdate : (e) => {this.setState({gameState: e})}
+        };
+        GameManager.instance.addListener(this.gameManagerListener);
+    }
+    componentWillUnmount(){
+        GameManager.instance.removeListener(this.gameManagerListener);
     }
     renderPlayer(player){return(
         <div className = "Main-header" key={player.name}>
@@ -110,15 +124,15 @@ export class WaitGameStartMenu extends React.Component{
                 Mafia
             </div>
             <div className="Main-body">
-                Name: {GameManager.instance.name}
+                Name: {this.state.gameState.name}
                 <br/>
-                Room Code : {GameManager.instance.roomCode}
+                Room Code : {this.state.gameState.roomCode}
                 <br/>
                 <br/>
                 Players
                 <br/>
                 <br/>
-                {GameManager.instance.gameState.players.map((p)=>{
+                {this.state.gameState.players.map((p)=>{
                     return this.renderPlayer(p)
                 })}
             </div>

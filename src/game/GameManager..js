@@ -14,9 +14,29 @@ class GameManager
         this.joinedGame = null;
         this.name = "";
 
+        this.state = {
+
+        };
         this.gameState = new GameState();
+        this.listeners = [];
     }
     static instance = new GameManager();
+
+    addListener(l){
+        this.listeners.push(l);
+    }
+    removeListener(l){
+        for(let i = 0; i < this.listeners.length; i++){
+            if(this.listeners[i] == l) this.listeners.splice(i);
+            return;
+        }
+    }
+    setState(s){
+        this.state = s;
+        for(let i = 0; i < this.listeners.length; i++){
+            if(this.listeners[i]) this.listeners[i].stateUpdate(this.gameState);
+        }
+    }
 
     pubNubMessage(m){
         console.log("Recieved");
@@ -56,11 +76,7 @@ class GameManager
                 break;
             case "gameState":
                 if(this.host) break;
-                this.gameState = m.message.contents.state;
-                // setInterval(() => {
-                //     Main.instance.state.currentMenu.forceUpdate();
-                // }, 1000);
-                
+                this.setState(m.message.contents.state);
                 break;
         };
     }
