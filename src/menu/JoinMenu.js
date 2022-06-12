@@ -43,6 +43,10 @@ export class JoinMenu extends React.Component{
                 GameManager.instance.invokeStateUpdate();
             }}>Join Game</button>
         </div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
     </div>
     );}
 }

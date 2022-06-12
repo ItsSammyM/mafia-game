@@ -39,7 +39,7 @@ export class HostMenu extends React.Component{
                     return (<div key={p.name}><button className="Main-button"
                         onMouseUp={() => {
                             let i = GameManager.instance.completeState.gameState.players.indexOf(p);
-                            if(i != -1){
+                            if(i !== -1){
                                 GameManager.instance.pubNub.createAndPublish(GameManager.instance.completeState.myState.roomCode, "kickPlayer", {
                                     name: GameManager.instance.completeState.gameState.players[i].name
                                 });
@@ -51,10 +51,16 @@ export class HostMenu extends React.Component{
                     </button><br/></div>)
                 })}
                 <br/>
+
                 <br/>
-                <button className="Main-button" onClick={() => {}
-                }>Start Game</button>
+                <button className="Main-button" onClick={() => {
+                    GameManager.instance.startGame();
+                }}>Start Game</button>
             </div>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
         </div>
     );}
 }

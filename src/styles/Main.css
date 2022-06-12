@@ -1,4 +1,5 @@
 *{
+    
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -7,7 +8,7 @@
 .Main {
     /* text-align: center; */
     background-color: #2d3646;
-    height: 100vh;
+    min-height: 100vh;
     align-items: center;
     text-align: center;
 }

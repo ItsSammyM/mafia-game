@@ -49,7 +49,12 @@ export class OpenMenu extends React.Component
                         Main.instance.setState({currentMenu: <JoinMenu/>});
                         GameManager.instance.invokeStateUpdate();
                     }}>Join Game</button>
+                    
                 </div>
+                <br/>
+                <br/>
+                <br/>
+                <br/>
             </div>
         );
     }

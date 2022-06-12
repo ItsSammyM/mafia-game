@@ -16,6 +16,6 @@ export class Main extends React.Component
   static instance = null;
   render()
   {
-    return (this.state.currentMenu);
+    return (<div className="Main">{this.state.currentMenu}</div>);
   }
 }

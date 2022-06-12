@@ -4,7 +4,7 @@ export class PlayerState{
         this.name = name;
 
         this.alive = false;
-        this.role = "None";
+        this.role = "";
         this.will = "";
     }
 }

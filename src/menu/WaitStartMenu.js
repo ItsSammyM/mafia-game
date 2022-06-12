@@ -43,6 +43,10 @@ export class WaitStartMenu extends React.Component{
                     </div>);
                 })}
             </div>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
         </div>
     );}
 }
