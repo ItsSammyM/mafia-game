@@ -1,14 +1,15 @@
+import React from "react";
 import { GameManager } from "../game/GameManager";
 
-export class WaitGameStartMenu extends React.Component{
+export class WaitStartMenu extends React.Component{
     constructor(props){
         super(props);
 
         
         this.state = {completeState : GameManager.instance.completeState};
-        this.stateListener = (s) => {
-            this.setState({completeState : s})
-        };
+        this.stateListener = {stateUpdate :(s) => {
+            this.setState({completeState : s});
+        }};
     }
     componentDidMount(){
         GameManager.instance.addListener(this.stateListener);
@@ -28,16 +29,18 @@ export class WaitGameStartMenu extends React.Component{
                 Mafia
             </div>
             <div className="Main-body">
-                Name: {this.state.gameState.name}
+                Name: {this.state.completeState.myState.name}
                 <br/>
-                Room Code : {this.state.gameState.roomCode}
+                Room Code : {this.state.completeState.myState.roomCode}
                 <br/>
                 <br/>
                 Players
                 <br/>
                 <br/>
-                {this.state.gameState.players.map((p)=>{
-                    return this.renderPlayer(p)
+                {this.state.completeState.gameState.players.map((p)=>{
+                    return (<div className = "Main-header" key={p.name}>
+                        {p.name}
+                    </div>);
                 })}
             </div>
         </div>

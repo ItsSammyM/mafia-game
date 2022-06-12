@@ -5,10 +5,13 @@ export class JoinMenu extends React.Component{
     constructor(props){
         super(props);
         
-        this.state = {completeState : GameManager.instance.completeState};
-        this.stateListener = (s) => {
-            this.setState({completeState : s})
+        this.state = {
+            enteredRoomCode : "",
+            completeState : GameManager.instance.completeState,
         };
+        this.stateListener = {stateUpdate :(s) => { 
+            this.setState({completeState : s});
+        }};
     }
     componentDidMount(){
         GameManager.instance.addListener(this.stateListener);
@@ -24,15 +27,20 @@ export class JoinMenu extends React.Component{
         </div>
         <div className = "Main-body">
             <br/>
-            Room Code
+            Room Code: {this.state.enteredRoomCode}
             <br/>
             <input className="Main-lineTextInput" onChange={(e)=>{
-                GameManager.instance.state.myState.roomCode = e;
-                GameManager.instance.invokeStateUpdate();
+                this.setState({enteredRoomCode : e.target.value});
             }}/>
             <br/><br/>
             <button className="Main-button" onClick={() => {
-                //GameManager.instance.joinGame()
+                GameManager.instance.completeState.myState.roomCode = this.state.enteredRoomCode;
+                GameManager.instance.pubNub.subscribe(GameManager.instance.completeState.myState.roomCode);
+                GameManager.instance.pubNub.createAndPublish(this.state.enteredRoomCode, "joinRequest", {
+                    name : GameManager.instance.completeState.myState.name
+                });
+
+                GameManager.instance.invokeStateUpdate();
             }}>Join Game</button>
         </div>
     </div>

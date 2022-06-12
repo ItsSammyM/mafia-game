@@ -1,7 +1,7 @@
 export class PlayerState{
-    constructor()
+    constructor(name)
     {
-        this.name = "";
+        this.name = name;
 
         this.alive = false;
         this.role = "None";

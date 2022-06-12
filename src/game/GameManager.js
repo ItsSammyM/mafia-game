@@ -1,4 +1,8 @@
+import { Main } from "../Main";
+import { OpenMenu } from "../menu/OpenMenu";
+import { WaitStartMenu} from "../menu/WaitStartMenu";
 import { CompleteState } from "./CompleteState";
+import { PlayerState } from "./PlayerState";
 import { PubNubWrapper } from "./PubNubWrapper";
 
 export class GameManager{
@@ -11,12 +15,13 @@ export class GameManager{
     }
     setState(cs){
         this.completeState = cs;
-        invokeStateUpdate();
+        this.invokeStateUpdate();
     }
     invokeStateUpdate(){
         for(let i = 0; i < this.listeners.length; i++){
             if(this.listeners[i]) this.listeners[i].stateUpdate(this.completeState);
         }
+        if(this.completeState.myState.host) this.sendGameState();
     }
     addListener(l){
         this.listeners.push(l);
@@ -31,8 +36,8 @@ export class GameManager{
     }
     
     sendGameState(){
-        this.pubNub.createAndPublish(this.state.myState.roomCode, "gameState", {
-            gameState: this.state.gameState
+        this.pubNub.createAndPublish(this.completeState.myState.roomCode, "gameState", {
+            gameState: this.completeState.gameState
         });
     }
 
@@ -44,13 +49,32 @@ export class GameManager{
             case "test":
                 break;
             case "joinRequest":
-                if(!this.state.myState.host) break;
+                if(!this.completeState.myState.host) break;
+                if(this.completeState.gameState.phase != "waitStart") break;
+                this.completeState.gameState.players.push(new PlayerState(m.message.contents.name));
+                this.invokeStateUpdate();
+                this.pubNub.createAndPublish(this.completeState.gameState.roomCode, "joinResponse", {
+                    success: true,
+                    detail : "No Implemented Exeptions"
+                });
                 break;
             case "joinResponse":
-                if(this.state.myState.host) break;
+                if(this.completeState.myState.host) break;
+                if(m.message.contents.success){
+                    Main.instance.setState({currentMenu : <WaitStartMenu/>});
+                }else{
+                    alert(m.message.contents.detail);
+                    Main.instance.setState({currentMenu : <OpenMenu/>});
+                }
                 break;
             case "gameState":
-                if(this.state.myState.host) break;
+                if(this.completeState.myState.host) break;
+                this.completeState.gameState = m.message.contents.gameState;
+                this.invokeStateUpdate();
+                break;
+            case "kickPlayer":
+                if(this.completeState.myState.host) break;
+                Main.instance.setState({currentMenu : <OpenMenu/>});
                 break;
         };
     }

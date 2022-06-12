@@ -1,6 +1,7 @@
 export class GameState{
     constructor(){
-        this.started = false;
+        this.roomCode = "";
+        this.phase = "";
         this.players = [];
     }
 }
