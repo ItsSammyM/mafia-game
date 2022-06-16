@@ -36,10 +36,7 @@ export class JoinMenu extends React.Component{
                 <button className="Main-button" onClick={() => {
                     GameManager.instance.completeState.myState.roomCode = this.state.enteredRoomCode;
                     GameManager.instance.pubNub.subscribe(GameManager.instance.completeState.myState.roomCode);
-                    GameManager.instance.pubNub.createAndPublish(this.state.enteredRoomCode, "joinRequest", {
-                        name : GameManager.instance.completeState.myState.name
-                    });
-
+                    GameManager.instance.sendJoinRequest();
                     GameManager.instance.invokeStateUpdate();
                 }}>Join Game</button>
             </div>

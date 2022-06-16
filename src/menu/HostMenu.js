@@ -37,12 +37,10 @@ export class HostMenu extends React.Component{
                 <br/>
                 {this.state.completeState.gameState.players.map((p)=>{
                     return (<div key={p.name}><button className="Main-button"
-                        onMouseUp={() => {
+                        onClick={() => {
                             let i = GameManager.instance.completeState.gameState.players.indexOf(p);
                             if(i !== -1){
-                                GameManager.instance.pubNub.createAndPublish(GameManager.instance.completeState.myState.roomCode, "kickPlayer", {
-                                    name: GameManager.instance.completeState.gameState.players[i].name
-                                });
+                                GameManager.instance.sendKickPlayer(GameManager.instance.completeState.gameState.players[i].name);
                                 GameManager.instance.completeState.gameState.players.splice(i, 1);
                                 GameManager.instance.invokeStateUpdate();
                             } 

@@ -1,13 +1,15 @@
 export class ChatState{
-    constructor(title){
+    constructor(title, playerNames = []){
         this.title = title;
-        this.playerName = [];
+        this.playerNames = playerNames;
         this.chatMessages = [];
     }
 }
 export class ChatMessageState{
-    constructor(senderName, text){
+    constructor(senderName, time, text="", will=false){
         this.senderName = senderName;
         this.text = text;
+        this.will = will;
+        this.time = time;
     }
 }

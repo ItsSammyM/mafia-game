@@ -1,4 +1,6 @@
 import { GameManager } from "../game/GameManager";
+import { ChatMenu } from "./ChatMenu";
+import { Main } from "../Main";
 import React from "react";
 
 export class MainMenu extends React.Component
@@ -35,8 +37,7 @@ export class MainMenu extends React.Component
                 Main
             </div>
             <div className = "Main-body">
-                {"Room Code: "+this.state.completeState.gameState.roomCode}
-                <br/>
+                
                 <br/>
                 <div style={{display: "inline-block", width:"90.7%"}}>
                     <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}}>Self</button></div>
@@ -48,7 +49,7 @@ export class MainMenu extends React.Component
                 <br/>
 
                 <br/>
-                <button className="Main-button">Day</button>
+                {/* <button className="Main-button" onClick={Main.instance.setState({currentMenu: <ChatMenu title="Day"/>})}>Day</button> */}
                 <br/>
                 <button className="Main-button">Mafia</button>
                 <br/>
@@ -61,8 +62,8 @@ export class MainMenu extends React.Component
                 <br/>
 
                 <br/>
-                <button className="Main-button">Wiki</button>
-                
+                <button className="Main-button">Wiki</button><br/>
+                {"Room Code: "+this.state.completeState.gameState.roomCode}
             </div>
             <br/>
             <br/>

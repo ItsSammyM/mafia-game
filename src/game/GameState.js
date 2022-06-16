@@ -5,5 +5,6 @@ export class GameState{
         this.phaseTimer = 0;
         this.started = false;
         this.players = [];
+        this.chats = [];
     }
 }

@@ -2,6 +2,7 @@ import { Main } from "../Main";
 import { MainMenu } from "../menu/MainMenu";
 import { OpenMenu } from "../menu/OpenMenu";
 import { WaitStartMenu} from "../menu/WaitStartMenu";
+import { ChatState } from "./ChatState";
 import { CompleteState } from "./CompleteState";
 import { PlayerState } from "./PlayerState";
 import { PubNubWrapper } from "./PubNubWrapper";
@@ -43,7 +44,26 @@ export class GameManager{
             gameState: this.completeState.gameState
         });
     }
-
+    sendJoinRequest(){
+        this.pubNub.createAndPublish(this.completeState.myState.roomCode, "joinRequest", {
+            name : this.completeState.myState.name
+        });
+    }
+    sendJoinResponse(success, detail = "No detail"){
+        this.pubNub.createAndPublish(this.completeState.gameState.roomCode, "joinResponse", {
+            success: success,
+            detail : detail
+        });
+    }
+    sendKickPlayer(name){
+        this.pubNub.createAndPublish(this.completeState.myState.roomCode, "kickPlayer", {
+            name: name
+        });
+    }
+    sendStartGame(){
+        this.pubNub.createAndPublish(this.completeState.myState.roomCode, "startGame", {});
+    }
+    
     onMessage(m){
         console.log("Recieved");
         console.log(m.message);
@@ -56,19 +76,13 @@ export class GameManager{
                 if(this.completeState.gameState.phase === "waitStart"){
                     this.completeState.gameState.players.push(new PlayerState(m.message.contents.name));
                     this.invokeStateUpdate();
-                    this.pubNub.createAndPublish(this.completeState.gameState.roomCode, "joinResponse", {
-                        success: true,
-                        detail : "No Implemented Exeptions"
-                    });
+                    this.sendJoinResponse(true);
                 }else if(this.completeState.gameState.started){
                     //no implemented check to ensure they should be allowed back in
                     //spectators?
-                    this.pubNub.createAndPublish(this.completeState.gameState.roomCode, "joinResponse", {
-                        success: true,
-                        detail : "No Implemented Exeptions"
-                    });
-                    this.pubNub.createAndPublish(this.completeState.myState.roomCode, "startGame", {});
-                    this.sendGameState();
+                    // this.sendJoinResponse(true);
+                    // this.sendStartGame();
+                    // this.sendGameState();
                 }
                 break;
             case "joinResponse":
@@ -86,9 +100,22 @@ export class GameManager{
                 this.invokeStateUpdate();
                 break;
             case "kickPlayer":
-                if(this.completeState.myState.host) break;
-                if(m.message.contents.name === this.completeState.myState.name)
-                    Main.instance.setState({currentMenu : <OpenMenu/>});
+                
+                if(m.message.contents.name !== this.completeState.myState.name) break;
+
+                if(this.completeState.myState.host)
+                {
+                    for(let i = 0; i < this.completeState.gameState.players.length; i++)
+                    {
+                        GameManager.instance.pubNub.createAndPublish(GameManager.instance.completeState.myState.roomCode, "kickPlayer", {
+                            name: this.completeState.gameState.players[i].name
+                        });
+                    }
+                }
+                Main.instance.setState({currentMenu : <OpenMenu/>});
+                this.completeState = new CompleteState();
+                
+                    
                 break;
             case "startGame":
                 //if(this.completeState.myState.host) break;
@@ -102,10 +129,25 @@ export class GameManager{
     startGame(){
         this.completeState.gameState.phase = "Day";
         this.completeState.gameState.started = true;
-        // for(let i = 0; i < this.completeState.gameState.players.length; i++){
-        //     this.completeState.gameState.players[i];
-        // }
-        this.pubNub.createAndPublish(this.completeState.myState.roomCode, "startGame", {});
+        //give players numbers
+        for(let i = 0; i < this.completeState.gameState.players.length; i++){
+            this.completeState.gameState.players[i].number = i;
+        }
+        //create whisper chats
+        for(let i = 0; i < this.completeState.gameState.players.length; i++){
+            for(let j = i+1; j < this.completeState.gameState.players.length; j++){
+                this.completeState.gameState.chats.push(new ChatState(
+                    "Whispers of"+this.completeState.gameState.players[i].name+" and "+this.completeState.gameState.players[j].name,
+                    [this.completeState.gameState.players[i], this.completeState.gameState.players[j]]
+                ));
+            }
+        }
+        this.completeState.gameState.chats.push(new ChatState("Day", this.completeState.gameState.players));
+        this.completeState.gameState.chats.push(new ChatState("Dead", this.completeState.gameState.players));
+        this.completeState.gameState.chats.push(new ChatState("Mafia", this.completeState.gameState.players));
+        this.completeState.gameState.chats.push(new ChatState("Vampire", this.completeState.gameState.players));
+        
+        this.sendStartGame();
         this.invokeStateUpdate();
     }
     playNight(){
