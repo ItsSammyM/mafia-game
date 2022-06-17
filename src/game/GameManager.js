@@ -2,7 +2,7 @@ import { Main } from "../Main";
 import { MainMenu } from "../menu/MainMenu";
 import { OpenMenu } from "../menu/OpenMenu";
 import { WaitStartMenu} from "../menu/WaitStartMenu";
-import { ChatState } from "./ChatState";
+import { ChatState, ChatMessageState } from "./ChatState";
 import { CompleteState } from "./CompleteState";
 import { PlayerState } from "./PlayerState";
 import { PubNubWrapper } from "./PubNubWrapper";
@@ -63,6 +63,14 @@ export class GameManager{
     sendStartGame(){
         this.pubNub.createAndPublish(this.completeState.myState.roomCode, "startGame", {});
     }
+    sendChatMessage(myName, text, chatTitle, will){
+        this.pubNub.createAndPublish(this.completeState.myState.roomCode, "sendChatMessage", {
+            myName : myName,
+            text: text,
+            chatTitle: chatTitle,
+            will : will
+        });
+    }
     
     onMessage(m){
         console.log("Recieved");
@@ -97,6 +105,17 @@ export class GameManager{
             case "gameState":
                 if(this.completeState.myState.host) break;
                 this.completeState.gameState = m.message.contents.gameState;
+                this.invokeStateUpdate();
+                break;
+            case "sendChatMessage":
+                if(!this.completeState.myState.host) break;
+                let chat = this.getChatFromTitle(m.message.contents.chatTitle);
+                chat.chatMessages.push(new ChatMessageState(
+                    m.message.contents.myName,
+                    Date.now(),
+                    m.message.contents.text,
+                    m.message.contents.will
+                ));
                 this.invokeStateUpdate();
                 break;
             case "kickPlayer":
@@ -162,6 +181,15 @@ export class GameManager{
         }
     }
 
+    getChatFromTitle(title){
+        for(let i = 0; i < this.completeState.gameState.chats.length; i++)
+        {
+            if(this.completeState.gameState.chats[i].title === title){
+                return this.completeState.gameState.chats[i];
+            }
+        }
+        return null;
+    }
     static instance = new GameManager();
     static generateRandomString(length){
         let allChars = "abcdefghijklmnopqrstuvwxyz1234567890";
@@ -174,6 +202,7 @@ export class GameManager{
         }
         return out;
     }
+    
 }
 
 /*

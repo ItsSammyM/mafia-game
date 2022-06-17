@@ -34,7 +34,7 @@ export class MainMenu extends React.Component
         <div className = "Main">
             <div className = "Main-header">
                 <br/>
-                Main
+                {this.state.completeState.myState.name}
             </div>
             <div className = "Main-body">
                 
@@ -49,7 +49,7 @@ export class MainMenu extends React.Component
                 <br/>
 
                 <br/>
-                {/* <button className="Main-button" onClick={Main.instance.setState({currentMenu: <ChatMenu title="Day"/>})}>Day</button> */}
+                <button className="Main-button" onClick={() => Main.instance.setState({currentMenu: <ChatMenu title="Day"/>})}>Day</button>
                 <br/>
                 <button className="Main-button">Mafia</button>
                 <br/>

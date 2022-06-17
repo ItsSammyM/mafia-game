@@ -1,12 +1,13 @@
 import React from "react";
 import { GameManager } from "../game/GameManager";
+import { ChatState } from "../game/ChatState";
 
 export class ChatMenu extends React.Component{
     constructor(props){
         super(props);
         this.state = {
             chatTitle : props.title,
-            chat: null,
+            chat: new ChatState(),
             enteredMessage : "",
             completeState : GameManager.instance.completeState,
         };
@@ -16,26 +17,18 @@ export class ChatMenu extends React.Component{
     }
     componentDidMount(){
         GameManager.instance.addListener(this.stateListener);
+        this.getChatFromTitle();    //i think this causes an infinite loop
     }
     componentWillUnmount(){
         GameManager.instance.removeListener(this.stateListener);
     }
-    componentDidUpdate(prevProps, prevState) {
-        this.getChatFromTitle();
-    }
     getChatFromTitle(){
-        for(let i = 0; i < this.state.completeState.gameState.chats.length; i++)
-        {
-            if(this.state.completeState.gameState.chats[i].title === this.state.chatTitle){
-                this.setState({chat : this.state.completeState.gameState.chats[i]});
-                return;
-            }
-        }
+        this.setState({chat: GameManager.instance.getChatFromTitle(this.state.chatTitle)});
     }
     renderMessage(m){
         return(<div>
             <div className="Main-button">
-                {m.senderName+m.text}
+                {m.senderName+": "+m.text}
             </div>
         </div>);
     }
@@ -43,8 +36,9 @@ export class ChatMenu extends React.Component{
         <div className = "Main">
             <div className = "Main-header">
                 <br/>
-                {this.state.chatName}
+                {this.state.chat.title}
             </div>
+            <br/>
             <div className="Main-body">
                 <div>
                     {
@@ -55,11 +49,16 @@ export class ChatMenu extends React.Component{
                 </div>
                 <div>
                     <input className="Main-lineTextInput" onChange={(e)=>{
-                        this.setState({enteredMessage : e.target.value});
+                        //this.setState({enteredMessage : e.target.value});
+                        //Un codenoting this line makes it send a chat message on every single imput change.
                     }}/>
                     <div style={{display: "inline-block", width:"90.7%"}}>
-                        <div style={{display: "inline-block", width:"50%"}}><button className="Main-button" style={{width:"100%"}}>Send Text</button></div>
-                        <div style={{display: "inline-block", width:"50%"}}><button className="Main-button" style={{width:"100%"}}>Send Will</button></div>
+                        <div style={{display: "inline-block", width:"50%"}}>
+                            <button className="Main-button" style={{width:"100%"}} onClick={GameManager.instance.sendChatMessage(this.state.completeState.myState.name, this.state.enteredMessage, this.state.chat.title, false)}>Send Text</button>
+                        </div>
+                        <div style={{display: "inline-block", width:"50%"}}>
+                            <button className="Main-button" style={{width:"100%"}} onClick={GameManager.instance.sendChatMessage(this.state.completeState.myState.name, this.state.enteredMessage, this.state.chat.title, true)}>Send Will</button>
+                        </div>
                     </div>
                 </div>
             </div>
