@@ -49,9 +49,9 @@ export class MainMenu extends React.Component
                 <br/>
                 <button className="Main-button" onClick={() => Main.instance.setState({currentMenu: <ChatMenu chat={GameManager.instance.getChatFromTitle("Day")}/>})}>Day</button>
                 <br/>
-                <button className="Main-button">Mafia</button>
+                <button className="Main-button" onClick={() => Main.instance.setState({currentMenu: <ChatMenu chat={GameManager.instance.getChatFromTitle("Mafia")}/>})}>Mafia</button>
                 <br/>
-                <button className="Main-button">Dead</button>
+                <button className="Main-button" onClick={() => Main.instance.setState({currentMenu: <ChatMenu chat={GameManager.instance.getChatFromTitle("Dead")}/>})}>Dead</button>
                 <br/>
 
 

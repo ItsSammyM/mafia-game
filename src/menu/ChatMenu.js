@@ -53,16 +53,28 @@ export class ChatMenu extends React.Component{
                 <div>
                     {this.renderMessages(this.state.chat.chatMessages)}
                 </div>
-                <div>
-                    <input className="Main-lineTextInput" onChange={(e)=>{
+                <br/>
+                <br/>
+                <br/>
+                <br/>
+                <div style={{position: "fixed", bottom: 10, width: "100%"}}>
+                    <input className="Main-lineTextInput" value={this.state.enteredMessage} onChange={(e)=>{
                         this.setState({enteredMessage : e.target.value});
                     }}/>
                     <div style={{display: "inline-block", width:"90.7%"}}>
                         <div style={{display: "inline-block", width:"50%"}}>
-                            <button className="Main-button" style={{width:"100%"}} onClick={() => GameManager.instance.sendChatMessage(this.state.completeState.myState.name, this.state.enteredMessage, this.state.chat.title, false)}>Send Text</button>
+                            <button className="Main-button" style={{width:"100%"}} 
+                            onClick={() => {
+                                GameManager.instance.sendChatMessage(this.state.completeState.myState.name, this.state.enteredMessage, this.state.chat.title, false); 
+                                this.setState({enteredMessage : ""});
+                            }}>Send Text</button>
                         </div>
                         <div style={{display: "inline-block", width:"50%"}}>
-                            <button className="Main-button" style={{width:"100%"}} onClick={() => GameManager.instance.sendChatMessage(this.state.completeState.myState.name, this.state.enteredMessage, this.state.chat.title, true)}>Send Will</button>
+                            <button className="Main-button" style={{width:"100%"}} 
+                            onClick={() => {
+                                GameManager.instance.sendChatMessage(this.state.completeState.myState.name, this.state.enteredMessage, this.state.chat.title, true); 
+                                this.setState({enteredMessage : ""});
+                            }}>Send Will</button>
                         </div>
                     </div>
                 </div>
