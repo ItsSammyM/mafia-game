@@ -41,9 +41,6 @@ export class ChatMenu extends React.Component{
     }
     render(){return(
         <div className = "Main">
-            <div className="Main-body">
-                <button className="Main-button" onClick={() => Main.instance.setState({currentMenu : <MainMenu/>})}>Back</button>    
-            </div>
             <div className = "Main-header">
                 {this.state.chat.title}
             </div>
@@ -62,19 +59,23 @@ export class ChatMenu extends React.Component{
                         this.setState({enteredMessage : e.target.value});
                     }}/>
                     <div style={{display: "inline-block", width:"90.7%"}}>
-                        <div style={{display: "inline-block", width:"50%"}}>
+                        <div style={{display: "inline-block", width:"33%"}}>
                             <button className="Main-button" style={{width:"100%"}} 
                             onClick={() => {
                                 GameManager.instance.sendChatMessage(this.state.completeState.myState.name, this.state.enteredMessage, this.state.chat.title, false); 
                                 this.setState({enteredMessage : ""});
                             }}>Send Text</button>
                         </div>
-                        <div style={{display: "inline-block", width:"50%"}}>
+                        <div style={{display: "inline-block", width:"33%"}}>
                             <button className="Main-button" style={{width:"100%"}} 
                             onClick={() => {
                                 GameManager.instance.sendChatMessage(this.state.completeState.myState.name, this.state.enteredMessage, this.state.chat.title, true); 
                                 this.setState({enteredMessage : ""});
                             }}>Send Will</button>
+                        </div>
+                        <div style={{display: "inline-block", width:"33%"}}>
+                            <button className="Main-button" style={{width:"100%"}} 
+                            onClick={() => Main.instance.setState({currentMenu : <MainMenu/>})}>Back</button> 
                         </div>
                     </div>
                 </div>
