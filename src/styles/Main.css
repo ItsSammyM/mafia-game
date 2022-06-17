@@ -17,7 +17,7 @@
     font-size: calc(40px + 2vmin);
     font-weight: 900;
     -webkit-text-stroke: 3px rgb(0, 0, 0);
-    color: rgb(143, 143, 143);
+    color: rgb(220, 220, 220)
 }
 .Main-body {
     font-size: calc(20px + 2vmin);

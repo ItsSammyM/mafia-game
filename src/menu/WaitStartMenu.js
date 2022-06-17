@@ -5,7 +5,6 @@ export class WaitStartMenu extends React.Component{
     constructor(props){
         super(props);
 
-        
         this.state = {completeState : GameManager.instance.completeState};
         this.stateListener = {stateUpdate :(s) => {
             this.setState({completeState : s});
@@ -29,13 +28,8 @@ export class WaitStartMenu extends React.Component{
                 Mafia
             </div>
             <div className="Main-body">
-                Name: {this.state.completeState.myState.name}
-                <br/>
-                Room Code : {this.state.completeState.myState.roomCode}
-                <br/>
                 <br/>
                 Players
-                <br/>
                 <br/>
                 {this.state.completeState.gameState.players.map((p)=>{
                     return (<div className = "Main-header" key={p.name}>

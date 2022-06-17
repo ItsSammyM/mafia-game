@@ -19,22 +19,12 @@ export class HostMenu extends React.Component{
     render(){return(
         <div className = "Main">
             <div className = "Main-header">
-                <br/>
-                {this.state.completeState.myState.name}
+                {this.state.completeState.myState.name}<br/>
+                {this.state.completeState.myState.roomCode}
             </div>
             <div className = "Main-body">
-                <div style={
-                    {
-                        color: "white",
-                        fontWeight: 1000,
-                        WebkitTextStroke: "2px rgb(0, 0, 0)"
-                    }
-                }>
-                    Room Code: {this.state.completeState.myState.roomCode}
-                </div>
                 <br/>
                 Players: 
-                <br/>
                 {this.state.completeState.gameState.players.map((p)=>{
                     return (<div key={p.name}><button className="Main-button"
                         onClick={() => {
@@ -48,7 +38,6 @@ export class HostMenu extends React.Component{
                         {p.name}
                     </button><br/></div>)
                 })}
-                <br/>
 
                 <br/>
                 <button className="Main-button" onClick={() => {

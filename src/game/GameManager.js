@@ -156,7 +156,7 @@ export class GameManager{
         for(let i = 0; i < this.completeState.gameState.players.length; i++){
             for(let j = i+1; j < this.completeState.gameState.players.length; j++){
                 this.completeState.gameState.chats.push(new ChatState(
-                    "Whispers of"+this.completeState.gameState.players[i].name+" and "+this.completeState.gameState.players[j].name,
+                    "Whispers of "+this.completeState.gameState.players[i].name+" and "+this.completeState.gameState.players[j].name,
                     [this.completeState.gameState.players[i], this.completeState.gameState.players[j]]
                 ));
             }
@@ -202,7 +202,6 @@ export class GameManager{
         }
         return out;
     }
-    
 }
 
 /*

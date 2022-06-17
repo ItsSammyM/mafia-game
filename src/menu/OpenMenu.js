@@ -18,7 +18,6 @@ export class OpenMenu extends React.Component
         return(
             <div className = "Main">
                 <div className = "Main-header">
-                    <br/>
                     Mafia
                 </div>
                 <div className="Main-body">
