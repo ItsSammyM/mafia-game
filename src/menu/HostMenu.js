@@ -1,5 +1,7 @@
 import React from "react";
 import { GameManager } from "../game/GameManager";
+import { Main } from "../Main";
+import { OpenMenu } from "./OpenMenu";
 
 export class HostMenu extends React.Component{
     constructor(props){
@@ -38,11 +40,14 @@ export class HostMenu extends React.Component{
                         {p.name}
                     </button><br/></div>)
                 })}
-
                 <br/>
                 <button className="Main-button" onClick={() => {
                     GameManager.instance.startGame();
                 }}>Start Game</button>
+                <button className="Main-button" onClick={() => {
+                    Main.instance.setState({currentMenu: <OpenMenu/>});
+                    GameManager.instance.resetState();
+                }}>Back</button>
             </div>
             <br/>
             <br/>

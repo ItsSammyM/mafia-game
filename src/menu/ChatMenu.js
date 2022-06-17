@@ -18,11 +18,18 @@ export class ChatMenu extends React.Component{
             });
         }};
     }
+    scrollToBottom = () => {
+        this.messagesEnd.scrollIntoView({ behavior: "smooth" });
+    }
     componentDidMount(){
         GameManager.instance.addListener(this.stateListener);
+        this.scrollToBottom();
     }
     componentWillUnmount(){
         GameManager.instance.removeListener(this.stateListener);
+    }
+    componentDidUpdate() {
+        this.scrollToBottom();
     }
     renderMessage(m){
         let s = {};
@@ -39,6 +46,10 @@ export class ChatMenu extends React.Component{
             return this.renderMessage(m);
         });
     }
+    sendText(will=false){
+        GameManager.instance.sendChatMessage(this.state.completeState.myState.name, this.state.enteredMessage, this.state.chat.title, will); 
+        this.setState({enteredMessage : ""});
+    }
     render(){return(
         <div className = "Main">
             <div className = "Main-header">
@@ -54,28 +65,33 @@ export class ChatMenu extends React.Component{
                 <br/>
                 <br/>
                 <br/>
-                <div style={{position: "fixed", bottom: 10, width: "100%"}}>
-                    <input className="Main-lineTextInput" value={this.state.enteredMessage} onChange={(e)=>{
+                <div style={{position: "fixed", bottom: 10, width: "100%"}} onSubmit={() => console.log(6)}>
+                    <input className="Main-lineTextInput" value={this.state.enteredMessage}
+                    onKeyPress={(e) => {
+                        if(e.code === "Enter") {
+                            this.sendText();
+                        }
+                    }}
+                    onChange={(e)=>{
                         this.setState({enteredMessage : e.target.value});
                     }}/>
                     <div style={{display: "inline-block", width:"90.7%"}}>
-                        <div style={{display: "inline-block", width:"33%"}}>
+                    <div style={{display: "inline-block", width:"33%"}}>
                             <button className="Main-button" style={{width:"100%"}} 
-                            onClick={() => {
-                                GameManager.instance.sendChatMessage(this.state.completeState.myState.name, this.state.enteredMessage, this.state.chat.title, false); 
-                                this.setState({enteredMessage : ""});
-                            }}>Send Text</button>
+                            onClick={() => Main.instance.setState({currentMenu : <MainMenu/>})}
+                            >Back</button> 
                         </div>
                         <div style={{display: "inline-block", width:"33%"}}>
                             <button className="Main-button" style={{width:"100%"}} 
                             onClick={() => {
-                                GameManager.instance.sendChatMessage(this.state.completeState.myState.name, this.state.enteredMessage, this.state.chat.title, true); 
-                                this.setState({enteredMessage : ""});
+                                this.sendText(true);
                             }}>Send Will</button>
                         </div>
                         <div style={{display: "inline-block", width:"33%"}}>
                             <button className="Main-button" style={{width:"100%"}} 
-                            onClick={() => Main.instance.setState({currentMenu : <MainMenu/>})}>Back</button> 
+                            onClick={() => {
+                                this.sendText();
+                            }}>Send Text</button>
                         </div>
                     </div>
                 </div>
@@ -84,6 +100,7 @@ export class ChatMenu extends React.Component{
             <br/>
             <br/>
             <br/>
+            <div ref={(el) => { this.messagesEnd = el; }}/>
         </div>);
     }
 }

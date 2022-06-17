@@ -17,6 +17,11 @@ export class GameManager{
         this.pubNub.addMsgListener((m) => this.onMessage(m));
 
     }
+    resetState(){
+        GameManager.instance.completeState = new CompleteState();
+    }
+    static instance = new GameManager();
+
     setState(cs){
         this.completeState = cs;
         this.invokeStateUpdate();
@@ -190,7 +195,7 @@ export class GameManager{
         }
         return null;
     }
-    static instance = new GameManager();
+    
     static generateRandomString(length){
         let allChars = "abcdefghijklmnopqrstuvwxyz1234567890";
         let out = "";
