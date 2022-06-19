@@ -36,6 +36,7 @@ export class MainMenu extends React.Component
             
             <div className = "Main-body">
                 <br/>
+                
                 <div className = "Main-header">
                     Main
                 </div>
@@ -48,10 +49,10 @@ export class MainMenu extends React.Component
                 <button className="Main-button">Anouncements</button>
                 <br/>
                 <br/>
+
                 <div className = "Main-header">
                     Chats
                 </div>
-                
                 <button className="Main-button" onClick={() => Main.instance.setState({currentMenu: <ChatMenu chat={GameManager.instance.getChatFromTitle("Day")}/>})}>Day</button>
                 <br/>
                 <button className="Main-button" onClick={() => Main.instance.setState({currentMenu: <ChatMenu chat={GameManager.instance.getChatFromTitle("Mafia")}/>})}>Mafia</button>
@@ -59,10 +60,10 @@ export class MainMenu extends React.Component
                 <button className="Main-button" onClick={() => Main.instance.setState({currentMenu: <ChatMenu chat={GameManager.instance.getChatFromTitle("Dead")}/>})}>Dead</button>
                 <br/>
                 <br/>
+
                 <div className = "Main-header">
                     Players
                 </div>
-                
                 {this.state.completeState.gameState.players.map((p) => this.renderPlayer(p))}
                 <br/>
 

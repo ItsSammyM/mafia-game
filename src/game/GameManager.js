@@ -65,8 +65,8 @@ export class GameManager{
             name: name
         });
     }
-    sendStartGame(){
-        this.pubNub.createAndPublish(this.completeState.myState.roomCode, "startGame", {});
+    sendStartGame(name="all"){
+        this.pubNub.createAndPublish(this.completeState.myState.roomCode, "startGame", {name: name});
     }
     sendChatMessage(myName, text, chatTitle, will){
         this.pubNub.createAndPublish(this.completeState.myState.roomCode, "sendChatMessage", {
@@ -97,6 +97,14 @@ export class GameManager{
                     this.invokeStateUpdate();
                     this.sendJoinResponse(true);
                 }else if(this.completeState.gameState.started){
+                    let player = this.getPlayerFromName(m.message.contents.name);
+                    if(player===null){
+                        this.sendJoinResponse(false, "Game started, no new players permitted");
+                        break;
+                    }
+                    this.sendJoinResponse(true);
+                    this.sendGameState();
+                    this.sendStartGame(m.message.contents.name);
                     //no implemented check to ensure they should be allowed back in
                     //spectators?
                     // this.sendJoinResponse(true);
@@ -157,7 +165,8 @@ export class GameManager{
                 break;
             case "startGame":
                 //if(this.completeState.myState.host) break;
-                Main.instance.setState({currentMenu : <MainMenu/>});
+                if(m.message.contents.name === "all"||m.message.contents.name===this.completeState.myState.name)
+                    Main.instance.setState({currentMenu : <MainMenu/>});
                 break;
             default:
                 console.log("No implemented response to type");
@@ -228,55 +237,3 @@ export class GameManager{
         return out;
     }
 }
-
-/*
-pubNubMessage(m){
-        console.log("Recieved");
-        console.log(m.message);
-
-        switch(m.message.type){
-            case "test":
-                break;
-            case "joinRequest":
-                if(!this.host){
-                    break;
-                }
-                this.gameState.players.push(new Player(m.message.contents.name));
-                this.pubNubPublish(this.pubNubCreatePayLoad(this.roomCode, "joinResponse",
-                    {
-                        name: m.message.contents.name,
-                        success: true,
-                        text: "No Implemented Exeptions"
-                    }
-                ));
-                this.sendGameState();
-                break;
-            case "joinResponse":
-                if(m.message.contents.name != this.name){
-                    break;
-                }
-                if(!m.message.contents.success){
-                    alert("Join Failed: "+m.message.contents.text);
-                    break;
-                }
-                if(!this.host){
-                    Main.instance.setState({
-                        currentMenu: <WaitGameStartMenu/>
-                    });
-                }
-
-                break;
-            case "gameState":
-                if(this.host) break;
-                this.setState(m.message.contents.state);
-                break;
-        };
-    }
-*/
-/*
-import React from "react";
-import GameManager from "../../game/GameManager.";
-import Button  from "../Button";
-
-
-*/
