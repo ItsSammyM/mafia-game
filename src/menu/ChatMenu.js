@@ -33,13 +33,35 @@ export class ChatMenu extends React.Component{
     }
     renderMessage(m){
         let s = {};
-        if(m.senderName === GameManager.instance.completeState.myState.name) s = {color: "rgb(220, 220, 220)"};
-        
-        return(<div key={m.senderName+m.time}>
-            <div className="Main-body" style={s}>
-                {m.senderName+": "+m.text}
-            </div>
-        </div>);
+        if(m.senderName === GameManager.instance.completeState.myState.name) {
+            s = {
+                color: "rgb(220, 220, 220)",
+                border: "5px solid black",
+                backgroundColor: "#165e28"
+            }
+        }else{
+            s = {
+                color: "rgb(140, 140, 140)",
+                border: "5px solid black",
+                backgroundColor: "#1a356b"
+            }
+        }
+        if(m.will){
+            return(<div key={m.senderName+m.time} style={s}>
+                <pre className="Main-body" style={{color: "#b0b004"}}>
+                    {"Final Will of <"+m.senderName+">"}
+                    <br/>
+                    <br/>
+                    {GameManager.instance.getPlayerFromName(m.senderName).will}
+                </pre>
+            </div>);
+        }
+        if(m.text!=="")
+            return(<div key={m.senderName+m.time} style={s}>
+                <div className="Main-body" style={{color: s.color}}>
+                    {m.senderName+": "+m.text}
+                </div>
+            </div>);
     }
     renderMessages(m){
         return m.map((m) => {
@@ -47,8 +69,9 @@ export class ChatMenu extends React.Component{
         });
     }
     sendText(will=false){
+        if(!will && this.state.enteredMessage==="") return;
         GameManager.instance.sendChatMessage(this.state.completeState.myState.name, this.state.enteredMessage, this.state.chat.title, will); 
-        this.setState({enteredMessage : ""});
+        if(!will) this.setState({enteredMessage : ""});
     }
     render(){return(
         <div className = "Main">
@@ -65,7 +88,7 @@ export class ChatMenu extends React.Component{
                 <br/>
                 <br/>
                 <br/>
-                <div style={{position: "fixed", bottom: 10, width: "100%"}} onSubmit={() => console.log(6)}>
+                <div style={{position: "fixed", bottom: 10, width: "100%"}}>
                     <input className="Main-lineTextInput" value={this.state.enteredMessage}
                         onKeyPress={(e) => {
                             if(e.code === "Enter") {
