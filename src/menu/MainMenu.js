@@ -2,6 +2,7 @@ import { GameManager } from "../game/GameManager";
 import { ChatMenu } from "./ChatMenu";
 import { Main } from "../Main";
 import React from "react";
+import { WillMenu } from "./WillMenu";
 
 export class MainMenu extends React.Component
 {
@@ -40,7 +41,7 @@ export class MainMenu extends React.Component
                 </div>
                 <div style={{display: "inline-block", width:"90.7%"}}>
                     <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}}>Self</button></div>
-                    <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}}>Will</button></div>
+                    <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}} onClick={()=>Main.instance.setState({currentMenu : <WillMenu/>})}>Will</button></div>
                     <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}}>Target</button></div>
                 </div>
                 <br/>

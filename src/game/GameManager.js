@@ -76,6 +76,12 @@ export class GameManager{
             will : will
         });
     }
+    sendSaveWill(myName, will){
+        this.pubNub.createAndPublish(this.completeState.myState.roomCode, "saveWill", {
+            myName : myName,
+            will : will
+        });
+    }
     
     onMessage(m){
         console.log("Recieved");
@@ -122,6 +128,14 @@ export class GameManager{
                     m.message.contents.will
                 ));
                 this.invokeStateUpdate();
+                break;
+            case "saveWill":
+                if(!this.completeState.myState.host) break;
+                let player = this.getPlayerFromName(m.message.contents.myName);
+                if(player){
+                    player.will = m.message.contents.will;
+                    this.invokeStateUpdate();
+                }
                 break;
             case "kickPlayer":
                 
@@ -195,7 +209,13 @@ export class GameManager{
         }
         return null;
     }
-    
+    getPlayerFromName(name){
+        for(let i = 0; i < this.completeState.gameState.players.length; i++){
+            if(this.completeState.gameState.players[i].name === name)
+                return this.completeState.gameState.players[i];
+        }
+        return null;
+    }
     static generateRandomString(length){
         let allChars = "abcdefghijklmnopqrstuvwxyz1234567890";
         let out = "";

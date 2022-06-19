@@ -67,14 +67,14 @@ export class ChatMenu extends React.Component{
                 <br/>
                 <div style={{position: "fixed", bottom: 10, width: "100%"}} onSubmit={() => console.log(6)}>
                     <input className="Main-lineTextInput" value={this.state.enteredMessage}
-                    onKeyPress={(e) => {
-                        if(e.code === "Enter") {
-                            this.sendText();
-                        }
-                    }}
-                    onChange={(e)=>{
-                        this.setState({enteredMessage : e.target.value});
-                    }}/>
+                        onKeyPress={(e) => {
+                            if(e.code === "Enter") {
+                                this.sendText();
+                            }
+                        }}
+                        onChange={(e)=>{
+                            this.setState({enteredMessage : e.target.value});
+                        }}/>
                     <div style={{display: "inline-block", width:"90.7%"}}>
                     <div style={{display: "inline-block", width:"33%"}}>
                             <button className="Main-button" style={{width:"100%"}} 

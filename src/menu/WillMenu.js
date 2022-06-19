@@ -8,31 +8,22 @@ export class WillMenu extends React.Component{
         super(props);
 
         this.state = {
-            completeState : GameManager.instance.completeState,
-            enteredWill : ""
+            enteredWill : GameManager.instance.getPlayerFromName(GameManager.instance.completeState.myState.name).will,
         };
-        this.stateListener = {stateUpdate :(s) => {
-            this.setState({completeState : s});
-        }};
-    }
-    componentDidMount(){
-        GameManager.instance.addListener(this.stateListener);
-    }
-    componentWillUnmount(){
-        GameManager.instance.removeListener(this.stateListener);
     }
     render(){return(
         <div className = "Main">
             <div className = "Main-header">
-
+                Will
             </div>
             <div className = "Main-body">
-                <input className="Main-lineTextInput" value={this.state.enteredMessage}
+                <textarea className="Main-lineTextInput" value={this.state.enteredWill}
+                    style={{minHeight: "70vh"}}
                     onChange={(e)=>{
                         this.setState({enteredWill : e.target.value});
                     }}/>
                 <button className="Main-button" onClick={() => {
-                    //make it so you can save the will and send it to host
+                    GameManager.instance.sendSaveWill(GameManager.instance.completeState.myState.name, this.state.enteredWill);
                     Main.instance.setState({currentMenu: <MainMenu/>});
                 }}>Back</button>
             </div>
