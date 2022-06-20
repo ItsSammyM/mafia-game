@@ -37,18 +37,20 @@ export class ChatMenu extends React.Component{
             s = {
                 color: "rgb(220, 220, 220)",
                 border: "5px solid black",
-                backgroundColor: "#165e28"
+                backgroundColor: "#165e28",
+                maxWidth: "100vw"
             }
         }else{
             s = {
                 color: "rgb(140, 140, 140)",
                 border: "5px solid black",
-                backgroundColor: "#1a356b"
+                backgroundColor: "#1a356b",
+                maxWidth: "100vw"
             }
         }
         if(m.will){
             return(<div key={m.senderName+m.time} style={s}>
-                <pre className="Main-body" style={{color: "#b0b004"}}>
+                <pre className="Main-body" style={{color: "#b0b004", overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
                     {"Final Will of <"+m.senderName+">"}
                     <br/>
                     <br/>
@@ -58,9 +60,9 @@ export class ChatMenu extends React.Component{
         }
         if(m.text!=="")
             return(<div key={m.senderName+m.time} style={s}>
-                <div className="Main-body" style={{color: s.color}}>
+                <pre className="Main-body" style={{color: s.color, overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
                     {m.senderName+": "+m.text}
-                </div>
+                </pre>
             </div>);
     }
     renderMessages(m){

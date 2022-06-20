@@ -19,6 +19,7 @@ export class GameManager{
     }
     resetState(){
         GameManager.instance.completeState = new CompleteState();
+        this.invokeStateUpdate();
     }
     static instance = new GameManager();
 

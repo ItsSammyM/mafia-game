@@ -29,6 +29,8 @@ export class OpenMenu extends React.Component
                     <br/>
                     <br/>
                     <button className="Main-button" onClick={() => {
+                        if(this.state.enteredName===""){alert("No entered name"); return;}
+
                         GameManager.instance.completeState.myState.name = this.state.enteredName;
                         GameManager.instance.completeState.gameState.phase = "waitStart";
                         GameManager.instance.completeState.myState.host = true;
@@ -44,6 +46,8 @@ export class OpenMenu extends React.Component
                     
                     <br/><br/>
                     <button className="Main-button" onClick={() => {
+                        if(this.state.enteredName===""){alert("No entered name"); return;}
+                        
                         GameManager.instance.completeState.myState.name = this.state.enteredName;
                         Main.instance.setState({currentMenu: <JoinMenu/>});
                         GameManager.instance.invokeStateUpdate();
