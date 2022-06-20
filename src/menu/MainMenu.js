@@ -23,9 +23,26 @@ export class MainMenu extends React.Component
     }
 
     renderPlayer(player){
+        if(player.name === this.state.completeState.myState.name) return;
         return (
             <div key={player.name} style={{display: "inline-block", width:"90.7%"}}>
-                <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}}>{player.name}</button></div>
+                <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}} 
+                    onClick={()=>{
+                        let chatTitle = "Whispers of ";
+                        let count = 0;
+                        for(let i = 0; i < this.state.completeState.gameState.players.length; i++){
+                            if(
+                                this.state.completeState.gameState.players[i].name === player.name || 
+                                this.state.completeState.gameState.players[i].name === this.state.completeState.myState.name
+                            ){
+                                count++;
+                                chatTitle += this.state.completeState.gameState.players[i].name;
+                                if(count===1) chatTitle+=" and ";
+                                if(count===2) break;
+                            }
+                        }
+                        Main.instance.setState({currentMenu: <ChatMenu chat={GameManager.instance.getChatFromTitle(chatTitle)}/>});
+                    }}>{player.name}</button></div>
                 <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}}>Vote</button></div>
                 <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}}>Target</button></div>
             </div>

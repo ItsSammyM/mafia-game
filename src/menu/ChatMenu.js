@@ -29,7 +29,13 @@ export class ChatMenu extends React.Component{
         GameManager.instance.removeListener(this.stateListener);
     }
     componentDidUpdate() {
-        this.scrollToBottom();
+        if(this.isInViewport(500))
+            this.scrollToBottom();
+    }
+    isInViewport(offset = 0) {
+        if (!this.messagesEnd) return false;
+        const top = this.messagesEnd.getBoundingClientRect().top;
+        return (top + offset) >= 0 && (top - offset) <= window.innerHeight;
     }
     renderMessage(m){
         let s = {};
@@ -48,13 +54,13 @@ export class ChatMenu extends React.Component{
                 maxWidth: "100vw"
             }
         }
-        if(m.will){
+        if(m.will!==""){
             return(<div key={m.senderName+m.time} style={s}>
                 <pre className="Main-body" style={{color: "#b0b004", overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
                     {"Final Will of <"+m.senderName+">"}
                     <br/>
                     <br/>
-                    {GameManager.instance.getPlayerFromName(m.senderName).will}
+                    {m.will}
                 </pre>
             </div>);
         }
@@ -70,10 +76,10 @@ export class ChatMenu extends React.Component{
             return this.renderMessage(m);
         });
     }
-    sendText(will=false){
-        if(!will && this.state.enteredMessage==="") return;
+    sendText(will=""){
+        if(will==="" && this.state.enteredMessage==="") return;
         GameManager.instance.sendChatMessage(this.state.completeState.myState.name, this.state.enteredMessage, this.state.chat.title, will); 
-        if(!will) this.setState({enteredMessage : ""});
+        if(will==="") this.setState({enteredMessage : ""});
     }
     render(){return(
         <div className = "Main">
@@ -109,7 +115,7 @@ export class ChatMenu extends React.Component{
                         <div style={{display: "inline-block", width:"33%"}}>
                             <button className="Main-button" style={{width:"100%"}} 
                             onClick={() => {
-                                this.sendText(true);
+                                this.sendText(GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).will);
                             }}>Send Will</button>
                         </div>
                         <div style={{display: "inline-block", width:"33%"}}>
@@ -121,11 +127,11 @@ export class ChatMenu extends React.Component{
                     </div>
                 </div>
             </div>
+            <br ref={(el) => { this.messagesEnd = el; }}/>
             <br/>
             <br/>
             <br/>
-            <br/>
-            <div ref={(el) => { this.messagesEnd = el; }}/>
+            <div/>
         </div>);
     }
 }
