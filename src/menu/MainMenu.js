@@ -30,8 +30,28 @@ export class MainMenu extends React.Component
         let whisperChat = null;
 
         let buttonCount = 0;
-        if(this.state.completeState.gameState.phase === "Voting"){ buttonCount++; voteButtonBool=true;}
-        if(this.state.completeState.gameState.phase === "Night"){ buttonCount++; targetButtonBool=true;}
+        let buttonPressed = false;
+        let number = 0;
+        let buttonClassName = "Main-button";
+        if(this.state.completeState.gameState.phase === "Voting"){ buttonCount++; voteButtonBool=true;
+            for(let i = 0; i < this.state.completeState.myState.voting.length; i++){
+                if(this.state.completeState.myState.voting[i] === player.name){
+                    buttonClassName += "-pressed";
+                    buttonPressed = true;
+                    break;
+                }
+            }
+        }
+        if(this.state.completeState.gameState.phase === "Night"){ buttonCount++; targetButtonBool=true;
+            for(let i = 0; i < this.state.completeState.myState.targeting.length; i++){
+                if(this.state.completeState.myState.targeting[i] === player.name){
+                    buttonClassName += "-pressed";
+                    buttonPressed = true;
+                    number = i+1;
+                    break;
+                }
+            }
+        }
         if(this.state.completeState.gameState.phase !== "Night"){ buttonCount++; whisperButtonBool=true;
             let chatTitle = "Whispers of ";
             let count = 0;
@@ -51,11 +71,40 @@ export class MainMenu extends React.Component
         
         let buttonWidth = (1.0 / buttonCount * 100)+"%"
 
-        let whisperButton = ()=>{if(whisperButtonBool) return(<div style={{display: "inline-block", width:buttonWidth}}><button className="Main-button" style={{width:"100%"}} 
-            onClick={()=>{Main.instance.setState({currentMenu: <ChatMenu chat={whisperChat}/>});
-        }}>Whisper</button></div>); return;}
-        let voteButton = ()=>{if(voteButtonBool) return(<div style={{display: "inline-block", width:buttonWidth}}><button className="Main-button" style={{width:"100%"}}>Vote</button></div>); return; }
-        let targetButton = ()=>{if(targetButtonBool) return(<div style={{display: "inline-block", width:buttonWidth}}><button className="Main-button" style={{width:"100%"}}>Target</button></div>); return;}
+        let whisperButton = ()=>{if(whisperButtonBool) return(
+        <div style={{display: "inline-block", width:buttonWidth}}>
+            <button className={buttonClassName} style={{width:"100%"}} onClick={()=>{
+                Main.instance.setState({currentMenu: <ChatMenu chat={whisperChat}/>});
+            }}>Whisper</button></div>);
+        return;}
+        let voteButton = ()=>{if(voteButtonBool) return(
+            <div style={{display: "inline-block", width:buttonWidth}}>
+                <button className={"Main-button" + (buttonPressed ? "-pressed" : "")} style={{width:"100%"}} onClick={()=>{
+                    if(buttonPressed){
+                        let i = GameManager.instance.completeState.myState.voting.indexOf(player.name);
+                        if(i!==-1) GameManager.instance.completeState.myState.voting.splice(i,1);
+                    }else{
+                        GameManager.instance.completeState.myState.voting = [];
+                        GameManager.instance.completeState.myState.voting.push(player.name);
+                    }
+                    GameManager.instance.invokeStateUpdate();
+                }}>Vote</button>
+            </div>);
+        return;}
+        let targetButton = ()=>{if(targetButtonBool) return(
+            <div style={{display: "inline-block", width:buttonWidth}}>
+                <button className={"Main-button" + (buttonPressed ? "-pressed" : "")} style={{width:"100%"}} onClick={()=>{
+                    if(buttonPressed){
+                        let i = GameManager.instance.completeState.myState.targeting.indexOf(player.name);
+                        if(i!==-1) GameManager.instance.completeState.myState.targeting.splice(i,1);
+                    }else{
+                        GameManager.instance.completeState.myState.targeting.push(player.name);
+                    }
+                    GameManager.instance.invokeStateUpdate(false);
+                    GameManager.instance.sendTargeting();
+                }}>{"Target" + (buttonPressed ? ": "+number:"")}</button>
+            </div>); 
+        return;}
 
         return(
             <div key={player.name} style={{display: "inline-block", width:"90.7%"}}>

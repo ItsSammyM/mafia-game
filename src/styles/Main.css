@@ -1,5 +1,4 @@
 *{
-    
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -31,6 +30,14 @@
     width: 90%;
     height: 50px;
     border: 5px solid black;
+}
+.Main-button-pressed {
+    color: rgb(65, 65, 65);
+    font-size: calc(12px + 2vmin);
+    width: 90%;
+    height: 50px;
+    border: 5px solid rgb(65, 65, 65);
+    background-color: #505050;
 }
 .Main-lineTextInput {
     color: #000000;

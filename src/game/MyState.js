@@ -6,5 +6,6 @@ export class MyState{
         this.name = "";
 
         this.targeting = [];
+        this.voting=[];
     }
 }

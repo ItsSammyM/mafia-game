@@ -78,7 +78,7 @@ export class ChatMenu extends React.Component{
     }
     sendText(alibi=""){
         if(alibi==="" && this.state.enteredMessage==="") return;
-        GameManager.instance.sendChatMessage(this.state.completeState.myState.name, this.state.enteredMessage, this.state.chat.title, alibi); 
+        GameManager.instance.sendChatMessage(this.state.enteredMessage, this.state.chat.title, alibi); 
         if(alibi==="") this.setState({enteredMessage : ""});
     }
     render(){return(

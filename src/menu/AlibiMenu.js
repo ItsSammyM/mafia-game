@@ -23,7 +23,7 @@ export class AlibiMenu extends React.Component{
                         this.setState({enteredAlibi : e.target.value});
                     }}/>
                 <button className="Main-button" onClick={() => {
-                    GameManager.instance.sendSaveAlibi(GameManager.instance.completeState.myState.name, this.state.enteredAlibi);
+                    GameManager.instance.sendSaveAlibi(this.state.enteredAlibi);
                     Main.instance.setState({currentMenu: <MainMenu/>});
                 }}>Back</button>
             </div>

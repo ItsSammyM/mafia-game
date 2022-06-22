@@ -34,30 +34,17 @@ export const AllRoles = {
 }
 export class MyRole{
     constructor(roleTitle){
+        //involving just tonights role
         this.roleTitle = roleTitle;
 
         this.roleblocked = false;
         this.currentDefense = 0;
         this.targeting = [];
         this.targetedBy = [];
-        // for(let property in role){
-        //     console.log(property, role[property])
-        // }
     }
     static doMyRole = function(priority, player){
         if(player === null || player.role===null || priority === null || player.role.roleblocked) return;
         AllRoles[player.role.roleTitle].doRole(priority, player);
-    }
-    static constructDefaultRole(roleTitle){
-        //find role in list
-        for(let role in AllRoles){
-            if(role===roleTitle){
-                //copy once found and return new
-                let myRole = GameManager.deepCopy(AllRoles[role]);
-                return myRole;
-            }
-        }
-        return null;
     }
 }
 /*

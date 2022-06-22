@@ -7,6 +7,7 @@ import { CompleteState } from "./CompleteState";
 import { PlayerState } from "./PlayerState";
 import { PubNubWrapper } from "./PubNubWrapper";
 import { MyRole } from "./MyRole";
+import { AllPhases } from "./AllPhases";
 
 export class GameManager{
     constructor(){
@@ -15,23 +16,23 @@ export class GameManager{
 
         this.pubNub = new PubNubWrapper();
         this.pubNub.addMsgListener((m) => this.onMessage(m));
-
     }
     resetState(){
         GameManager.instance.completeState = new CompleteState();
         this.invokeStateUpdate();
     }
     static instance = new GameManager();
+    
 
     setState(cs){
         this.completeState = cs;
         this.invokeStateUpdate();
     }
-    invokeStateUpdate(){
+    invokeStateUpdate(send=true){
         for(let i = 0; i < this.listeners.length; i++){
             if(this.listeners[i]) this.listeners[i].stateUpdate(this.completeState);
         }
-        if(this.completeState.myState.host) this.sendGameState();
+        if(this.completeState.myState.host && send) this.sendGameState();
     }
     addListener(l){
         this.listeners.push(l);
@@ -69,18 +70,24 @@ export class GameManager{
     sendStartGame(name="all"){
         this.pubNub.createAndPublish(this.completeState.myState.roomCode, "startGame", {name: name});
     }
-    sendChatMessage(myName, text, chatTitle, alibi){
+    sendChatMessage(text, chatTitle, alibi){
         this.pubNub.createAndPublish(this.completeState.myState.roomCode, "sendChatMessage", {
-            myName : myName,
+            myName : this.completeState.myState.name,
             text: text,
             chatTitle: chatTitle,
             alibi : alibi
         });
     }
-    sendSaveAlibi(myName, alibi){
+    sendSaveAlibi(alibi){
         this.pubNub.createAndPublish(this.completeState.myState.roomCode, "saveAlibi", {
-            myName : myName,
+            myName : this.completeState.myState.name,
             alibi : alibi
+        });
+    }
+    sendTargeting(){
+        this.pubNub.createAndPublish(this.completeState.myState.roomCode, "targeting", {
+            myName: this.completeState.myState.name,
+            targeting: this.completeState.myState.targeting,
         });
     }
     
@@ -92,43 +99,44 @@ export class GameManager{
             case "test":
                 break;
             case "joinRequest":
-                if(!this.completeState.myState.host) break;
-                if(this.completeState.gameState.phase === "waitStart"){
-                    this.completeState.gameState.players.push(new PlayerState(m.message.contents.name));
-                    this.invokeStateUpdate();
-                    this.sendJoinResponse(true);
-                }else if(this.completeState.gameState.started){
-                    let player = this.getPlayerFromName(m.message.contents.name);
-                    if(player===null){
-                        this.sendJoinResponse(false, "Game started, no new players permitted");
-                        break;
+                {
+                    if(!this.completeState.myState.host) break;
+                    if(this.completeState.gameState.phase === "waitStart"){
+                        this.completeState.gameState.players.push(new PlayerState(m.message.contents.name));
+                        this.invokeStateUpdate();
+                        this.sendJoinResponse(true);
+                    }else if(this.completeState.gameState.started){
+                        let player = this.getPlayerFromName(m.message.contents.name);
+                        if(player===null){
+                            this.sendJoinResponse(false, "Game started, no new players permitted");
+                            break;
+                        }
+                        this.sendJoinResponse(true);
+                        this.sendGameState();
+                        this.sendStartGame(m.message.contents.name);
+                        //no implemented check to ensure they should be allowed back in
+                        //spectators?
+                        // this.sendJoinResponse(true);
+                        // this.sendStartGame();
+                        // this.sendGameState();
                     }
-                    this.sendJoinResponse(true);
-                    this.sendGameState();
-                    this.sendStartGame(m.message.contents.name);
-                    //no implemented check to ensure they should be allowed back in
-                    //spectators?
-                    // this.sendJoinResponse(true);
-                    // this.sendStartGame();
-                    // this.sendGameState();
-                }
-                break;
+                break;}
             case "joinResponse":
-                if(this.completeState.myState.host) break;
+                {if(this.completeState.myState.host) break;
                 if(m.message.contents.success){
                     Main.instance.setState({currentMenu : <WaitStartMenu/>});
                 }else{
                     alert(m.message.contents.detail);
                     Main.instance.setState({currentMenu : <OpenMenu/>});
                 }
-                break;
+                break;}
             case "gameState":
-                if(this.completeState.myState.host) break;
+                {if(this.completeState.myState.host) break;
                 this.completeState.gameState = m.message.contents.gameState;
                 this.invokeStateUpdate();
-                break;
+                break;}
             case "sendChatMessage":
-                if(!this.completeState.myState.host) break;
+                {if(!this.completeState.myState.host) break;
                 let chat = this.getChatFromTitle(m.message.contents.chatTitle);
                 chat.chatMessages.push(new ChatMessageState(
                     m.message.contents.myName,
@@ -137,19 +145,17 @@ export class GameManager{
                     m.message.contents.alibi
                 ));
                 this.invokeStateUpdate();
-                break;
+                break;}
             case "saveAlibi":
-                if(!this.completeState.myState.host) break;
+                {if(!this.completeState.myState.host) break;
                 let player = this.getPlayerFromName(m.message.contents.myName);
                 if(player){
                     player.alibi = m.message.contents.alibi;
                     this.invokeStateUpdate();
                 }
-                break;
-            case "kickPlayer":
-                
-                if(m.message.contents.name !== this.completeState.myState.name) break;
-
+                break;}
+            case "kickPlayer":        
+                {if(m.message.contents.name !== this.completeState.myState.name) break;
                 if(this.completeState.myState.host)
                 {
                     for(let i = 0; i < this.completeState.gameState.players.length; i++)
@@ -161,22 +167,27 @@ export class GameManager{
                 }
                 Main.instance.setState({currentMenu : <OpenMenu/>});
                 this.completeState = new CompleteState();
-                
-                    
-                break;
+                break;}
             case "startGame":
-                //if(this.completeState.myState.host) break;
+                {//if(this.completeState.myState.host) break;
                 if(m.message.contents.name === "all"||m.message.contents.name===this.completeState.myState.name)
                     Main.instance.setState({currentMenu : <MainMenu/>});
-                break;
+                break;}
+            case "targeting":
+                {if(!this.completeState.myState.host) break;
+                let player = this.getPlayerFromName(m.message.contents.myName);
+                if(player) player.role.targeting = m.message.contents.targeting;
+                this.invokeStateUpdate();
+                break;}
             default:
                 console.log("No implemented response to type");
                 break;
         };
     }
     startGame(){
-        this.completeState.gameState.phase = "Day";
+        this.startPhase("Night");
         this.completeState.gameState.started = true;
+        
         //give players roles
         for(let i = 0; i < this.completeState.gameState.players.length; i++){
             this.completeState.gameState.players[i].role = new MyRole("Sheriff");
@@ -199,19 +210,29 @@ export class GameManager{
         
         this.sendStartGame();
         this.invokeStateUpdate();
-    }
-    playNight(){
-        for(let priority = -10; priority < 10; priority++){
-            //loops through priorities
-            for(let i = 0; i < this.completeState.gameState.players.length; i++){
-                //loops through players
-                // let player = this.completeState.gameState.players[i];
-                // let playerRole = new Role(player.role);
-                // playerRole.doRole(priority, player, null);
-            }
-        }
+        this.tick();
     }
 
+    tick(){
+        //console.log(this.completeState.gameState.phaseTimer);
+        this.completeState.gameState.phaseTimer--;
+
+        if(this.completeState.gameState.phaseTimer === 0){
+            AllPhases[this.completeState.gameState.phase].timeOut();
+        }
+
+        setTimeout(()=>{
+            this.tick();
+        }, 1000);
+        //if(this.completeState.gameState.phaseTimer < -2)
+        //console.log(this.completeState.gameState);
+    }
+
+    startPhase(str){
+        this.completeState.gameState.phase = str;
+        this.completeState.gameState.phaseTimer = AllPhases[str].phaseTime;
+        //AllPhases[str].onStart();
+    }
     getChatFromTitle(title){
         for(let i = 0; i < this.completeState.gameState.chats.length; i++)
         {
@@ -253,4 +274,5 @@ export class GameManager{
           return original;
         }
     }
+    
 }
