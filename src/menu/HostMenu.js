@@ -22,6 +22,7 @@ export class HostMenu extends React.Component{
         <div className = "Main">
             <div className = "Main-header">
                 {this.state.completeState.myState.name}<br/>
+                Room Code <br/>
                 {this.state.completeState.myState.roomCode}
             </div>
             <div className = "Main-body">

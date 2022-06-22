@@ -6,7 +6,7 @@ import { ChatState, ChatMessageState } from "./ChatState";
 import { CompleteState } from "./CompleteState";
 import { PlayerState } from "./PlayerState";
 import { PubNubWrapper } from "./PubNubWrapper";
-import { Role } from "./Role";
+import { MyRole } from "./MyRole";
 
 export class GameManager{
     constructor(){
@@ -69,18 +69,18 @@ export class GameManager{
     sendStartGame(name="all"){
         this.pubNub.createAndPublish(this.completeState.myState.roomCode, "startGame", {name: name});
     }
-    sendChatMessage(myName, text, chatTitle, will){
+    sendChatMessage(myName, text, chatTitle, alibi){
         this.pubNub.createAndPublish(this.completeState.myState.roomCode, "sendChatMessage", {
             myName : myName,
             text: text,
             chatTitle: chatTitle,
-            will : will
+            alibi : alibi
         });
     }
-    sendSaveWill(myName, will){
-        this.pubNub.createAndPublish(this.completeState.myState.roomCode, "saveWill", {
+    sendSaveAlibi(myName, alibi){
+        this.pubNub.createAndPublish(this.completeState.myState.roomCode, "saveAlibi", {
             myName : myName,
-            will : will
+            alibi : alibi
         });
     }
     
@@ -134,15 +134,15 @@ export class GameManager{
                     m.message.contents.myName,
                     Date.now(),
                     m.message.contents.text,
-                    m.message.contents.will
+                    m.message.contents.alibi
                 ));
                 this.invokeStateUpdate();
                 break;
-            case "saveWill":
+            case "saveAlibi":
                 if(!this.completeState.myState.host) break;
                 let player = this.getPlayerFromName(m.message.contents.myName);
                 if(player){
-                    player.will = m.message.contents.will;
+                    player.alibi = m.message.contents.alibi;
                     this.invokeStateUpdate();
                 }
                 break;
@@ -177,9 +177,9 @@ export class GameManager{
     startGame(){
         this.completeState.gameState.phase = "Day";
         this.completeState.gameState.started = true;
-        //give players numbers
+        //give players roles
         for(let i = 0; i < this.completeState.gameState.players.length; i++){
-            this.completeState.gameState.players[i].number = i;
+            this.completeState.gameState.players[i].role = new MyRole("Sheriff");
         }
         //create whisper chats
         for(let i = 0; i < this.completeState.gameState.players.length; i++){
@@ -190,10 +190,12 @@ export class GameManager{
                 ));
             }
         }
-        this.completeState.gameState.chats.push(new ChatState("Day", this.completeState.gameState.players));
-        this.completeState.gameState.chats.push(new ChatState("Dead", this.completeState.gameState.players));
-        this.completeState.gameState.chats.push(new ChatState("Mafia", this.completeState.gameState.players));
-        this.completeState.gameState.chats.push(new ChatState("Vampire", this.completeState.gameState.players));
+        //create chats
+        let allPlayerNames = this.completeState.gameState.players.map((e)=>{return e.name});
+        this.completeState.gameState.chats.push(new ChatState("Day", allPlayerNames));
+        this.completeState.gameState.chats.push(new ChatState("Dead", allPlayerNames));
+        this.completeState.gameState.chats.push(new ChatState("Mafia", allPlayerNames));
+        this.completeState.gameState.chats.push(new ChatState("Vampire", allPlayerNames));
         
         this.sendStartGame();
         this.invokeStateUpdate();
@@ -203,9 +205,9 @@ export class GameManager{
             //loops through priorities
             for(let i = 0; i < this.completeState.gameState.players.length; i++){
                 //loops through players
-                let player = this.completeState.gameState.players[i];
-                let playerRole = new Role(player.role);
-                playerRole.doRole(priority, player, null);
+                // let player = this.completeState.gameState.players[i];
+                // let playerRole = new Role(player.role);
+                // playerRole.doRole(priority, player, null);
             }
         }
     }
@@ -236,5 +238,19 @@ export class GameManager{
             out+=allChars.substring(r, r+1);
         }
         return out;
+    }
+    static deepCopy(original) {
+        if (Array.isArray(original)) {
+          return original.map(elem => GameManager.deepCopy(elem));
+        }
+        else if (typeof original === 'object' && original !== null){
+          return Object.fromEntries(
+            Object.entries(original)
+              .map(([k, v]) => [k, GameManager.deepCopy(v)]));
+        }
+        else{
+          // Primitive value: atomic, no need to copy
+          return original;
+        }
     }
 }

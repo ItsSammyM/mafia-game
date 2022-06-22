@@ -4,5 +4,7 @@ export class MyState{
         this.host = false;
         this.joinedGame = null;
         this.name = "";
+
+        this.targeting = [];
     }
 }

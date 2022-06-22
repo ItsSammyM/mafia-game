@@ -54,13 +54,13 @@ export class ChatMenu extends React.Component{
                 maxWidth: "100vw"
             }
         }
-        if(m.will!==""){
+        if(m.alibi!==""){
             return(<div key={m.senderName+m.time} style={s}>
                 <pre className="Main-body" style={{color: "#b0b004", overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
-                    {"Final Will of <"+m.senderName+">"}
+                    {"Alibi of <"+m.senderName+">"}
                     <br/>
                     <br/>
-                    {m.will}
+                    {m.alibi}
                 </pre>
             </div>);
         }
@@ -76,10 +76,10 @@ export class ChatMenu extends React.Component{
             return this.renderMessage(m);
         });
     }
-    sendText(will=""){
-        if(will==="" && this.state.enteredMessage==="") return;
-        GameManager.instance.sendChatMessage(this.state.completeState.myState.name, this.state.enteredMessage, this.state.chat.title, will); 
-        if(will==="") this.setState({enteredMessage : ""});
+    sendText(alibi=""){
+        if(alibi==="" && this.state.enteredMessage==="") return;
+        GameManager.instance.sendChatMessage(this.state.completeState.myState.name, this.state.enteredMessage, this.state.chat.title, alibi); 
+        if(alibi==="") this.setState({enteredMessage : ""});
     }
     render(){return(
         <div className = "Main">
@@ -115,11 +115,11 @@ export class ChatMenu extends React.Component{
                         <div style={{display: "inline-block", width:"33%"}}>
                             <button className="Main-button" style={{width:"100%"}} 
                             onClick={() => {
-                                this.sendText(GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).will);
-                            }}>Send Will</button>
+                                this.sendText(GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).alibi);
+                            }}>Send Alibi</button>
                         </div>
                         <div style={{display: "inline-block", width:"33%"}}>
-                            <button className="Main-button" style={{width:"100%"}} 
+                            <button className="Main-button" style={{width:"100%"}}
                             onClick={() => {
                                 this.sendText();
                             }}>Send Text</button>
