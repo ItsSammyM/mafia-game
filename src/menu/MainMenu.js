@@ -138,7 +138,7 @@ export class MainMenu extends React.Component
                         Main
                     </div>
                     <div style={{display: "inline-block", width:"90.7%"}}>
-                        <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}}>Information</button></div>
+                        <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}} onClick={()=>Main.instance.setState({currentMenu : <ChatMenu chat={this.state.completeState.myState.name + " Information"}/>})}>Information</button></div>
                         <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}} onClick={()=>Main.instance.setState({currentMenu : <AlibiMenu/>})}>Alibi</button></div>
                         <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}}>Target</button></div>
                     </div>

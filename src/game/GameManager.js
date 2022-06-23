@@ -70,12 +70,12 @@ export class GameManager{
     sendStartGame(name="all"){
         this.pubNub.createAndPublish(this.completeState.myState.roomCode, "startGame", {name: name});
     }
-    sendChatMessage(text, chatTitle, alibi){
+    sendChatMessage(text, chatTitle, type="msg"){
         this.pubNub.createAndPublish(this.completeState.myState.roomCode, "sendChatMessage", {
             myName : this.completeState.myState.name,
             text: text,
             chatTitle: chatTitle,
-            alibi : alibi
+            type : type
         });
     }
     sendSaveAlibi(alibi){
@@ -142,7 +142,7 @@ export class GameManager{
                     m.message.contents.myName,
                     Date.now(),
                     m.message.contents.text,
-                    m.message.contents.alibi
+                    m.message.contents.type
                 ));
                 this.invokeStateUpdate();
                 break;}
@@ -188,12 +188,12 @@ export class GameManager{
         this.startPhase("Night");
         this.completeState.gameState.started = true;
         
-        //give players roles
         for(let i = 0; i < this.completeState.gameState.players.length; i++){
+            //give players role
             this.completeState.gameState.players[i].role = new MyRole("Sheriff");
-        }
-        //create whisper chats
-        for(let i = 0; i < this.completeState.gameState.players.length; i++){
+            //create information chats
+            this.completeState.gameState.chats.push(new ChatState(this.completeState.gameState.players[i].name+" Information", [this.completeState.gameState.players[i].name]));
+            //create whisper chats
             for(let j = i+1; j < this.completeState.gameState.players.length; j++){
                 this.completeState.gameState.chats.push(new ChatState(
                     "Whispers of "+this.completeState.gameState.players[i].name+" and "+this.completeState.gameState.players[j].name,

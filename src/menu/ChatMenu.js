@@ -54,17 +54,17 @@ export class ChatMenu extends React.Component{
                 maxWidth: "100vw"
             }
         }
-        if(m.alibi!==""){
+        if(m.type==="alibi"){
             return(<div key={m.senderName+m.time} style={s}>
                 <pre className="Main-body" style={{color: "#b0b004", overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
                     {"Alibi of <"+m.senderName+">"}
                     <br/>
                     <br/>
-                    {m.alibi}
+                    {m.text}
                 </pre>
             </div>);
         }
-        if(m.text!=="")
+        if(m.type==="msg")
             return(<div key={m.senderName+m.time} style={s}>
                 <pre className="Main-body" style={{color: s.color, overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
                     {m.senderName+": "+m.text}
@@ -76,10 +76,10 @@ export class ChatMenu extends React.Component{
             return this.renderMessage(m);
         });
     }
-    sendText(alibi=""){
-        if(alibi==="" && this.state.enteredMessage==="") return;
-        GameManager.instance.sendChatMessage(this.state.enteredMessage, this.state.chat.title, alibi); 
-        if(alibi==="") this.setState({enteredMessage : ""});
+    sendText(text, type="msg"){
+        if(text==="") return;
+        GameManager.instance.sendChatMessage(text, this.state.chat.title, type); 
+        if(type==="msg") this.setState({enteredMessage : ""});
     }
     render(){return(
         <div className = "Main">
@@ -100,7 +100,7 @@ export class ChatMenu extends React.Component{
                     <input className="Main-lineTextInput" value={this.state.enteredMessage}
                         onKeyPress={(e) => {
                             if(e.code === "Enter") {
-                                this.sendText();
+                                this.sendText(this.state.enteredMessage);
                             }
                         }}
                         onChange={(e)=>{
@@ -115,13 +115,13 @@ export class ChatMenu extends React.Component{
                         <div style={{display: "inline-block", width:"33%"}}>
                             <button className="Main-button" style={{width:"100%"}} 
                             onClick={() => {
-                                this.sendText(GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).alibi);
+                                this.sendText(GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).alibi, "alibi");
                             }}>Send Alibi</button>
                         </div>
                         <div style={{display: "inline-block", width:"33%"}}>
                             <button className="Main-button" style={{width:"100%"}}
                             onClick={() => {
-                                this.sendText();
+                                this.sendText(this.state.enteredMessage);
                             }}>Send Text</button>
                         </div>
                     </div>

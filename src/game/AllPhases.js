@@ -30,12 +30,15 @@ export const AllPhases = {
                 }
             }
 
+            //reset after
             for(let i = 0; i < GameManager.instance.completeState.gameState.players.length; i++){
                 //loops through players
                 let player = GameManager.instance.completeState.gameState.players[i];
-                ////Reset role here
+                player.resetRole();
+                GameManager.instance.sendChatMessage("Mourning", player.name + " Information");
             }
 
+            GameManager.instance.startPhase("Mourning");
             GameManager.instance.invokeStateUpdate();
         },
     },

@@ -6,10 +6,10 @@ export class ChatState{
     }
 }
 export class ChatMessageState{
-    constructor(senderName, time, text="", alibi=false){
+    constructor(senderName, time, text="", type="msg"){
         this.senderName = senderName;
+        this.type = type;
         this.text = text;
-        this.alibi = alibi;
         this.time = time;
     }
 }
