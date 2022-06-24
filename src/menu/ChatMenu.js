@@ -32,55 +32,84 @@ export class ChatMenu extends React.Component{
         if(this.isInViewport(500))
             this.scrollToBottom();
     }
+
     isInViewport(offset = 0) {
         if (!this.messagesEnd) return false;
         const top = this.messagesEnd.getBoundingClientRect().top;
         return (top + offset) >= 0 && (top - offset) <= window.innerHeight;
-    }
-    renderMessage(m){
-        let s = {};
-        if(m.senderName === GameManager.instance.completeState.myState.name) {
-            s = {
-                color: "rgb(220, 220, 220)",
-                border: "5px solid black",
-                backgroundColor: "#165e28",
-                maxWidth: "100vw"
-            }
-        }else{
-            s = {
-                color: "rgb(140, 140, 140)",
-                border: "5px solid black",
-                backgroundColor: "#1a356b",
-                maxWidth: "100vw"
-            }
-        }
-        if(m.type==="alibi"){
-            return(<div key={m.senderName+m.time} style={s}>
-                <pre className="Main-body" style={{color: "#b0b004", overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
-                    {"Alibi of <"+m.senderName+">"}
-                    <br/>
-                    <br/>
-                    {m.text}
-                </pre>
-            </div>);
-        }
-        if(m.type==="msg")
-            return(<div key={m.senderName+m.time} style={s}>
-                <pre className="Main-body" style={{color: s.color, overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
-                    {m.senderName+": "+m.text}
-                </pre>
-            </div>);
-    }
-    renderMessages(m){
-        return m.map((m) => {
-            return this.renderMessage(m);
-        });
     }
     sendText(text, type="msg"){
         if(text==="") return;
         GameManager.instance.sendChatMessage(text, this.state.chat.title, type); 
         if(type==="msg") this.setState({enteredMessage : ""});
     }
+
+    renderMessage(m){
+        let divStyle = {
+            border: "5px solid black",
+            maxWidth: "100vw"
+        };
+
+        if(m.senderName === GameManager.instance.completeState.myState.name) {
+            divStyle.color = "rgb(220, 220, 220)";
+            divStyle.backgroundColor = "#165e28";
+        }else{
+            divStyle.color = "rgb(140, 140, 140)";
+            divStyle.backgroundColor = "#1a356b";
+        }
+
+        switch(m.type){
+            case "alibi":
+                {
+                    return(<div key={m.senderName+m.time+m.type} style={divStyle}>
+                        <pre className="Main-body" style={{color: "#b0b004", overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
+                            {"Alibi of <"+m.senderName+">"}
+                            <br/>
+                            <br/>
+                            {m.text}
+                        </pre>
+                    </div>);
+                }
+            case "msg":
+                {
+                    return(<div key={m.senderName+m.time+m.type} style={divStyle}>
+                        <pre className="Main-body" style={{color: divStyle.color, overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
+                            {m.senderName+": "+m.text}
+                        </pre>
+                    </div>);
+                }
+            case "private information":
+                {
+                    divStyle.backgroundColor = "#751717";
+                    divStyle.color = "rgb(220, 220, 220)";
+                    return(<div key={m.senderName+m.time+m.type+m.text} style={divStyle}>
+                        <pre className="Main-body" style={{color: divStyle.color, overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
+                            {m.text}
+                        </pre>
+                    </div>);
+                }
+            case "public information":
+                {
+                    divStyle.backgroundColor = "#173975";
+                    divStyle.color = "rgb(220, 220, 220)";
+                    return(<div key={m.senderName+m.time+m.type+m.text} style={divStyle}>
+                        <pre className="Main-body" style={{color: divStyle.color, overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
+                            {m.text}
+                        </pre>
+                    </div>);
+                }
+            default:
+                {
+
+                }
+        }
+    }
+    renderMessages(m){
+        return m.map((m) => {
+            return this.renderMessage(m);
+        });
+    }
+    
     render(){return(
         <div className = "Main">
             <div className = "Main-header">

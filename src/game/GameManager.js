@@ -8,6 +8,7 @@ import { PlayerState } from "./PlayerState";
 import { PubNubWrapper } from "./PubNubWrapper";
 import { MyRole } from "./MyRole";
 import { AllPhases } from "./AllPhases";
+import { AllRoles } from "./AllRoles";
 
 export class GameManager{
     constructor(){
@@ -22,7 +23,6 @@ export class GameManager{
         this.invokeStateUpdate();
     }
     static instance = new GameManager();
-    
 
     setState(cs){
         this.completeState = cs;
@@ -70,12 +70,25 @@ export class GameManager{
     sendStartGame(name="all"){
         this.pubNub.createAndPublish(this.completeState.myState.roomCode, "startGame", {name: name});
     }
-    sendChatMessage(text, chatTitle, type="msg"){
+    sendChatMessage(text, chatTitle, type="msg", myName=this.completeState.myState.name){
         this.pubNub.createAndPublish(this.completeState.myState.roomCode, "sendChatMessage", {
-            myName : this.completeState.myState.name,
+            myName : myName,
             text: text,
             chatTitle: chatTitle,
             type : type
+        });
+    }
+    createSendChatMessage(text, chatTitle, type="msg", myName=this.completeState.myState.name){
+        return {
+            myName : myName,
+            text: text,
+            chatTitle: chatTitle,
+            type : type
+        };
+    }
+    sendBulkChatMessage(listMessages){
+        this.pubNub.createAndPublish(this.completeState.myState.roomCode, "sendBulkChatMessage", {
+            listMessages : listMessages,
         });
     }
     sendSaveAlibi(alibi){
@@ -146,6 +159,22 @@ export class GameManager{
                 ));
                 this.invokeStateUpdate();
                 break;}
+            case "sendBulkChatMessage":
+                {
+                    if(!this.completeState.myState.host) break;
+                    for(let i = 0; i < m.message.contents.listMessages.length; i++){
+                        let chatMessage = m.message.contents.listMessages[i];
+
+                        let chat = this.getChatFromTitle(chatMessage.chatTitle);
+                        chat.chatMessages.push(new ChatMessageState(
+                            chatMessage.myName,
+                            Date.now(),
+                            chatMessage.text,
+                            chatMessage.type
+                        ));
+                    }
+                    this.invokeStateUpdate();
+                break;}
             case "saveAlibi":
                 {if(!this.completeState.myState.host) break;
                 let player = this.getPlayerFromName(m.message.contents.myName);
@@ -184,53 +213,121 @@ export class GameManager{
                 break;
         };
     }
-    startGame(){
-        this.startPhase("Night");
-        this.completeState.gameState.started = true;
+    startGame(roleList){
+        //runs on host
+        let listMessages = [];
+
+        this.completeState.gameState.roleList = roleList;
+        GameManager.shufleList(this.completeState.gameState.roleList);
         
         for(let i = 0; i < this.completeState.gameState.players.length; i++){
-            //give players role
-            this.completeState.gameState.players[i].role = new MyRole("Sheriff");
+            let player = this.completeState.gameState.players[i];
+
             //create information chats
-            this.completeState.gameState.chats.push(new ChatState(this.completeState.gameState.players[i].name+" Information", [this.completeState.gameState.players[i].name]));
+            this.completeState.gameState.chats.push(new ChatState(player.name+" Information", [player.name]));
             //create whisper chats
             for(let j = i+1; j < this.completeState.gameState.players.length; j++){
                 this.completeState.gameState.chats.push(new ChatState(
-                    "Whispers of "+this.completeState.gameState.players[i].name+" and "+this.completeState.gameState.players[j].name,
-                    [this.completeState.gameState.players[i], this.completeState.gameState.players[j]]
+                    "Whispers of "+player.name+" and "+this.completeState.gameState.players[j].name,
+                    [player, this.completeState.gameState.players[j]]
                 ));
             }
+            
+            //give players role
+            let roleTitle = this.getRoleFromGeneric(roleList[i]);
+            this.completeState.gameState.players[i].role = new MyRole(roleTitle);
+            
+            //Start game information
+            listMessages.push(this.createSendChatMessage("Role: "+roleTitle, player.name+" Information", "private information", "game"));
         }
+        this.sendBulkChatMessage(listMessages);
+        
         //create chats
         let allPlayerNames = this.completeState.gameState.players.map((e)=>{return e.name});
         this.completeState.gameState.chats.push(new ChatState("Day", allPlayerNames));
         this.completeState.gameState.chats.push(new ChatState("Dead", allPlayerNames));
         this.completeState.gameState.chats.push(new ChatState("Mafia", allPlayerNames));
         this.completeState.gameState.chats.push(new ChatState("Vampire", allPlayerNames));
-        
+
+        GameManager.shufleList(this.completeState.gameState.roleList);
+
+        this.startPhase("Night");
+        this.completeState.gameState.started = true;
+
         this.sendStartGame();
         this.invokeStateUpdate();
         this.tick();
     }
 
     tick(){
-        //console.log(this.completeState.gameState.phaseTimer);
+        if(!this.completeState.myState.host) return;
+
         this.completeState.gameState.phaseTimer--;
 
         if(this.completeState.gameState.phaseTimer === 0){
+            console.log(this.completeState.gameState.phase + " timeout");
             AllPhases[this.completeState.gameState.phase].timeOut();
         }
 
         setTimeout(()=>{
             this.tick();
         }, 1000);
-        //if(this.completeState.gameState.phaseTimer < -2)
-        //console.log(this.completeState.gameState);
+    }
+
+    getRoleFromGeneric(generic){
+        
+        //if(console.log(generic))
+        //handle exact role
+        if(generic.faction in AllRoles){
+            return generic.faction;
+        }
+
+        //handle random faction
+        if(generic.faction === "Random"){
+            let allFactions = this.getFactionList();
+            return this.getRoleFromGeneric({
+                faction: allFactions[Math.random()*allFactions.length],
+                alignment: "Random"
+            });
+        }
+        //by here, we know the faction. so handle random alignment
+        if(generic.alignment === "Random"){
+            let allAlignments = this.getAlignmentList(generic.faction);
+            return {
+                faction: generic.faction,
+                alignment: allAlignments[Math.random()*allAlignments.length]
+            }
+        }
+        return "Fuck"
+    }
+    getFactionList(){
+        let output = [];
+        for(let role in AllRoles){
+            if(!output.includes(role.faction))
+                output.push(role.faction);
+        }
+        return output;
+    }
+    getAlignmentList(faction){
+        let output = [];
+        for(let role in AllRoles){
+            if(role.faction === faction && !output.includes(role.alignment))
+                output.push(role.alignment);
+        }
     }
 
     startPhase(str){
         this.completeState.gameState.phase = str;
         this.completeState.gameState.phaseTimer = AllPhases[str].phaseTime;
+        
+        let listMessages = [];
+        for(let i = 0; i < this.completeState.gameState.players.length; i++){
+            listMessages.push(this.createSendChatMessage(
+                str+" "+this.completeState.gameState.dayNumber,
+                this.completeState.gameState.players[i].name + " Information", "public information", "game"
+            ));
+        }
+        this.sendBulkChatMessage(listMessages);
         //AllPhases[str].onStart();
     }
     getChatFromTitle(title){
@@ -248,6 +345,14 @@ export class GameManager{
                 return this.completeState.gameState.players[i];
         }
         return null;
+    }
+    static shufleList(l){
+        for(let i = 0; i < l.length; i++){
+            let r = Math.random()*l.length;
+            let t = l[r];
+            l[r] = l[i];
+            l[i] = t;
+        }
     }
     static generateRandomString(length){
         let allChars = "abcdefghijklmnopqrstuvwxyz1234567890";

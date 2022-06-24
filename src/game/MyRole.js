@@ -1,50 +1,16 @@
-import { GameManager } from "./GameManager";
-
-export const AllRoles = {
-    Sheriff: {
-        faction : "Town",
-        alignment : "Investigative",
-        roleblockable : true,
-        defense : 0,
-        doRole : function(priority, player){
-            if(player.role.targeting.length < 1) return;
-            if(priority!==2) return;
-        }
-    },
-    Mafioso: {
-        faction : "Mafia",
-        alignment : "Killing",
-        roleblockable : true,
-        defense : 0,
-        doRole : function(priority, player){
-            if(player.role.targeting.length < 1) return;
-            if(priority!==3) return;
-        }
-    },
-    Consort: {
-        faction : "Mafia",
-        alignment : "Support",
-        roleblockable : false,
-        defense : 0,
-        doRole : function(priority, player){
-            if(player.role.targeting.length < 1) return;
-            if(priority!==0) return;
-        }
-    },
-}
 export class MyRole{
     constructor(roleTitle){
         //involving just tonights role
         this.roleTitle = roleTitle;
+        this.alive = true;
 
+        this.cycleReset();
+    }
+    cycleReset(){
         this.roleblocked = false;
         this.currentDefense = 0;
-        this.targeting = [];
-        this.targetedBy = [];
-    }
-    static doMyRole = function(priority, player){
-        if(player === null || player.role===null || priority === null || player.role.roleblocked) return;
-        AllRoles[player.role.roleTitle].doRole(priority, player);
+        this.targeting = [];    //list of player names
+        this.targetedBy = [];   //list of player names
     }
 }
 /*
