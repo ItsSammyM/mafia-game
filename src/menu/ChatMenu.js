@@ -61,7 +61,7 @@ export class ChatMenu extends React.Component{
         switch(m.type){
             case "alibi":
                 {
-                    return(<div key={m.senderName+m.time+m.type} style={divStyle}>
+                    return(<div key={m.senderName+m.time+m.type+m.text+Math.random()} style={divStyle}>
                         <pre className="Main-body" style={{color: "#b0b004", overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
                             {"Alibi of <"+m.senderName+">"}
                             <br/>
@@ -72,7 +72,7 @@ export class ChatMenu extends React.Component{
                 }
             case "msg":
                 {
-                    return(<div key={m.senderName+m.time+m.type} style={divStyle}>
+                    return(<div key={m.senderName+m.time+m.type+m.text+Math.random()} style={divStyle}>
                         <pre className="Main-body" style={{color: divStyle.color, overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
                             {m.senderName+": "+m.text}
                         </pre>
@@ -82,7 +82,7 @@ export class ChatMenu extends React.Component{
                 {
                     divStyle.backgroundColor = "#751717";
                     divStyle.color = "rgb(220, 220, 220)";
-                    return(<div key={m.senderName+m.time+m.type+m.text} style={divStyle}>
+                    return(<div key={m.senderName+m.time+m.type+m.text+Math.random()} style={divStyle}>
                         <pre className="Main-body" style={{color: divStyle.color, overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
                             {m.text}
                         </pre>
@@ -92,7 +92,7 @@ export class ChatMenu extends React.Component{
                 {
                     divStyle.backgroundColor = "#173975";
                     divStyle.color = "rgb(220, 220, 220)";
-                    return(<div key={m.senderName+m.time+m.type+m.text} style={divStyle}>
+                    return(<div key={m.senderName+m.time+m.type+m.text+Math.random()} style={divStyle}>
                         <pre className="Main-body" style={{color: divStyle.color, overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
                             {m.text}
                         </pre>

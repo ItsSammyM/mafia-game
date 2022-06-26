@@ -1,14 +1,21 @@
+import { AllRoles } from "./AllRoles";
+
 export class MyRole{
     constructor(roleTitle){
-        //involving just tonights role
+        //persistant traits
         this.roleTitle = roleTitle;
         this.alive = true;
+        
 
         this.cycleReset();
     }
     cycleReset(){
+        //delete extra stuff from roles
+        this.extra = {};
+
+        //involving just tonights role
         this.roleblocked = false;
-        this.currentDefense = 0;
+        this.currentDefense = AllRoles[this.roleTitle].defense;
         this.targeting = [];    //list of player names
         this.targetedBy = [];   //list of player names
     }
@@ -17,14 +24,16 @@ export class MyRole{
 Priority
 Everyones target is set first
 
--3: Veteran(Decides Alert) Vigilante(Suicide) Jester(Kill)
--2: Transporter(Swaps)
--1: Witch(Swaps)
+-6: Veteran(Decides Alert) Vigilante(Suicide) Jester(Kill) 
+-4: Transporter(Swaps)
+-2: Witch(Swaps)
  0: Escort / Consort(Roleblock)
-+1: Doctor(Heal), Blackmailer(Decide), Crusader(Heal), bodyguard(Heal & swap), Arsonist(Douse), Framer, Disguiser
-+2: Sheriff, Invest, Consig, Lookout, Tracker,
-+3: Mafioso/Godfather, SerialKiller, Werewolf, Veteran, Vampire, Arsonist, Crusader, Bodyguard, Vigilante (All kill)
-+4: Spy(Collect info) Amnesiac(Convert) Vampire(Convert) Forger(Change info), Janitor(Clean)
++1 Godfather(Swap mafioso target and clear self)
++2: Doctor(Heal), Blackmailer(Decide), Crusader(Heal), bodyguard(Heal & swap), Arsonist(Douse), Framer, Disguiser
++4: Sheriff, Invest, Consig, Lookout, Tracker,
++6: Mafioso/Godfather, SerialKiller, Werewolf, Veteran, Vampire, Arsonist, Crusader, Bodyguard, Vigilante (All kill)
++8: Spy(Collect info) Amnesiac(Convert) Vampire(Convert) Forger(Change info), Janitor(Clean)
++10 Witch(Steal info)
 
 --------
 investigator idea

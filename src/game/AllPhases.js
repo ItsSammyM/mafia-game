@@ -28,7 +28,7 @@ export const AllPhases = {
         }
     },
     Night: {
-        phaseTime : 10,
+        phaseTime : 15,
         timeOut: ()=>{
 
             //save current gamestate so nobody can change who theyre targeting while this code is running
@@ -38,14 +38,22 @@ export const AllPhases = {
             for(let i = 0; i < GameManager.instance.completeState.gameState.players.length; i++){
                 let player = GameManager.instance.completeState.gameState.players[i];
 
+                //remind player who they targeted this night
+                let s = "You tried to target: ";
+                //set targetedBy
                 for(let t = 0; t < player.role.targeting.length; t++){
                     let targeted = player.role.targeting[t];
+                    s += targeted + ", ";
+
                     GameManager.instance.getPlayerFromName(targeted).role.targetedBy.push(player.name);
                 }
+                s = s.substring(0,s.length-2);
+                if(s.length === 19) s+= " nobody";
+                player.addGiveInformation(s, false);
             }
 
             //main night loop
-            for(let priority = -3; priority <= 4; priority++){
+            for(let priority = -10; priority <= 10; priority++){
                 //loops through priorities
                 for(let i = 0; i < GameManager.instance.completeState.gameState.players.length; i++){
                     //loops through players

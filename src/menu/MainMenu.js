@@ -3,7 +3,8 @@ import { ChatMenu } from "./ChatMenu";
 import { Main } from "../Main";
 import React from "react";
 import { AlibiMenu } from "./AlibiMenu";
-
+import { GraveyardMenu } from "./GraveyardMenu";
+import { AllRoles } from "../game/AllRoles";
 export class MainMenu extends React.Component
 {
     constructor(props){
@@ -106,9 +107,23 @@ export class MainMenu extends React.Component
             </div>); 
         return;}
 
+        let nameString = player.name;
+
+        if(player.role.alive === false) nameString+= " (Dead)";
+        if(//if were both mafia
+            AllRoles[player.role.roleTitle].faction === "Mafia" && 
+            AllRoles[GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).role.roleTitle].faction==="Mafia"
+        )
+            nameString+= " ("+player.role.roleTitle+")";
+        if(//if were both coven
+            AllRoles[player.role.roleTitle].faction === "Coven" && 
+            AllRoles[GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).role.roleTitle].faction==="Coven"
+        )
+            nameString+= " ("+player.role.roleTitle+")";
+
         return(
             <div key={player.name} style={{display: "inline-block", width:"90.7%"}}>
-                {player.name}
+                {nameString}
                 {whisperButton()}
                 {voteButton()}
                 {targetButton()}
@@ -118,6 +133,7 @@ export class MainMenu extends React.Component
     renderChat(chatTitle){
         let chat = GameManager.instance.getChatFromTitle(chatTitle);
         if(chat===null) return;
+        //check if im in the chat
         for(let i = 0; i < chat.playerNames.length; i++){
             if(chat.playerNames[i] === this.state.completeState.myState.name){
                 return(
@@ -145,7 +161,8 @@ export class MainMenu extends React.Component
                         <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}}>Target</button></div>
                     </div>
                     <br/>
-                    <button className="Main-button">Graveyard</button>
+                    <button className="Main-button" 
+                    onClick={()=>Main.instance.setState({currentMenu : <GraveyardMenu/>})}>Graveyard</button>
                     <br/>
                 </div>
                 <br/>

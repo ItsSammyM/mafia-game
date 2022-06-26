@@ -105,8 +105,8 @@ export class GameManager{
     }
     
     onMessage(m){
-        console.log("Recieved");
-        console.log(m.message);
+        //console.log("Recieved");
+        //console.log(m.message);
 
         switch(m.message.type){
             case "test":
@@ -183,7 +183,7 @@ export class GameManager{
                     this.invokeStateUpdate();
                 }
                 break;}
-            case "kickPlayer":        
+            case "kickPlayer":
                 {if(m.message.contents.name !== this.completeState.myState.name) break;
                 if(this.completeState.myState.host)
                 {
@@ -195,7 +195,7 @@ export class GameManager{
                     }
                 }
                 Main.instance.setState({currentMenu : <OpenMenu/>});
-                this.completeState = new CompleteState();
+                this.resetState();
                 break;}
             case "startGame":
                 {//if(this.completeState.myState.host) break;
@@ -219,7 +219,10 @@ export class GameManager{
 
         this.completeState.gameState.roleList = roleList;
         GameManager.shufleList(this.completeState.gameState.roleList);
-        
+
+        //get list of players in each chat
+        let mafiaMemberNames = [];
+
         for(let i = 0; i < this.completeState.gameState.players.length; i++){
             let player = this.completeState.gameState.players[i];
 
@@ -234,20 +237,20 @@ export class GameManager{
             }
             
             //give players role
-            let roleTitle = this.getRoleFromGeneric(roleList[i]);
-            this.completeState.gameState.players[i].role = new MyRole(roleTitle);
-            
+            let roleTitle = this.getRoleFromGeneric(this.completeState.gameState.roleList[i]);
+            player.role = new MyRole(roleTitle);
+            if(AllRoles[player.role.roleTitle].faction === "Mafia") mafiaMemberNames.push(player.name);
             //Start game information
-            listMessages.push(this.createSendChatMessage("Role: "+roleTitle, player.name+" Information", "private information", "game"));
+            listMessages.push(this.createSendChatMessage("Your role: \n"+roleTitle + "\n" + AllRoles[roleTitle].faction + " " + AllRoles[roleTitle].alignment, player.name+" Information", "private information", "game"));
         }
         this.sendBulkChatMessage(listMessages);
         
         //create chats
         let allPlayerNames = this.completeState.gameState.players.map((e)=>{return e.name});
         this.completeState.gameState.chats.push(new ChatState("Day", allPlayerNames));
-        this.completeState.gameState.chats.push(new ChatState("Dead", allPlayerNames));
-        this.completeState.gameState.chats.push(new ChatState("Mafia", allPlayerNames));
-        this.completeState.gameState.chats.push(new ChatState("Vampire", allPlayerNames));
+        this.completeState.gameState.chats.push(new ChatState("Dead", []));
+        this.completeState.gameState.chats.push(new ChatState("Mafia", mafiaMemberNames));
+        //this.completeState.gameState.chats.push(new ChatState("Vampire", allPlayerNames));
 
         GameManager.shufleList(this.completeState.gameState.roleList);
 
@@ -275,8 +278,9 @@ export class GameManager{
     }
 
     getRoleFromGeneric(generic){
-        
-        //if(console.log(generic))
+
+        if(generic === null || generic===undefined)
+            return this.getRoleFromGeneric({faction:"Random",alignment:"Random"});
         //handle exact role
         if(generic.faction in AllRoles){
             return generic.faction;
@@ -286,34 +290,46 @@ export class GameManager{
         if(generic.faction === "Random"){
             let allFactions = this.getFactionList();
             return this.getRoleFromGeneric({
-                faction: allFactions[Math.random()*allFactions.length],
+                faction: allFactions[Math.floor(Math.random()*allFactions.length)],
                 alignment: "Random"
             });
         }
         //by here, we know the faction. so handle random alignment
         if(generic.alignment === "Random"){
             let allAlignments = this.getAlignmentList(generic.faction);
-            return {
+            return this.getRoleFromGeneric({
                 faction: generic.faction,
-                alignment: allAlignments[Math.random()*allAlignments.length]
-            }
+                alignment: allAlignments[Math.floor(Math.random()*allAlignments.length)]
+            });
         }
-        return "Fuck"
+
+        //handle case where we know faction and alignment
+        let roles = this.getFactionAlignmentList(generic.faction, generic.alignment);
+        return roles[Math.floor(Math.random()*roles.length)];
     }
     getFactionList(){
         let output = [];
         for(let role in AllRoles){
-            if(!output.includes(role.faction))
-                output.push(role.faction);
+            if(!output.includes(AllRoles[role].faction))
+                output.push(AllRoles[role].faction);
         }
         return output;
     }
     getAlignmentList(faction){
         let output = [];
         for(let role in AllRoles){
-            if(role.faction === faction && !output.includes(role.alignment))
-                output.push(role.alignment);
+            if(AllRoles[role].faction === faction && !output.includes(AllRoles[role].alignment))
+                output.push(AllRoles[role].alignment);
         }
+        return output;
+    }
+    getFactionAlignmentList(faction, alignment){
+        let output = [];
+        for(let role in AllRoles){
+            if(AllRoles[role].faction === faction && AllRoles[role].alignment === alignment)
+                output.push(role);
+        }
+        return output;
     }
 
     startPhase(str){
@@ -330,6 +346,7 @@ export class GameManager{
         this.sendBulkChatMessage(listMessages);
         //AllPhases[str].onStart();
     }
+
     getChatFromTitle(title){
         for(let i = 0; i < this.completeState.gameState.chats.length; i++)
         {
@@ -346,9 +363,17 @@ export class GameManager{
         }
         return null;
     }
+    getPlayerByRole(roleTitle){
+        for(let i = 0; i < this.completeState.gameState.players.length; i++){
+            if(this.completeState.gameState.players[i].role.roleTitle === roleTitle)
+                return this.completeState.gameState.players[i];
+        }
+        return null;
+    }
+
     static shufleList(l){
         for(let i = 0; i < l.length; i++){
-            let r = Math.random()*l.length;
+            let r = Math.floor(Math.random()*l.length);
             let t = l[r];
             l[r] = l[i];
             l[i] = t;

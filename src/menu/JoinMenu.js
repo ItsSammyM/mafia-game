@@ -21,6 +21,13 @@ export class JoinMenu extends React.Component{
     componentWillUnmount(){
         GameManager.instance.removeListener(this.stateListener);
     }
+    handleJoin(){
+        GameManager.instance.completeState.myState.roomCode = this.state.enteredRoomCode;
+        GameManager.instance.completeState.myState.roomCode.toLowerCase();
+        GameManager.instance.pubNub.subscribe(GameManager.instance.completeState.myState.roomCode);
+        GameManager.instance.sendJoinRequest();
+        GameManager.instance.invokeStateUpdate();
+    }
     render(){return(
         <div className = "Main">
             <div className = "Main-header">
@@ -33,14 +40,14 @@ export class JoinMenu extends React.Component{
                 <br/>
                 <input className="Main-lineTextInput" onChange={(e)=>{
                     this.setState({enteredRoomCode : e.target.value});
+                }} onKeyPress={(e) => {
+                    if(e.code === "Enter") {
+                        this.handleJoin();
+                    }
                 }}/>
                 <br/><br/>
                 <button className="Main-button" onClick={() => {
-                    GameManager.instance.completeState.myState.roomCode = this.state.enteredRoomCode;
-                    GameManager.instance.completeState.myState.roomCode.toLowerCase();
-                    GameManager.instance.pubNub.subscribe(GameManager.instance.completeState.myState.roomCode);
-                    GameManager.instance.sendJoinRequest();
-                    GameManager.instance.invokeStateUpdate();
+                    this.handleJoin();
                 }}>Join Game</button>
                 <button className="Main-button" onClick={() => {
                     Main.instance.setState({currentMenu: <OpenMenu/>});

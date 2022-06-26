@@ -22,7 +22,7 @@ export class PubNubWrapper{
     }
     publish(publishPayload){
         this.pubnub.publish(publishPayload, function(status, response) {
-            console.log("Sending " + publishPayload.message.type);
+            //console.log("Sending " + publishPayload.message.type);
             // console.log(status, response);
             // console.log(publishPayload);
         });
