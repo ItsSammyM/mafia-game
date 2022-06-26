@@ -113,6 +113,7 @@ export class HostMenu extends React.Component{
                 
                 <br/>
                 Players: 
+                <br/>
                 {this.state.completeState.gameState.players.map((p)=>{
                     let name = "";
                     if(p.name === this.state.completeState.myState.name)
@@ -134,6 +135,7 @@ export class HostMenu extends React.Component{
                 
                 <br/>
                 Role List
+                <br/>
                 {this.state.roleList.map(function(currentelement, index, arrayobj) {
                     return this.renderRolePick(index);
                 },this)}

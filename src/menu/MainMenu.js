@@ -109,17 +109,20 @@ export class MainMenu extends React.Component
 
         let nameString = player.name;
 
-        if(player.role.alive === false) nameString+= " (Dead)";
-        if(//if were both mafia
-            AllRoles[player.role.roleTitle].faction === "Mafia" && 
-            AllRoles[GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).role.roleTitle].faction==="Mafia"
-        )
-            nameString+= " ("+player.role.roleTitle+")";
-        if(//if were both coven
-            AllRoles[player.role.roleTitle].faction === "Coven" && 
-            AllRoles[GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).role.roleTitle].faction==="Coven"
-        )
-            nameString+= " ("+player.role.roleTitle+")";
+        if(player.role){
+            if(player.role.alive === false) nameString+= " (Dead)";
+            if(//if were both mafia
+                AllRoles[player.role.roleTitle].faction === "Mafia" && 
+                AllRoles[GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).role.roleTitle].faction==="Mafia"
+            )
+                nameString+= " ("+player.role.roleTitle+")";
+            if(//if were both coven
+                AllRoles[player.role.roleTitle].faction === "Coven" && 
+                AllRoles[GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).role.roleTitle].faction==="Coven"
+            )
+                nameString+= " ("+player.role.roleTitle+")";
+        }
+        
 
         return(
             <div key={player.name} style={{display: "inline-block", width:"90.7%"}}>
