@@ -1,12 +1,15 @@
 import { AllRoles } from "./AllRoles";
 import { GameManager } from "./GameManager";
+import { GraveState } from "./GraveState";
 
 export class PlayerState{
     constructor(name)
     {
         this.name = name;
-        this.alibi = "";
+        this.alibi = "No Alibi";
         this.role = null;
+
+        this.grave = null;
 
         this.giveInformation = [];
         //information
@@ -64,5 +67,11 @@ export class PlayerState{
     kill(){
         this.role.alive = false;
         GameManager.instance.getChatFromTitle("Dead").playerNames.push(this.name);
+        this.grave = new GraveState(
+            this.alibi,
+            this.role.roleTitle,
+            GameManager.instance.completeState.gameState.phase,
+            GameManager.instance.completeState.gameState.dayNumber
+        );
     }
 }

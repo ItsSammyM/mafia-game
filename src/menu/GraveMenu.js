@@ -1,4 +1,7 @@
+import React from "react";
 import { GameManager } from "../game/GameManager";
+import { Main } from "../Main";
+import { GraveyardMenu } from "./GraveyardMenu";
 
 export class GraveMenu extends React.Component{
     constructor(props){
@@ -17,9 +20,20 @@ export class GraveMenu extends React.Component{
     componentWillUnmount(){
         GameManager.instance.removeListener(this.stateListener);
     }
-    render(){return(<div className="Main">
-        <div className="Main-head">
+    render(){
+        let player = GameManager.instance.getPlayerFromName(this.state.playerName);
+        return(<div className="Main">
+        <div className="Main-header">
             Grave of {this.state.playerName}
         </div>
-    </div>);}
+        <div className="Main-body">
+            Role: <br/>
+            {player.grave.roleTitle} <br/>
+            Alibi <br/>
+            {player.grave.alibi} <br/>
+            <br/>
+            <button className="Main-button" onClick={() => {Main.instance.setState({currentMenu : <GraveyardMenu/>})}}>Back</button>
+        </div>
+    </div>
+    );}
 }

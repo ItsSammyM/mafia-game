@@ -2,7 +2,7 @@ import { GameManager } from "../game/GameManager";
 import React from "react";
 import { MainMenu } from "./MainMenu";
 import { Main } from "../Main";
-import { GraveMenu } from "./GraveMenu";
+import { GraveMenu } from "./GraveMenu"
 
 export class GraveyardMenu extends React.Component{
     constructor(props){

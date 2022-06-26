@@ -28,7 +28,7 @@ export const AllPhases = {
         }
     },
     Night: {
-        phaseTime : 15,
+        phaseTime : 30,
         timeOut: ()=>{
 
             //save current gamestate so nobody can change who theyre targeting while this code is running
