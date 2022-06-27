@@ -30,7 +30,7 @@ export class MainMenu extends React.Component
 
         let buttonCount = 0;
         
-        if(this.state.completeState.gameState.phase === "Voting" && player.name !== this.state.completeState.myState.name){
+        if(this.state.completeState.gameState.phase === "Vote" && player.name !== this.state.completeState.myState.name){
             buttonCount++;
             voteButtonBool=true;
         }
@@ -98,7 +98,7 @@ export class MainMenu extends React.Component
         );
     }
     renderVote(player, buttonWidth){
-        let numVotes = 0;
+        let numVotes = player.role.votedFor.length;
         let buttonPressed = false;
 
         let voteIndex = this.state.completeState.myState.voting.indexOf(player.name);
@@ -117,6 +117,7 @@ export class MainMenu extends React.Component
                         GameManager.instance.completeState.myState.voting.push(player.name);
                     }
                     GameManager.instance.invokeStateUpdate();
+                    GameManager.instance.sendVoting();
                 }}>{"Vote: " + numVotes}</button>
             </div>
         );

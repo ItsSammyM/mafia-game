@@ -1,5 +1,3 @@
-import { GameManager } from "./GameManager";
-
 export class ChatState{
     constructor(title, playerNames = []){
         this.title = title;
@@ -13,8 +11,6 @@ export class ChatState{
             text,
             type
         ));
-        if(!GameManager.instance.completeState.myState.unreadChats.includes(this.title))
-            GameManager.instance.completeState.myState.unreadChats.push(this.title);
     }
 }
 export class ChatMessageState{

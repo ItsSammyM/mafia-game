@@ -103,6 +103,15 @@ export class GameManager{
             targeting: this.completeState.myState.targeting,
         });
     }
+    sendVoting(){
+        this.pubNub.createAndPublish(this.completeState.myState.roomCode, "voting", {
+            myName: this.completeState.myState.name,
+            voting: this.completeState.myState.voting,
+        });
+    }
+    sendPhaseChange(){
+        this.pubNub.createAndPublish(this.completeState.myState.roomCode, "phaseChange", {});
+    }
     
     onMessage(m){
         //console.log("Recieved");
@@ -149,8 +158,13 @@ export class GameManager{
                 this.invokeStateUpdate();
                 break;}
             case "sendChatMessage":
-                {if(!this.completeState.myState.host) break;
+                {
                 let chat = this.getChatFromTitle(m.message.contents.chatTitle);
+                if(!chat) break;
+                if(!this.completeState.myState.unreadChats.includes(chat.title))
+                    this.completeState.myState.unreadChats.push(chat.title);
+
+                if(!this.completeState.myState.host) break;
                 chat.addMessage(
                     m.message.contents.myName,
                     m.message.contents.text,
@@ -160,11 +174,15 @@ export class GameManager{
                 break;}
             case "sendBulkChatMessage":
                 {
-                    if(!this.completeState.myState.host) break;
                     for(let i = 0; i < m.message.contents.listMessages.length; i++){
                         let chatMessage = m.message.contents.listMessages[i];
-
                         let chat = this.getChatFromTitle(chatMessage.chatTitle);
+                        if(!chat) continue;
+
+                        if(!this.completeState.myState.unreadChats.includes(chat.title))
+                            this.completeState.myState.unreadChats.push(chat.title);
+
+                        if(!this.completeState.myState.host) continue;
                         chat.addMessage(
                             chatMessage.myName,
                             chatMessage.text,
@@ -201,10 +219,33 @@ export class GameManager{
                     Main.instance.setState({currentMenu : <MainMenu/>});
                 break;}
             case "targeting":
-                {if(!this.completeState.myState.host) break;
+                {
+                if(!this.completeState.myState.host) break;
                 let player = this.getPlayerFromName(m.message.contents.myName);
                 if(player) player.role.targeting = m.message.contents.targeting;
                 this.invokeStateUpdate();
+                break;}
+            case "voting":
+                {
+                if(!this.completeState.myState.host) break;
+                let player = this.getPlayerFromName(m.message.contents.myName);
+                if(player) player.role.voting = m.message.contents.voting;
+
+                for(let i = 0; i < this.completeState.gameState.players.length; i++){
+                    
+                    let chat = this.getChatFromTitle(this.completeState.gameState.players[i] + " Information");
+                    chat.addMessage(
+                        "game",
+                        this.completeState.gameState.players[i] +" is voting for "+this.completeState.gameState.players[i].voting,
+                        "public information"
+                    );
+                }
+                this.setVotedFor();
+                this.invokeStateUpdate();
+                break;}
+            case "phaseChange":
+                {
+                    Main.instance.setState({currentMenu : <MainMenu/>});
                 break;}
             default:
                 console.log("No implemented response to type");
@@ -344,6 +385,7 @@ export class GameManager{
         }
         this.sendBulkChatMessage(listMessages);
         this.invokeStateUpdate();
+        this.sendPhaseChange();
         //AllPhases[str].onStart();
     }
 
@@ -369,6 +411,20 @@ export class GameManager{
                 return this.completeState.gameState.players[i];
         }
         return null;
+    }
+
+    setVotedFor(){
+        //this is broken
+
+        // reset votes
+        // for(let i = 0; i < this.completeState.gameState.players.length; i++){
+        //     this.completeState.gameState.players[i].voting = [];
+        // }
+        // for(let i = 0; i < this.completeState.gameState.players.length; i++){
+        //     for(let j = 0; j < this.completeState.gameState.players[i].voting.length; j++){
+        //         this.getPlayerFromName(this.completeState.gameState.players[i].voting[j]).votedFor.push(this.completeState.gameState.players[i]);
+        //     }
+        // }
     }
 
     static shufleList(l){
@@ -404,5 +460,4 @@ export class GameManager{
           return original;
         }
     }
-    
 }

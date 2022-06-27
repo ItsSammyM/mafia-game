@@ -16,6 +16,8 @@ export class MyRole{
         //involving just tonights role
         this.roleblocked = false;
         this.currentDefense = AllRoles[this.roleTitle].defense;
+        this.voting = [];
+        this.votedFor = [];
         this.targeting = [];    //list of player names
         this.targetedBy = [];   //list of player names
     }
