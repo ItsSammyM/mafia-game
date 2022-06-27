@@ -138,7 +138,11 @@ export class ChatMenu extends React.Component{
                     <div style={{display: "inline-block", width:"90.7%"}}>
                     <div style={{display: "inline-block", width:"33%"}}>
                             <button className="Main-button" style={{width:"100%"}} 
-                            onClick={() => Main.instance.setState({currentMenu : <MainMenu/>})}
+                            onClick={() => {
+                                Main.instance.setState({currentMenu : <MainMenu/>});
+                                let index = GameManager.instance.completeState.myState.unreadChats.indexOf(this.state.chat.title);
+                                if(index !== -1) GameManager.instance.completeState.myState.unreadChats.splice(index ,1);
+                            }}
                             >Back</button> 
                         </div>
                         <div style={{display: "inline-block", width:"33%"}}>

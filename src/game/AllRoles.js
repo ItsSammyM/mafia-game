@@ -48,10 +48,42 @@ export const AllRoles = {
         doRole : function(priority, player){
             if(!player.role.alive) return;
             if(player.role.targeting.length < 1) return;
-            if(priority!==0) return;
+            if(priority!==-6) return;
 
             let targeted = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
             targeted.roleBlock();
+        }
+    },
+    Transporter: {
+        faction : "Town",
+        alignment : "Support",
+        roleblockable : false,
+        witchable : false,
+        defense : 0,
+        interrogationResults : "Innocent",
+        doRole : function(priority, player){
+            if(!player.role.alive) return;
+            if(player.role.targeting.length < 2) return;
+
+            if(priority!==-10) return;
+
+            let playerA = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
+            let playerB = GameManager.instance.getPlayerFromName(player.role.targeting[1]);
+
+            playerA.addGiveInformation("You were transported!", false);
+            playerB.addGiveInformation("You were transported!", false);
+
+            for(let i = 0; i < GameManager.instance.completeState.gameState.players.length; i++){
+                let swapTargetPlayer = GameManager.instance.completeState.gameState.players[i];
+                
+                for(let j = 0; j < swapTargetPlayer.role.targeting.length; j++){
+                    if(swapTargetPlayer.role.targeting[j] === playerA.name){
+                        swapTargetPlayer.role.targeting[j] = playerB.name
+                    }else if(swapTargetPlayer.role.targeting[j] === playerB.name){
+                        swapTargetPlayer.role.targeting[j] = playerA.name
+                    }
+                }
+            }
         }
     },
     Mafioso: {
@@ -82,7 +114,7 @@ export const AllRoles = {
             if(player.role.targeting.length < 1) return;
             let targeted = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
 
-            if(priority===1){
+            if(priority===-4){
                 let mafioso = GameManager.instance.getPlayerByRole("Mafioso");
                 if(mafioso !== null) player.role.extra.foundMafioso = true;
 
@@ -106,7 +138,7 @@ export const AllRoles = {
         doRole : function(priority, player){
             if(!player.role.alive) return;
             if(player.role.targeting.length < 1) return;
-            if(priority!==0) return;
+            if(priority!==-6) return;
 
             let targeted = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
             targeted.roleBlock();
@@ -121,31 +153,24 @@ export const AllRoles = {
         interrogationResults : "Innocent",
         doRole : function(priority, player){
             if(!player.role.alive) return;
-            if(player.role.targeting.length < 2) return;
-
             
-
-            if(priority===-2){
+            if(priority===-8){
+                if(player.role.targeting.length < 2) return;
                 let controlled = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
 
-                if(AllRoles[controlled.role.roleTitle].witchable){
-                    controlled.role.targeting[0] = player.role.targeting[1];
+                if(controlled.getMyRole().witchable){
                     controlled.role.extra.witched = true;
+                    controlled.role.targeting[0] = player.role.targeting[1];
+                    player.role.targeting = [player.role.targeting[0]];
+
                     controlled.addGiveInformation("You were controlled by the witch, your target was changed.", false);
                     player.role.extra.controlled = controlled;
                 }
             }
-            if(priority===10){
+            if(priority===10 && player.role.extra.controlled){
                 player.addGiveInformation("Your targets role is "+player.role.extra.controlled.role.roleTitle+"\n here is the information they recieved");
                 player.addGiveInformationList(player.role.extra.controlled.giveInformation);
             }
-
-            
-            
-            //let controlledInto = GameManager.instance.getPlayerFromName(player.role.targeting[1]);
-
-            
-            
         }
     }
 }

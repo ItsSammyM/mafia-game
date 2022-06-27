@@ -5,6 +5,8 @@ export class MyState{
         this.joinedGame = null;
         this.name = "";
 
+        this.unreadChats = [];
+        
         this.targeting = [];
         this.voting=[];
     }

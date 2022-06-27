@@ -4,7 +4,7 @@ import { Main } from "../Main";
 import React from "react";
 import { AlibiMenu } from "./AlibiMenu";
 import { GraveyardMenu } from "./GraveyardMenu";
-import { AllRoles } from "../game/AllRoles";
+
 export class MainMenu extends React.Component
 {
     constructor(props){
@@ -23,62 +23,90 @@ export class MainMenu extends React.Component
         GameManager.instance.removeListener(this.stateListener);
     }
     renderPlayer(player){
-        if(player.name === this.state.completeState.myState.name) return;
   
         let whisperButtonBool=false;
         let targetButtonBool=false;
         let voteButtonBool=false;
-        let whisperChat = null;
 
         let buttonCount = 0;
-        let buttonPressed = false;
-        let number = 0;
-        let buttonClassName = "Main-button";
-        if(this.state.completeState.gameState.phase === "Voting"){ buttonCount++; voteButtonBool=true;
-            for(let i = 0; i < this.state.completeState.myState.voting.length; i++){
-                if(this.state.completeState.myState.voting[i] === player.name){
-                    buttonClassName += "-pressed";
-                    buttonPressed = true;
-                    break;
-                }
-            }
+        
+        if(this.state.completeState.gameState.phase === "Voting" && player.name !== this.state.completeState.myState.name){
+            buttonCount++;
+            voteButtonBool=true;
         }
-        if(this.state.completeState.gameState.phase === "Night"){ buttonCount++; targetButtonBool=true;
-            for(let i = 0; i < this.state.completeState.myState.targeting.length; i++){
-                if(this.state.completeState.myState.targeting[i] === player.name){
-                    buttonClassName += "-pressed";
-                    buttonPressed = true;
-                    number = i+1;
-                    break;
-                }
-            }
+        if(this.state.completeState.gameState.phase === "Night"){
+            buttonCount++;
+            targetButtonBool=true;
         }
-        if(this.state.completeState.gameState.phase !== "Night"){ buttonCount++; whisperButtonBool=true;
-            let chatTitle = "Whispers of ";
-            let count = 0;
-            for(let i = 0; i < this.state.completeState.gameState.players.length; i++){
-                if(
-                    this.state.completeState.gameState.players[i].name === player.name || 
-                    this.state.completeState.gameState.players[i].name === this.state.completeState.myState.name
-                ){
-                    count++;
-                    chatTitle += this.state.completeState.gameState.players[i].name;
-                    if(count===1) chatTitle+=" and ";
-                    if(count===2) break;
-                }
-            }
-            whisperChat = GameManager.instance.getChatFromTitle(chatTitle);
+        if(this.state.completeState.gameState.phase !== "Night" && player.name !== this.state.completeState.myState.name){
+            buttonCount++; 
+            whisperButtonBool=true;
         }
         
         let buttonWidth = (1.0 / buttonCount * 100)+"%"
 
-        let whisperButton = ()=>{if(whisperButtonBool) return(
-        <div style={{display: "inline-block", width:buttonWidth}}>
-            <button className={buttonClassName} style={{width:"100%"}} onClick={()=>{
-                Main.instance.setState({currentMenu: <ChatMenu chat={whisperChat}/>});
-            }}>Whisper</button></div>);
-        return;}
-        let voteButton = ()=>{if(voteButtonBool) return(
+        let nameString = player.name;
+        if(player.name === this.state.completeState.myState.name) nameString+=" (Self)"
+        // if(player && player.getMyRole()){
+        //     if(player.role.alive === false) nameString+= " (Dead)";
+        //     if(//if were both mafia
+        //         player.getMyRole().faction === "Mafia" && 
+        //         GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).getMyRole().faction==="Mafia"
+        //     )
+        //         nameString+= " ("+player.role.roleTitle+")";
+        //     if(//if were both coven
+        //         player.getMyRole().faction === "Coven" && 
+        //         GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).getMyRole().faction==="Coven"
+        //     )
+        //         nameString+= " ("+player.role.roleTitle+")";
+        // }
+        
+        return(
+            <div key={player.name} style={{display: "inline-block", width:"90.7%"}}>
+                {nameString}<br/>
+                {whisperButtonBool ? this.renderWhisper(player, buttonWidth) : null}
+                {voteButtonBool ? this.renderVote(player, buttonWidth) : null}
+                {targetButtonBool ? this.renderTarget(player, buttonWidth) : null}
+            </div>
+        );
+    }
+    renderWhisper(player, buttonWidth){
+        let chatTitle = "Whispers of ";
+        let count = 0;
+        for(let i = 0; i < this.state.completeState.gameState.players.length; i++){
+            if(
+                this.state.completeState.gameState.players[i].name === player.name || 
+                this.state.completeState.gameState.players[i].name === this.state.completeState.myState.name
+            ){
+                count++;
+                chatTitle += this.state.completeState.gameState.players[i].name;
+                if(count===1) chatTitle+=" and ";
+                if(count===2) break;
+            }
+        }
+        let whisperChat = GameManager.instance.getChatFromTitle(chatTitle);
+
+        let s = "";
+        if(this.state.completeState.myState.unreadChats.includes(chatTitle))
+            s+="-notification";
+        return(
+            <div style={{display: "inline-block", width:buttonWidth}}>
+                <button className={"Main-button"+s} style={{width:"100%"}} 
+                onClick={()=>{Main.instance.setState({currentMenu: <ChatMenu chat={whisperChat}/>});}}
+                >Whisper</button>
+            </div>
+        );
+    }
+    renderVote(player, buttonWidth){
+        let numVotes = 0;
+        let buttonPressed = false;
+
+        let voteIndex = this.state.completeState.myState.voting.indexOf(player.name);
+        if(voteIndex !== -1){
+            buttonPressed = true;
+        }
+
+        return(
             <div style={{display: "inline-block", width:buttonWidth}}>
                 <button className={"Main-button" + (buttonPressed ? "-pressed" : "")} style={{width:"100%"}} onClick={()=>{
                     if(buttonPressed){
@@ -89,10 +117,20 @@ export class MainMenu extends React.Component
                         GameManager.instance.completeState.myState.voting.push(player.name);
                     }
                     GameManager.instance.invokeStateUpdate();
-                }}>Vote</button>
-            </div>);
-        return;}
-        let targetButton = ()=>{if(targetButtonBool) return(
+                }}>{"Vote: " + numVotes}</button>
+            </div>
+        );
+    }
+    renderTarget(player, buttonWidth){
+        let buttonPressed = false;
+        let number = 0;
+        let targetIndex = this.state.completeState.myState.targeting.indexOf(player.name);
+        if(targetIndex !== -1){
+            buttonPressed = true;
+            number = targetIndex+1;
+        }
+
+        return(
             <div style={{display: "inline-block", width:buttonWidth}}>
                 <button className={"Main-button" + (buttonPressed ? "-pressed" : "")} style={{width:"100%"}} onClick={()=>{
                     if(buttonPressed){
@@ -101,54 +139,34 @@ export class MainMenu extends React.Component
                     }else{
                         GameManager.instance.completeState.myState.targeting.push(player.name);
                     }
-                    GameManager.instance.invokeStateUpdate(false);
+                    GameManager.instance.invokeStateUpdate();
                     GameManager.instance.sendTargeting();
                 }}>{"Target" + (buttonPressed ? ": "+number:"")}</button>
-            </div>); 
-        return;}
-
-        let nameString = player.name;
-
-        if(player.role){
-            if(player.role.alive === false) nameString+= " (Dead)";
-            if(//if were both mafia
-                AllRoles[player.role.roleTitle].faction === "Mafia" && 
-                AllRoles[GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).role.roleTitle].faction==="Mafia"
-            )
-                nameString+= " ("+player.role.roleTitle+")";
-            if(//if were both coven
-                AllRoles[player.role.roleTitle].faction === "Coven" && 
-                AllRoles[GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).role.roleTitle].faction==="Coven"
-            )
-                nameString+= " ("+player.role.roleTitle+")";
-        }
-        
-
-        return(
-            <div key={player.name} style={{display: "inline-block", width:"90.7%"}}>
-                {nameString}
-                {whisperButton()}
-                {voteButton()}
-                {targetButton()}
             </div>
         );
     }
     renderChat(chatTitle){
         let chat = GameManager.instance.getChatFromTitle(chatTitle);
         if(chat===null) return;
+        let s = "";
+        if(this.state.completeState.myState.unreadChats.includes(chatTitle))
+            s+="-notification";
         //check if im in the chat
-        for(let i = 0; i < chat.playerNames.length; i++){
-            if(chat.playerNames[i] === this.state.completeState.myState.name){
-                return(
-                    <div>
-                        <button className="Main-button" onClick={() => Main.instance.setState({currentMenu: <ChatMenu chat={chat}/>})}>{chatTitle}</button>
-                        <br/>
-                    </div>
-                )
-            }
-        }
+        if(chat.playerNames.includes(this.state.completeState.myState.name))
+            return(
+                <div>
+                    <button className={"Main-button"+s} onClick={() => {Main.instance.setState({currentMenu: <ChatMenu chat={chat}/>})}}>
+                        {chatTitle}</button>
+                    <br/>
+                </div>
+            );
     }
-    render(){return(
+    render(){
+        let s = "";
+        if(this.state.completeState.myState.unreadChats.includes(this.state.completeState.myState.name + " Information"))
+            s+="-notification";
+
+        return(
         <div className = "Main">
             <div className = "Main-body">
                 <br/>
@@ -157,11 +175,10 @@ export class MainMenu extends React.Component
                         Main
                     </div>
                     <div style={{display: "inline-block", width:"90.7%"}}>
-                        <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}} 
+                        <div style={{display: "inline-block", width:"50%"}}><button className={"Main-button"+s} style={{width:"100%"}} 
                             onClick={()=>Main.instance.setState({currentMenu : <ChatMenu chat={GameManager.instance.getChatFromTitle(this.state.completeState.myState.name + " Information")}/>})
                         }>Information</button></div>
-                        <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}} onClick={()=>Main.instance.setState({currentMenu : <AlibiMenu/>})}>Alibi</button></div>
-                        <div style={{display: "inline-block", width:"33%"}}><button className="Main-button" style={{width:"100%"}}>Target</button></div>
+                        <div style={{display: "inline-block", width:"50%"}}><button className="Main-button" style={{width:"100%"}} onClick={()=>Main.instance.setState({currentMenu : <AlibiMenu/>})}>Alibi</button></div>
                     </div>
                     <br/>
                     <button className="Main-button" 

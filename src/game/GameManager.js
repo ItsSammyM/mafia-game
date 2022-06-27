@@ -2,7 +2,7 @@ import { Main } from "../Main";
 import { MainMenu } from "../menu/MainMenu";
 import { OpenMenu } from "../menu/OpenMenu";
 import { WaitStartMenu} from "../menu/WaitStartMenu";
-import { ChatState, ChatMessageState } from "./ChatState";
+import { ChatState } from "./ChatState";
 import { CompleteState } from "./CompleteState";
 import { PlayerState } from "./PlayerState";
 import { PubNubWrapper } from "./PubNubWrapper";
@@ -151,12 +151,11 @@ export class GameManager{
             case "sendChatMessage":
                 {if(!this.completeState.myState.host) break;
                 let chat = this.getChatFromTitle(m.message.contents.chatTitle);
-                chat.chatMessages.push(new ChatMessageState(
+                chat.addMessage(
                     m.message.contents.myName,
-                    Date.now(),
                     m.message.contents.text,
                     m.message.contents.type
-                ));
+                );
                 this.invokeStateUpdate();
                 break;}
             case "sendBulkChatMessage":
@@ -166,12 +165,11 @@ export class GameManager{
                         let chatMessage = m.message.contents.listMessages[i];
 
                         let chat = this.getChatFromTitle(chatMessage.chatTitle);
-                        chat.chatMessages.push(new ChatMessageState(
+                        chat.addMessage(
                             chatMessage.myName,
-                            Date.now(),
                             chatMessage.text,
                             chatMessage.type
-                        ));
+                        );
                     }
                     this.invokeStateUpdate();
                 break;}
@@ -336,6 +334,7 @@ export class GameManager{
         this.completeState.gameState.phase = str;
         this.completeState.gameState.phaseTimer = AllPhases[str].phaseTime;
         
+        //send information that phase changed
         let listMessages = [];
         for(let i = 0; i < this.completeState.gameState.players.length; i++){
             listMessages.push(this.createSendChatMessage(
@@ -344,6 +343,7 @@ export class GameManager{
             ));
         }
         this.sendBulkChatMessage(listMessages);
+        this.invokeStateUpdate();
         //AllPhases[str].onStart();
     }
 

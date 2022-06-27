@@ -25,11 +25,6 @@ export class HostMenu extends React.Component{
     }
 
     renderRolePick(i){
-        let confirmedRoleOptions = [];
-        for(let r in AllRoles){
-            confirmedRoleOptions.push(r);
-        }
-
         return(
         <div key={i} style={{display: "inline-block",  width:"90.7%"}}>
             <select className="Main-button" style={{display: "inline-block", width:"50%"}} onChange={(e)=>{
@@ -42,7 +37,7 @@ export class HostMenu extends React.Component{
                 <option>Town</option>
                 <option>Mafia</option>
                 <option>Neutral</option>
-                {confirmedRoleOptions.map((o, i)=>{return(<option key={o}>{o}</option>);})}
+                {Object.keys(AllRoles).map((o, i)=>{return(<option key={o}>{o}</option>);})}
             </select>
             {this.renderAlignmentPick(i)}
         </div>

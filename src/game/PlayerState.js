@@ -12,6 +12,7 @@ export class PlayerState{
         this.grave = null;
 
         this.giveInformation = [];
+        
         //information
         //private or public
     }
@@ -40,10 +41,15 @@ export class PlayerState{
         this.getMyRole().doRole(priority, this);
     }
     roleBlock(){
-        if(this.getMyRole().roleblockable && !this.role.roleblocked){
-            this.role.roleblocked = true;
-            this.addGiveInformation("You were Roleblocked! Your ability might not have worked.", false);
+        if(this.getMyRole().roleblockable){
+            if(!this.role.roleblocked){
+                this.role.roleblocked = true;
+                this.addGiveInformation("You were roleblocked! Your ability might not have worked.", false);
+            }
+        }else{
+            this.addGiveInformation("Someone tried to roleblock you but you are immune", false);
         }
+        
     }
     nightKill(attacker, attackPower=1, killMessage="You've been murdered! You may speak with the other dead."){
         /*

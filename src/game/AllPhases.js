@@ -11,14 +11,13 @@ export const AllPhases = {
     Vote: {
         phaseTime : 5,
         timeOut: ()=>{
-
+            GameManager.instance.startPhase("Night");
         }
     },
     Testimony: {
         phaseTime : 5,
         timeOut: ()=>{
             GameManager.instance.startPhase("Judgement");
-            GameManager.instance.invokeStateUpdate();
         }
     },
     Judgement: {
@@ -28,7 +27,7 @@ export const AllPhases = {
         }
     },
     Night: {
-        phaseTime : 30,
+        phaseTime : 5,
         timeOut: ()=>{
 
             //save current gamestate so nobody can change who theyre targeting while this code is running
@@ -40,12 +39,9 @@ export const AllPhases = {
 
                 //remind player who they targeted this night
                 let s = "You tried to target: ";
-                //set targetedBy
                 for(let t = 0; t < player.role.targeting.length; t++){
                     let targeted = player.role.targeting[t];
                     s += targeted + ", ";
-
-                    GameManager.instance.getPlayerFromName(targeted).role.targetedBy.push(player.name);
                 }
                 s = s.substring(0,s.length-2);
                 if(s.length === 19) s+= " nobody";
@@ -53,11 +49,21 @@ export const AllPhases = {
             }
 
             //main night loop
-            for(let priority = -10; priority <= 10; priority++){
+            for(let priority = -12; priority <= 12; priority++){
+                
                 //loops through priorities
                 for(let i = 0; i < GameManager.instance.completeState.gameState.players.length; i++){
                     //loops through players
                     let player = GameManager.instance.completeState.gameState.players[i];
+
+                    //set targetedBy
+                    if(priority===0){
+                        for(let t = 0; t < player.role.targeting.length; t++){
+                            let targeted = player.role.targeting[t];
+                            GameManager.instance.getPlayerFromName(targeted).role.targetedBy.push(player.name);
+                        }
+                    }
+
                     player.doMyRole(priority);
                 }
             }
