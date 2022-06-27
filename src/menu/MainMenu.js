@@ -101,8 +101,7 @@ export class MainMenu extends React.Component
         let numVotes = player.role.votedFor.length;
         let buttonPressed = false;
 
-        let voteIndex = this.state.completeState.myState.voting.indexOf(player.name);
-        if(voteIndex !== -1){
+        if(this.state.completeState.myState.voting.includes(player.name)){
             buttonPressed = true;
         }
 

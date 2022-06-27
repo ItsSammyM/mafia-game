@@ -192,59 +192,63 @@ export class GameManager{
                     this.invokeStateUpdate();
                 break;}
             case "saveAlibi":
-                {if(!this.completeState.myState.host) break;
-                let player = this.getPlayerFromName(m.message.contents.myName);
-                if(player){
-                    player.alibi = m.message.contents.alibi;
-                    this.invokeStateUpdate();
-                }
+                {
+                    if(!this.completeState.myState.host) break;
+                    let player = this.getPlayerFromName(m.message.contents.myName);
+                    if(player){
+                        player.alibi = m.message.contents.alibi;
+                        this.invokeStateUpdate();
+                    }
                 break;}
             case "kickPlayer":
                 {if(m.message.contents.name !== this.completeState.myState.name) break;
-                if(this.completeState.myState.host)
-                {
-                    for(let i = 0; i < this.completeState.gameState.players.length; i++)
+                    if(this.completeState.myState.host)
                     {
-                        GameManager.instance.pubNub.createAndPublish(GameManager.instance.completeState.myState.roomCode, "kickPlayer", {
-                            name: this.completeState.gameState.players[i].name
-                        });
+                        for(let i = 0; i < this.completeState.gameState.players.length; i++)
+                        {
+                            GameManager.instance.pubNub.createAndPublish(GameManager.instance.completeState.myState.roomCode, "kickPlayer", {
+                                name: this.completeState.gameState.players[i].name
+                            });
+                        }
                     }
-                }
-                Main.instance.setState({currentMenu : <OpenMenu/>});
-                this.resetState();
+                    Main.instance.setState({currentMenu : <OpenMenu/>});
+                    this.resetState();
                 break;}
             case "startGame":
                 {//if(this.completeState.myState.host) break;
-                if(m.message.contents.name === "all"||m.message.contents.name===this.completeState.myState.name)
+                    if(m.message.contents.name === "all"||m.message.contents.name===this.completeState.myState.name)
                     Main.instance.setState({currentMenu : <MainMenu/>});
                 break;}
             case "targeting":
                 {
-                if(!this.completeState.myState.host) break;
-                let player = this.getPlayerFromName(m.message.contents.myName);
-                if(player) player.role.targeting = m.message.contents.targeting;
-                this.invokeStateUpdate();
+                    if(!this.completeState.myState.host) break;
+                    let player = this.getPlayerFromName(m.message.contents.myName);
+                    if(player) player.role.targeting = m.message.contents.targeting;
+                    this.invokeStateUpdate();
                 break;}
             case "voting":
                 {
-                if(!this.completeState.myState.host) break;
-                let player = this.getPlayerFromName(m.message.contents.myName);
-                if(player) player.role.voting = m.message.contents.voting;
+                    console.log("reece");
+                    if(!this.completeState.myState.host) break;
+                    let player = this.getPlayerFromName(m.message.contents.myName);
+                    if(player) player.role.voting = m.message.contents.voting;
 
-                for(let i = 0; i < this.completeState.gameState.players.length; i++){
-                    
-                    let chat = this.getChatFromTitle(this.completeState.gameState.players[i] + " Information");
-                    chat.addMessage(
-                        "game",
-                        this.completeState.gameState.players[i] +" is voting for "+this.completeState.gameState.players[i].voting,
-                        "public information"
-                    );
-                }
-                this.setVotedFor();
-                this.invokeStateUpdate();
+                    for(let i = 0; i < this.completeState.gameState.players.length; i++){
+                        
+                        let chat = this.getChatFromTitle(this.completeState.gameState.players[i].name + " Information");
+                        chat.addMessage(
+                            "game",
+                            player.name +" is voting for "+player.role.voting[0],
+                            "public information"
+                        );
+                    }
+                    this.setVotedFor();
+                    this.invokeStateUpdate();
                 break;}
             case "phaseChange":
                 {
+                    this.completeState.myState.voting = [];
+                    this.completeState.myState.targeting = [];
                     Main.instance.setState({currentMenu : <MainMenu/>});
                 break;}
             default:
@@ -414,17 +418,16 @@ export class GameManager{
     }
 
     setVotedFor(){
-        //this is broken
 
         // reset votes
-        // for(let i = 0; i < this.completeState.gameState.players.length; i++){
-        //     this.completeState.gameState.players[i].voting = [];
-        // }
-        // for(let i = 0; i < this.completeState.gameState.players.length; i++){
-        //     for(let j = 0; j < this.completeState.gameState.players[i].voting.length; j++){
-        //         this.getPlayerFromName(this.completeState.gameState.players[i].voting[j]).votedFor.push(this.completeState.gameState.players[i]);
-        //     }
-        // }
+        for(let i = 0; i < this.completeState.gameState.players.length; i++){
+            this.completeState.gameState.players[i].role.votedFor = [];
+        }
+        for(let i = 0; i < this.completeState.gameState.players.length; i++){
+            for(let j = 0; j < this.completeState.gameState.players[i].role.voting.length; j++){
+                this.getPlayerFromName(this.completeState.gameState.players[i].role.voting[j]).role.votedFor.push(this.completeState.gameState.players[i].name);
+            }
+        }
     }
 
     static shufleList(l){
