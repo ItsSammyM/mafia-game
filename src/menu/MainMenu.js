@@ -28,9 +28,9 @@ export class MainMenu extends React.Component
         let targetButtonBool=false;
         let voteButtonBool=false;
 
-        let buttonCount = 0;
+        let buttonCount = 1;
         
-        if(this.state.completeState.gameState.phase === "Vote" && player.name !== this.state.completeState.myState.name){
+        if(this.state.completeState.gameState.phase === "Vote"){
             buttonCount++;
             voteButtonBool=true;
         }
@@ -46,7 +46,7 @@ export class MainMenu extends React.Component
         let buttonWidth = (1.0 / buttonCount * 100)+"%"
 
         let nameString = player.name;
-        if(player.name === this.state.completeState.myState.name) nameString+=" (Self)"
+        if(player.name === this.state.completeState.myState.name) nameString+=" (Self)";
         // if(player && player.getMyRole()){
         //     if(player.role.alive === false) nameString+= " (Dead)";
         //     if(//if were both mafia
@@ -62,8 +62,8 @@ export class MainMenu extends React.Component
         // }
         
         return(
-            <div key={player.name} style={{display: "inline-block", width:"90.7%"}}>
-                {nameString}<br/>
+            <div key={player.name} style={{display: "inline-block", width:"90.7%", textAlign: "left"}}>
+                {nameString+": "}
                 {whisperButtonBool ? this.renderWhisper(player, buttonWidth) : null}
                 {voteButtonBool ? this.renderVote(player, buttonWidth) : null}
                 {targetButtonBool ? this.renderTarget(player, buttonWidth) : null}
@@ -104,20 +104,26 @@ export class MainMenu extends React.Component
         if(this.state.completeState.myState.voting.includes(player.name)){
             buttonPressed = true;
         }
-
+        
+        if(player.name !== this.state.completeState.myState.name)
+            return(
+                <div style={{display: "inline-block", width:buttonWidth}}>
+                    <button className={"Main-button" + (buttonPressed ? "-pressed" : "")} style={{width:"100%"}} onClick={()=>{
+                        if(buttonPressed){
+                            let i = GameManager.instance.completeState.myState.voting.indexOf(player.name);
+                            if(i!==-1) GameManager.instance.completeState.myState.voting.splice(i,1);
+                        }else{
+                            GameManager.instance.completeState.myState.voting = [];
+                            GameManager.instance.completeState.myState.voting.push(player.name);
+                        }
+                        GameManager.instance.invokeStateUpdate();
+                        GameManager.instance.sendVoting();
+                    }}>{"Vote: " + numVotes}</button>
+                </div>
+            );
         return(
             <div style={{display: "inline-block", width:buttonWidth}}>
-                <button className={"Main-button" + (buttonPressed ? "-pressed" : "")} style={{width:"100%"}} onClick={()=>{
-                    if(buttonPressed){
-                        let i = GameManager.instance.completeState.myState.voting.indexOf(player.name);
-                        if(i!==-1) GameManager.instance.completeState.myState.voting.splice(i,1);
-                    }else{
-                        GameManager.instance.completeState.myState.voting = [];
-                        GameManager.instance.completeState.myState.voting.push(player.name);
-                    }
-                    GameManager.instance.invokeStateUpdate();
-                    GameManager.instance.sendVoting();
-                }}>{"Vote: " + numVotes}</button>
+                <button className={"Main-button" + (buttonPressed ? "-pressed" : "")} style={{width:"100%", color:"#dd0000"}}>{"Vote: " + numVotes}</button>
             </div>
         );
     }
@@ -172,7 +178,9 @@ export class MainMenu extends React.Component
                 <br/>
                 <div>
                     <div className = "Main-header">
-                        Main
+                        {!this.state.completeState.gameState.started ? ("Main") : (
+                            this.state.completeState.gameState.phase
+                        )}
                     </div>
                     <div style={{display: "inline-block", width:"90.7%"}}>
                         <div style={{display: "inline-block", width:"50%"}}><button className={"Main-button"+s} style={{width:"100%"}} 

@@ -90,7 +90,7 @@ export class ChatMenu extends React.Component{
                 }
             case "public information":
                 {
-                    divStyle.backgroundColor = "#173975";
+                    divStyle.backgroundColor = "#7a6916";
                     divStyle.color = "rgb(220, 220, 220)";
                     return(<div key={m.senderName+m.time+m.type+m.text+Math.random()} style={divStyle}>
                         <pre className="Main-body" style={{color: divStyle.color, overflow:"auto", wordWrap: "break-word", whiteSpace: "pre-wrap"}}>
@@ -109,23 +109,14 @@ export class ChatMenu extends React.Component{
             return this.renderMessage(m);
         });
     }
-    
-    render(){return(
-        <div className = "Main">
-            <div className = "Main-header">
-                {this.state.chat.title}
-            </div>
-            <br/>
-            <div className="Main-body">
-                
-                <div>
-                    {this.renderMessages(this.state.chat.chatMessages)}
-                </div>
-                <br/>
-                <br/>
-                <br/>
-                <br/>
-                <div style={{position: "fixed", bottom: 10, width: "100%"}}>
+    renderSendComponent(){
+
+
+        //Make dissapear when i am restricted form this chat
+
+
+        return(
+            <div style={{position: "fixed", bottom: 10, width: "100%"}}>
                     <input className="Main-lineTextInput" value={this.state.enteredMessage}
                         onKeyPress={(e) => {
                             if(e.code === "Enter") {
@@ -159,6 +150,27 @@ export class ChatMenu extends React.Component{
                         </div>
                     </div>
                 </div>
+        );
+    }
+    renderBack(){
+
+    }
+    render(){return(
+        <div className = "Main">
+            <div className = "Main-header">
+                {this.state.chat.title}
+            </div>
+            <br/>
+            <div className="Main-body">
+                
+                <div>
+                    {this.renderMessages(this.state.chat.chatMessages)}
+                </div>
+                <br/>
+                <br/>
+                <br/>
+                <br/>
+                
             </div>
             <br ref={(el) => { this.messagesEnd = el; }}/>
             <br/>

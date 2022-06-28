@@ -286,13 +286,17 @@ export class GameManager{
             //Start game information
             listMessages.push(this.createSendChatMessage("Your role: \n"+roleTitle + "\n" + AllRoles[roleTitle].faction + " " + AllRoles[roleTitle].alignment, player.name+" Information", "private information", "game"));
         }
-        this.sendBulkChatMessage(listMessages);
+        
         
         //create chats
         let allPlayerNames = this.completeState.gameState.players.map((e)=>{return e.name});
         this.completeState.gameState.chats.push(new ChatState("Day", allPlayerNames));
         this.completeState.gameState.chats.push(new ChatState("Dead", []));
+        
         this.completeState.gameState.chats.push(new ChatState("Mafia", mafiaMemberNames));
+        listMessages.push(this.createSendChatMessage("The members of the mafia are:" + mafiaMemberNames.map((e)=>{
+            return " \n"+e.toString() +" as the "+ this.getPlayerFromName(e).role.roleTitle;
+        }), "Mafia", "public information", "game"))
         //this.completeState.gameState.chats.push(new ChatState("Vampire", allPlayerNames));
 
         GameManager.shufleList(this.completeState.gameState.roleList);
@@ -302,11 +306,12 @@ export class GameManager{
 
         this.sendStartGame();
         this.invokeStateUpdate();
+        this.sendBulkChatMessage(listMessages);
         this.tick();
     }
 
     tick(){
-        if(!this.completeState.myState.host) return;
+        if(!this.completeState.myState.host || !this.completeState.gameState.started) return;
 
         this.completeState.gameState.phaseTimer--;
 
@@ -418,16 +423,39 @@ export class GameManager{
     }
 
     setVotedFor(){
-
-        // reset votes
+        let aliveCount = 0;
         for(let i = 0; i < this.completeState.gameState.players.length; i++){
+            // reset votes
             this.completeState.gameState.players[i].role.votedFor = [];
+            //count alive
+            if(this.completeState.gameState.players[i].role.alive) aliveCount++;
         }
         for(let i = 0; i < this.completeState.gameState.players.length; i++){
             for(let j = 0; j < this.completeState.gameState.players[i].role.voting.length; j++){
                 this.getPlayerFromName(this.completeState.gameState.players[i].role.voting[j]).role.votedFor.push(this.completeState.gameState.players[i].name);
             }
         }
+
+        //switch phase
+        for(let i = 0; i < this.completeState.gameState.players.length; i++){
+            //check if votes add up high enough
+            if(this.completeState.gameState.players[i].role.votedFor.length >= (Math.floor(aliveCount/2) + 1)){
+
+                this.completeState.gameState.onTrial = this.completeState.gameState.players[i].name;
+                this.startPhase("Testimony");
+                
+                let listMessages = [];
+                for(let j = 0; j < this.completeState.gameState.players.length; j++){
+                    listMessages.push(this.createSendChatMessage(
+                        this.completeState.gameState.onTrial + " is on trial, be quiet and allow them to defend themselves.",
+                        this.completeState.gameState.players[j].name + " Information", "public information", "game"
+                    ));
+                }
+                this.sendBulkChatMessage(listMessages);
+                return;
+            }
+        }
+        
     }
 
     static shufleList(l){
