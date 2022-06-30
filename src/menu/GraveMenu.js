@@ -27,8 +27,9 @@ export class GraveMenu extends React.Component{
             Grave of {this.state.playerName}
         </div>
         <div className="Main-body">
-            Role: <br/>
-            {player.grave.roleTitle} <br/>
+            {player.grave.phase + " " + player.grave.dayNumber} <br/><br/>
+            Role:
+            {player.grave.roleTitle} <br/><br/>
             Alibi <br/>
             {player.grave.alibi} <br/>
             <br/>

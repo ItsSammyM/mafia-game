@@ -1,4 +1,5 @@
 import { GameManager } from "./GameManager";
+import { GraveState } from "./GraveState";
 
 export const AllRoles = {
     Sheriff: {
@@ -8,8 +9,9 @@ export const AllRoles = {
         witchable : true,
         defense : 0,
         interrogationResults : "Innocent",
+        extraPersist : {},
         doRole : function(priority, player){
-            if(!player.role.alive) return;
+            if(!player.role.aliveTonight) return;
             if(player.role.targeting.length < 1) return;
             if(priority!==4) return;
 
@@ -24,8 +26,9 @@ export const AllRoles = {
         witchable : true,
         defense : 0,
         interrogationResults : "Innocent",
+        extraPersist : {},
         doRole : function(priority, player){
-            if(!player.role.alive) return;
+            if(!player.role.aliveTonight) return;
             if(player.role.targeting.length < 1) return;
             if(priority!==4) return;
 
@@ -45,8 +48,9 @@ export const AllRoles = {
         witchable : true,
         defense : 0,
         interrogationResults : "Innocent",
+        extraPersist : {},
         doRole : function(priority, player){
-            if(!player.role.alive) return;
+            if(!player.role.aliveTonight) return;
             if(player.role.targeting.length < 1) return;
             if(priority!==-6) return;
 
@@ -61,8 +65,9 @@ export const AllRoles = {
         witchable : false,
         defense : 0,
         interrogationResults : "Innocent",
+        extraPersist : {},
         doRole : function(priority, player){
-            if(!player.role.alive) return;
+            if(!player.role.aliveTonight) return;
             if(player.role.targeting.length < 2) return;
 
             if(priority!==-10) return;
@@ -93,8 +98,9 @@ export const AllRoles = {
         witchable : true,
         defense : 0,
         interrogationResults : "Suspicious",
+        extraPersist : {},
         doRole : function(priority, player){
-            if(!player.role.alive) return;
+            if(!player.role.aliveTonight) return;
             if(player.role.targeting.length < 1) return;
             if(priority!==6) return;
 
@@ -109,8 +115,9 @@ export const AllRoles = {
         witchable : true,
         defense : 1,
         interrogationResults : "Innocent",
+        extraPersist : {},
         doRole : function(priority, player){
-            if(!player.role.alive) return;
+            if(!player.role.aliveTonight) return;
             if(player.role.targeting.length < 1) return;
             let targeted = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
 
@@ -135,13 +142,36 @@ export const AllRoles = {
         witchable : true,
         defense : 0,
         interrogationResults : "Suspicious",
+        extraPersist : {},
         doRole : function(priority, player){
-            if(!player.role.alive) return;
+            if(!player.role.aliveTonight) return;
             if(player.role.targeting.length < 1) return;
             if(priority!==-6) return;
 
             let targeted = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
             targeted.roleBlock();
+        }
+    },
+    Janitor: {
+        faction : "Mafia",
+        alignment : "Support",
+        roleblockable : false,
+        witchable : true,
+        defense : 0,
+        interrogationResults : "Suspicious",
+        extraPersist : { cleans : 3 },
+        doRole : function(priority, player){
+            if(!player.role.aliveTonight) return;
+            if(player.role.targeting.length < 1) return;
+            if(priority!==8) return;
+
+            let targeted = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
+            if(targeted.role.alive === true) return;
+
+            if(player.role.extraPersist.Janitor.cleans > 0){
+                targeted.grave = new GraveState("Alibi was cleaned", "Cleaned", "", "");
+                player.role.extraPersist.Janitor.cleans--;
+            }
         }
     },
     Witch: {
@@ -151,8 +181,9 @@ export const AllRoles = {
         witchable : false,
         defense : 1,
         interrogationResults : "Innocent",
+        extraPersist : {},
         doRole : function(priority, player){
-            if(!player.role.alive) return;
+            if(!player.role.aliveTonight) return;
             
             if(priority===-8){
                 if(player.role.targeting.length < 2) return;

@@ -63,6 +63,7 @@ export class PlayerState{
         */
         if(attackPower > this.role.currentDefense){
             this.kill();
+            GameManager.instance.completeState.gameState.addGiveInformation(this.name + " died last night, Check their grave.", true);
             this.addGiveInformation(killMessage, false);
         }else{
             this.addGiveInformation("Someone attacked you but your defense was too strong.", false);

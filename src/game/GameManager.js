@@ -161,6 +161,10 @@ export class GameManager{
                 {
                 let chat = this.getChatFromTitle(m.message.contents.chatTitle);
                 if(!chat) break;
+
+                if(chat.restrictedPlayerNames.includes(m.message.contents.myName)) break;
+                if(!(chat.playerNames.includes(m.message.contents.myName) || m.message.contents.myName==="game")) break;
+
                 if(!this.completeState.myState.unreadChats.includes(chat.title))
                     this.completeState.myState.unreadChats.push(chat.title);
 
@@ -178,6 +182,9 @@ export class GameManager{
                         let chatMessage = m.message.contents.listMessages[i];
                         let chat = this.getChatFromTitle(chatMessage.chatTitle);
                         if(!chat) continue;
+
+                        if(chat.restrictedPlayerNames.includes(chatMessage.myName)) continue;
+                        if(!(chat.playerNames.includes(chatMessage.myName) || chatMessage.myName==="game")) continue;
 
                         if(!this.completeState.myState.unreadChats.includes(chat.title))
                             this.completeState.myState.unreadChats.push(chat.title);
@@ -228,7 +235,6 @@ export class GameManager{
                 break;}
             case "voting":
                 {
-                    console.log("reece");
                     if(!this.completeState.myState.host) break;
                     let player = this.getPlayerFromName(m.message.contents.myName);
                     if(player) player.role.voting = m.message.contents.voting;
@@ -249,7 +255,7 @@ export class GameManager{
                 {
                     this.completeState.myState.voting = [];
                     this.completeState.myState.targeting = [];
-                    Main.instance.setState({currentMenu : <MainMenu/>});
+                    //Main.instance.setState({currentMenu : <MainMenu/>});
                 break;}
             default:
                 console.log("No implemented response to type");
@@ -275,7 +281,7 @@ export class GameManager{
             for(let j = i+1; j < this.completeState.gameState.players.length; j++){
                 this.completeState.gameState.chats.push(new ChatState(
                     "Whispers of "+player.name+" and "+this.completeState.gameState.players[j].name,
-                    [player, this.completeState.gameState.players[j]]
+                    [player.name, this.completeState.gameState.players[j].name]
                 ));
             }
             
@@ -383,6 +389,7 @@ export class GameManager{
     startPhase(str){
         this.completeState.gameState.phase = str;
         this.completeState.gameState.phaseTimer = AllPhases[str].phaseTime;
+        AllPhases[str].onStart();
         
         //send information that phase changed
         let listMessages = [];
@@ -395,7 +402,6 @@ export class GameManager{
         this.sendBulkChatMessage(listMessages);
         this.invokeStateUpdate();
         this.sendPhaseChange();
-        //AllPhases[str].onStart();
     }
 
     getChatFromTitle(title){
@@ -441,13 +447,13 @@ export class GameManager{
             //check if votes add up high enough
             if(this.completeState.gameState.players[i].role.votedFor.length >= (Math.floor(aliveCount/2) + 1)){
 
-                this.completeState.gameState.onTrial = this.completeState.gameState.players[i].name;
+                this.completeState.gameState.onTrialName = this.completeState.gameState.players[i].name;
                 this.startPhase("Testimony");
                 
                 let listMessages = [];
                 for(let j = 0; j < this.completeState.gameState.players.length; j++){
                     listMessages.push(this.createSendChatMessage(
-                        this.completeState.gameState.onTrial + " is on trial, be quiet and allow them to defend themselves.",
+                        this.completeState.gameState.onTrialName + " is on trial, be quiet and allow them to defend themselves.",
                         this.completeState.gameState.players[j].name + " Information", "public information", "game"
                     ));
                 }

@@ -1,11 +1,13 @@
 import { AllRoles } from "./AllRoles";
+import { GameManager } from "./GameManager";
 
 export class MyRole{
     constructor(roleTitle){
         //persistant traits
         this.roleTitle = roleTitle;
         this.alive = true;
-        
+        this.extraPersist = {};
+        this.extraPersist[roleTitle] = GameManager.deepCopy(AllRoles[roleTitle].extraPersist);
 
         this.cycleReset();
     }
@@ -14,6 +16,7 @@ export class MyRole{
         this.extra = {};
 
         //involving just tonights role
+        this.aliveTonight = this.alive;
         this.roleblocked = false;
         this.currentDefense = AllRoles[this.roleTitle].defense;
         this.voting = [];

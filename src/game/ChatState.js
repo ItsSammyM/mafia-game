@@ -16,6 +16,9 @@ export class ChatState{
     restrictAll(){
         this.restrictedPlayerNames = this.playerNames.slice();
     }
+    restrictPlayer(playerName){
+        this.restrictedPlayerNames.push(playerName);
+    }
     unrestrictAll(){
         this.restrictedPlayerNames = [];
     }

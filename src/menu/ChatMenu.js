@@ -112,48 +112,47 @@ export class ChatMenu extends React.Component{
     renderSendComponent(){
 
 
-        //Make dissapear when i am restricted form this chat
-
+        //Notify when restricted
 
         return(
             <div style={{position: "fixed", bottom: 10, width: "100%"}}>
-                    <input className="Main-lineTextInput" value={this.state.enteredMessage}
-                        onKeyPress={(e) => {
-                            if(e.code === "Enter") {
-                                this.sendText(this.state.enteredMessage);
-                            }
-                        }}
-                        onChange={(e)=>{
-                            this.setState({enteredMessage : e.target.value});
-                        }}/>
-                    <div style={{display: "inline-block", width:"90.7%"}}>
+                <div className="Main-header" style={{color:"#aa0000"}}>{
+                    this.state.chat.restrictedPlayerNames.includes(this.state.completeState.myState.name) ? "Restricted" : ""
+                }</div>
+                <input className="Main-lineTextInput" value={this.state.enteredMessage}
+                    onKeyPress={(e) => {
+                        if(e.code === "Enter") {
+                            this.sendText(this.state.enteredMessage);
+                        }
+                    }}
+                    onChange={(e)=>{
+                        this.setState({enteredMessage : e.target.value});
+                }}/>
+                <div style={{display: "inline-block", width:"90.7%"}}>
                     <div style={{display: "inline-block", width:"33%"}}>
-                            <button className="Main-button" style={{width:"100%"}} 
-                            onClick={() => {
-                                Main.instance.setState({currentMenu : <MainMenu/>});
-                                let index = GameManager.instance.completeState.myState.unreadChats.indexOf(this.state.chat.title);
-                                if(index !== -1) GameManager.instance.completeState.myState.unreadChats.splice(index ,1);
-                            }}
-                            >Back</button> 
-                        </div>
-                        <div style={{display: "inline-block", width:"33%"}}>
-                            <button className="Main-button" style={{width:"100%"}} 
-                            onClick={() => {
-                                this.sendText(GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).alibi, "alibi");
-                            }}>Send Alibi</button>
-                        </div>
-                        <div style={{display: "inline-block", width:"33%"}}>
-                            <button className="Main-button" style={{width:"100%"}}
-                            onClick={() => {
-                                this.sendText(this.state.enteredMessage);
-                            }}>Send Text</button>
-                        </div>
+                        <button className="Main-button" style={{width:"100%"}} 
+                        onClick={() => {
+                            Main.instance.setState({currentMenu : <MainMenu/>});
+                            let index = GameManager.instance.completeState.myState.unreadChats.indexOf(this.state.chat.title);
+                            if(index !== -1) GameManager.instance.completeState.myState.unreadChats.splice(index ,1);
+                        }}
+                        >Back</button> 
+                    </div>
+                    <div style={{display: "inline-block", width:"33%"}}>
+                        <button className="Main-button" style={{width:"100%"}} 
+                        onClick={() => {
+                            this.sendText(GameManager.instance.getPlayerFromName(this.state.completeState.myState.name).alibi, "alibi");
+                        }}>Send Alibi</button>
+                    </div>
+                    <div style={{display: "inline-block", width:"33%"}}>
+                        <button className="Main-button" style={{width:"100%"}}
+                        onClick={() => {
+                            this.sendText(this.state.enteredMessage);
+                        }}>Send Text</button>
                     </div>
                 </div>
+            </div>
         );
-    }
-    renderBack(){
-
     }
     render(){return(
         <div className = "Main">
@@ -170,7 +169,7 @@ export class ChatMenu extends React.Component{
                 <br/>
                 <br/>
                 <br/>
-                
+                {this.renderSendComponent()}
             </div>
             <br ref={(el) => { this.messagesEnd = el; }}/>
             <br/>

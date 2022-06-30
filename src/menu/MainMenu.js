@@ -38,7 +38,7 @@ export class MainMenu extends React.Component
             buttonCount++;
             targetButtonBool=true;
         }
-        if(this.state.completeState.gameState.phase !== "Night" && player.name !== this.state.completeState.myState.name){
+        if(player.name !== this.state.completeState.myState.name){
             buttonCount++; 
             whisperButtonBool=true;
         }
@@ -167,12 +167,7 @@ export class MainMenu extends React.Component
                 </div>
             );
     }
-    render(){
-        let s = "";
-        if(this.state.completeState.myState.unreadChats.includes(this.state.completeState.myState.name + " Information"))
-            s+="-notification";
-
-        return(
+    render(){return(
         <div className = "Main">
             <div className = "Main-body">
                 <br/>
@@ -182,11 +177,37 @@ export class MainMenu extends React.Component
                             this.state.completeState.gameState.phase
                         )}
                     </div>
+                    <div className = "Main-header" style={{color:"#aa0000"}}>
+                        {
+                            (this.state.completeState.gameState.phase === "Testimony" || this.state.completeState.gameState.phase === "Judgement" ) ?
+                            (this.state.completeState.gameState.onTrialName + " is on trial, let them be heard!") : ("")
+                        }
+                        {
+                            (this.state.completeState.gameState.phase === "Judgement" ) ?
+                            (<div style={{WebkitTextStroke: "0px rgb(0,0,0)", display: "inline-block", width:"90.7%"}}>
+                                <button className="Main-button" style={{color:"#00aa00", display: "inline-block", width:"33%"}}>
+                                    Innocent
+                                </button>
+                                <button className="Main-button" style={{color:"#4c34eb", display: "inline-block", width:"33%"}}>
+                                    Abstain
+                                </button>
+                                <button className="Main-button" style={{color:"#aa0000", display: "inline-block", width:"33%"}}>
+                                    Guilty
+                                </button>
+                            </div>) : ("")
+                        }
+                    </div>
                     <div style={{display: "inline-block", width:"90.7%"}}>
-                        <div style={{display: "inline-block", width:"50%"}}><button className={"Main-button"+s} style={{width:"100%"}} 
-                            onClick={()=>Main.instance.setState({currentMenu : <ChatMenu chat={GameManager.instance.getChatFromTitle(this.state.completeState.myState.name + " Information")}/>})
-                        }>Information</button></div>
-                        <div style={{display: "inline-block", width:"50%"}}><button className="Main-button" style={{width:"100%"}} onClick={()=>Main.instance.setState({currentMenu : <AlibiMenu/>})}>Alibi</button></div>
+                        <div style={{display: "inline-block", width:"50%"}}>
+                            <button className={"Main-button"+(this.state.completeState.myState.unreadChats.includes(this.state.completeState.myState.name + " Information") ? "-notification":"")}style={{width:"100%"}} 
+                                onClick={()=>Main.instance.setState({currentMenu : <ChatMenu chat={GameManager.instance.getChatFromTitle(this.state.completeState.myState.name + " Information")}/>})}
+                            >Information</button>
+                        </div>
+                        <div style={{display: "inline-block", width:"50%"}}>
+                            <button className="Main-button" style={{width:"100%"}} 
+                                onClick={()=>Main.instance.setState({currentMenu : <AlibiMenu/>})}
+                            >Alibi</button>
+                        </div>
                     </div>
                     <br/>
                     <button className="Main-button" 
