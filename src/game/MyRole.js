@@ -19,6 +19,7 @@ export class MyRole{
         this.aliveTonight = this.alive;
         this.roleblocked = false;
         this.currentDefense = AllRoles[this.roleTitle].defense;
+        this.judgement = 0;
         this.voting = [];
         this.votedFor = [];
         this.targeting = [];    //list of player names

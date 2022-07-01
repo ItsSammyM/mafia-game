@@ -167,6 +167,31 @@ export class MainMenu extends React.Component
                 </div>
             );
     }
+    renderTrial(){return(
+        <div className = "Main-header" style={{color:"#aa0000"}}>
+            {
+                (this.state.completeState.gameState.phase === "Testimony" || this.state.completeState.gameState.phase === "Judgement" ) ?
+                (this.state.completeState.gameState.onTrialName + " is on trial, let them be heard!") : ("")
+            }
+            {
+                (this.state.completeState.gameState.phase === "Judgement" ) ?
+                (<div style={{WebkitTextStroke: "0px rgb(0,0,0)", display: "inline-block", width:"90.7%"}}>
+                    <button className="Main-button" style={{color:"#00aa00", display: "inline-block", width:"33%"}}
+                    onClick={()=>{GameManager.instance.completeState.myState.judgement=1; GameManager.instance.sendJudgement();}}>
+                        Innocent
+                    </button>
+                    <button className="Main-button" style={{color:"#4c34eb", display: "inline-block", width:"33%"}}
+                    onClick={()=>{GameManager.instance.completeState.myState.judgement=0; GameManager.instance.sendJudgement();}}>
+                        Abstain
+                    </button>
+                    <button className="Main-button" style={{color:"#aa0000", display: "inline-block", width:"33%"}}
+                    onClick={()=>{GameManager.instance.completeState.myState.judgement=-1; GameManager.instance.sendJudgement();}}>
+                        Guilty
+                    </button>
+                </div>) : ("")
+            }
+        </div>
+    );}
     render(){return(
         <div className = "Main">
             <div className = "Main-body">
@@ -177,26 +202,7 @@ export class MainMenu extends React.Component
                             this.state.completeState.gameState.phase
                         )}
                     </div>
-                    <div className = "Main-header" style={{color:"#aa0000"}}>
-                        {
-                            (this.state.completeState.gameState.phase === "Testimony" || this.state.completeState.gameState.phase === "Judgement" ) ?
-                            (this.state.completeState.gameState.onTrialName + " is on trial, let them be heard!") : ("")
-                        }
-                        {
-                            (this.state.completeState.gameState.phase === "Judgement" ) ?
-                            (<div style={{WebkitTextStroke: "0px rgb(0,0,0)", display: "inline-block", width:"90.7%"}}>
-                                <button className="Main-button" style={{color:"#00aa00", display: "inline-block", width:"33%"}}>
-                                    Innocent
-                                </button>
-                                <button className="Main-button" style={{color:"#4c34eb", display: "inline-block", width:"33%"}}>
-                                    Abstain
-                                </button>
-                                <button className="Main-button" style={{color:"#aa0000", display: "inline-block", width:"33%"}}>
-                                    Guilty
-                                </button>
-                            </div>) : ("")
-                        }
-                    </div>
+                    {this.renderTrial()}
                     <div style={{display: "inline-block", width:"90.7%"}}>
                         <div style={{display: "inline-block", width:"50%"}}>
                             <button className={"Main-button"+(this.state.completeState.myState.unreadChats.includes(this.state.completeState.myState.name + " Information") ? "-notification":"")}style={{width:"100%"}} 

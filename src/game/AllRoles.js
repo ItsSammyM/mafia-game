@@ -168,10 +168,10 @@ export const AllRoles = {
             let targeted = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
             if(targeted.role.alive === true) return;
 
-            if(player.role.extraPersist.Janitor.cleans > 0){
-                targeted.grave = new GraveState("Alibi was cleaned", "Cleaned", "", "");
-                player.role.extraPersist.Janitor.cleans--;
-            }
+            if(player.role.extraPersist.Janitor.cleans <= 0){player.addGiveInformation("You have already used all of your cleans", false); return;}
+
+            targeted.grave = new GraveState("Alibi was cleaned", "Cleaned", "", "");
+            player.role.extraPersist.Janitor.cleans--;
         }
     },
     Witch: {

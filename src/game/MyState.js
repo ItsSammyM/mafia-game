@@ -8,6 +8,7 @@ export class MyState{
         this.unreadChats = [];
         
         this.targeting = [];
+        this.judgement = 0;
         this.voting=[];
     }
 }

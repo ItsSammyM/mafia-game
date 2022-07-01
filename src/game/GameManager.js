@@ -75,21 +75,58 @@ export class GameManager{
             myName : myName,
             text: text,
             chatTitle: chatTitle,
-            type : type
+            type : type,
+            fromHost : this.completeState.myState.host
         });
+        
+        if(!this.completeState.myState.host) return;
+        let chat = this.getChatFromTitle(chatTitle);
+        if(chat.restrictedPlayerNames.includes(myName)) return;
+        if(!(chat.playerNames.includes(myName) || myName==="game")) return;
+        chat.addMessage(
+            myName,
+            text,
+            type
+        );
     }
     createSendChatMessage(text, chatTitle, type="msg", myName=this.completeState.myState.name){
         return {
             myName : myName,
             text: text,
             chatTitle: chatTitle,
-            type : type
+            type : type,
+            fromHost : this.completeState.myState.host
         };
+    }
+    createSendInfoMessageToAll(text){
+        let out = [];
+        for(let i = 0; i < this.completeState.gameState.players.length; i++){
+            out.push({
+                myName : "game",
+                text: text,
+                chatTitle: this.completeState.gameState.players[i].name+" Information",
+                type : "public information",
+                fromHost : this.completeState.myState.host
+            });
+        }
     }
     sendBulkChatMessage(listMessages){
         this.pubNub.createAndPublish(this.completeState.myState.roomCode, "sendBulkChatMessage", {
             listMessages : listMessages,
         });
+
+        if(!this.completeState.myState.host) return;
+        for(let i = 0; i < listMessages.length; i++){
+            
+            let chat = this.getChatFromTitle(listMessages[i].chatTitle);
+            if(chat.restrictedPlayerNames.includes(listMessages[i].myName)) continue;
+            if(!(chat.playerNames.includes(listMessages[i].myName) || listMessages[i].myName==="game")) continue;
+            chat.addMessage(
+                listMessages[i].myName,
+                listMessages[i].text,
+                listMessages[i].type
+            );
+        }
     }
     sendSaveAlibi(alibi){
         this.pubNub.createAndPublish(this.completeState.myState.roomCode, "saveAlibi", {
@@ -111,6 +148,12 @@ export class GameManager{
     }
     sendPhaseChange(){
         this.pubNub.createAndPublish(this.completeState.myState.roomCode, "phaseChange", {});
+    }
+    sendJudgement(){
+        this.pubNub.createAndPublish(this.completeState.myState.roomCode, "judgement", {
+            myName: this.completeState.myState.name,
+            judgement: this.completeState.myState.judgement,
+        });
     }
     
     onMessage(m){
@@ -156,19 +199,22 @@ export class GameManager{
                 {if(this.completeState.myState.host) break;
                 this.completeState.gameState = m.message.contents.gameState;
                 this.invokeStateUpdate();
+                console.log(this.completeState);
                 break;}
             case "sendChatMessage":
                 {
                 let chat = this.getChatFromTitle(m.message.contents.chatTitle);
                 if(!chat) break;
 
-                if(chat.restrictedPlayerNames.includes(m.message.contents.myName)) break;
-                if(!(chat.playerNames.includes(m.message.contents.myName) || m.message.contents.myName==="game")) break;
-
                 if(!this.completeState.myState.unreadChats.includes(chat.title))
                     this.completeState.myState.unreadChats.push(chat.title);
 
                 if(!this.completeState.myState.host) break;
+                if(m.message.contents.fromHost) break;
+
+                if(chat.restrictedPlayerNames.includes(m.message.contents.myName)) break;
+                if(!(chat.playerNames.includes(m.message.contents.myName) || m.message.contents.myName==="game")) break;
+
                 chat.addMessage(
                     m.message.contents.myName,
                     m.message.contents.text,
@@ -183,13 +229,16 @@ export class GameManager{
                         let chat = this.getChatFromTitle(chatMessage.chatTitle);
                         if(!chat) continue;
 
-                        if(chat.restrictedPlayerNames.includes(chatMessage.myName)) continue;
-                        if(!(chat.playerNames.includes(chatMessage.myName) || chatMessage.myName==="game")) continue;
-
+                        //add notif basically
                         if(!this.completeState.myState.unreadChats.includes(chat.title))
                             this.completeState.myState.unreadChats.push(chat.title);
 
                         if(!this.completeState.myState.host) continue;
+                        if(chatMessage.fromHost) continue;
+
+                        if(chat.restrictedPlayerNames.includes(chatMessage.myName)) continue;
+                        if(!(chat.playerNames.includes(chatMessage.myName) || chatMessage.myName==="game")) continue;
+                        
                         chat.addMessage(
                             chatMessage.myName,
                             chatMessage.text,
@@ -239,17 +288,18 @@ export class GameManager{
                     let player = this.getPlayerFromName(m.message.contents.myName);
                     if(player) player.role.voting = m.message.contents.voting;
 
-                    for(let i = 0; i < this.completeState.gameState.players.length; i++){
-                        
-                        let chat = this.getChatFromTitle(this.completeState.gameState.players[i].name + " Information");
-                        chat.addMessage(
-                            "game",
-                            player.name +" is voting for "+player.role.voting[0],
-                            "public information"
-                        );
-                    }
+                    let listMessages = this.createSendInfoMessageToAll(player.name +" is voting for "+player.role.voting[0]);
+                    this.sendBulkChatMessage(listMessages);
                     this.setVotedFor();
                     this.invokeStateUpdate();
+                break;}
+            case "judgement":
+                {
+                    //+1 = inno
+                    //0 = abstain
+                    //-1 = guilty
+                    if(!this.completeState.myState.host) break;
+                    this.getPlayerFromName(m.message.contents.myName).role.judgement = m.message.contents.judgement;
                 break;}
             case "phaseChange":
                 {
@@ -450,20 +500,15 @@ export class GameManager{
                 this.completeState.gameState.onTrialName = this.completeState.gameState.players[i].name;
                 this.startPhase("Testimony");
                 
-                let listMessages = [];
-                for(let j = 0; j < this.completeState.gameState.players.length; j++){
-                    listMessages.push(this.createSendChatMessage(
-                        this.completeState.gameState.onTrialName + " is on trial, be quiet and allow them to defend themselves.",
-                        this.completeState.gameState.players[j].name + " Information", "public information", "game"
-                    ));
-                }
+                let listMessages = 
+                this.createSendInfoMessageToAll(this.completeState.gameState.onTrialName + " is on trial, be quiet and allow them to defend themselves.");
+                
                 this.sendBulkChatMessage(listMessages);
                 return;
             }
         }
         
     }
-
     static shufleList(l){
         for(let i = 0; i < l.length; i++){
             let r = Math.floor(Math.random()*l.length);
