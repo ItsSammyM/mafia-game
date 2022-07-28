@@ -1,7 +1,7 @@
 import { Main } from "../Main";
 import { MainMenu } from "../menu/MainMenu";
 import { OpenMenu } from "../menu/OpenMenu";
-import { WaitStartMenu} from "../menu/WaitStartMenu";
+import { WaitStartMenu } from "../menu/WaitStartMenu";
 import { ChatState } from "./ChatState";
 import { CompleteState } from "./CompleteState";
 import { PlayerState } from "./PlayerState";
