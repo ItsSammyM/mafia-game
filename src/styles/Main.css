@@ -25,31 +25,17 @@
     font-weight: 500;
     color: rgb(143, 143, 143);
 }
-.Main-button {
+.Main-box {
     color: #000000;
+    background-color: #ffffff;
     font-size: calc(12px + 2vmin);
     width: 90%;
     height: 50px;
     border: 5px solid black;
 }
-.Main-button-notification {
+.Main-box-notif {
     color: #000000;
     background-color: #fae457;
-    font-size: calc(12px + 2vmin);
-    width: 90%;
-    height: 50px;
-    border: 5px solid black;
-}
-.Main-button-pressed {
-    color: rgb(65, 65, 65);
-    font-size: calc(12px + 2vmin);
-    width: 90%;
-    height: 50px;
-    border: 5px solid rgb(65, 65, 65);
-    background-color: #505050;
-}
-.Main-lineTextInput {
-    color: #000000;
     font-size: calc(12px + 2vmin);
     width: 90%;
     height: 50px;
