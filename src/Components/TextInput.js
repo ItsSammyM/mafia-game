@@ -3,17 +3,15 @@ import "../styles/Main.css"
 
 
 /**
- *  props:
  * 
- *      onChange(e):
- *          e : idk but its the thing from onChange
- * 
- *      notif : boolean
- *          determines css
+ * @param {Object} props
+ * @param {bool} props.notif
+ * @param {function} props.onChange
+ * @returns {JSX}
  */
 export function TextInput (props) {
 
-    return (<input className="Main-box"
+    return (<input className={props.notif ? "Main-box-notif" : "Main-box"}
         type="text"
         onChange={
             (e)=>{

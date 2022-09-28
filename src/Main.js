@@ -3,6 +3,7 @@ import { StartMenu } from "./menu/StartMenu.js"
 import "./styles/Main.css"
 
 export class Main extends React.Component {
+    static instance = null;
     constructor(props) {
         super(props);
         Main.instance = this;
@@ -15,8 +16,12 @@ export class Main extends React.Component {
     }
     componentWillUnmount() {
     }
-    static instance = null;
     render() {return (<div className="Main">
-            {this.state.currentMenu}
+        <br/>
+        {this.state.currentMenu}
     </div>);}
+
+    changeMenu(menu){
+        this.setState({currentMenu:menu});
+    }
 }

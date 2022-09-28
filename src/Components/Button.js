@@ -2,19 +2,12 @@ import React from "react";
 import "../styles/Main.css"
 
 /**
- *  props:
  * 
- *      text : string
- *          text on button
- * 
- *      onClick() : function
- *          function to call when clicked
- * 
- *      notif : boolean
- *          determines css
+ * @param {Object} props 
+ * @returns {JSX}
  */
 export function Button(props){
-    return (<button className={"Main-box"} 
+    return (<button className={props.notif ? "Main-box-notif" : "Main-box"} 
     onClick={
         ()=>{
             (props.onClick ? props.onClick : ()=>{})()
