@@ -25,16 +25,16 @@ export class PubNubWrapper{
         return(
             {
                 toClient : toClient,
-                type: msgType,
+                typeId: msgType,
                 contents: contents
             }
         );
     }
-    static createPayload(msgChannel, toClient, msgType, contents){
+    static createPayload(msgChannel, toClient, msgTypeId, contents){
         return(
             {
                 channel : msgChannel,
-                message: this.createMessage(toClient, msgType, contents)
+                message: this.createMessage(toClient, msgTypeId, contents)
             }
         );
     }
@@ -45,8 +45,8 @@ export class PubNubWrapper{
             // console.log(publishPayload);
         });
     };
-    createAndPublish(msgChannel, toClient, msgType, contents){
-        this.publish(this.createPayload(msgChannel, toClient, msgType, contents));
+    createAndPublish(msgChannel, toClient, msgTypeId, contents){
+        this.publish(this.createPayload(msgChannel, toClient, msgTypeId, contents));
     }
     subscribe(channel){
         if(this.subscribedChannels.indexOf(channel) !== -1)
