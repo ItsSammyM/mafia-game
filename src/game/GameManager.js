@@ -1,16 +1,16 @@
 import { PubNubWrapper } from "./PubNubWrapper"
 import { generateRandomString } from "./functions"
-import { PlayerState } from "../gameState/PlayerState";
+import { PlayerState } from "../gameStateHost/PlayerState";
 import { Main } from "../Main"
 import { WaitJoinMenu } from "../menu/WaitJoinMenu";
-import { StartMenu } from "../menu/StartMenu";
+import {MainMenu} from "../menu/MainMenu"
 
 /**
  * A type of message, with specified behaviors for how it should be sent and recieved
  */
  class MessageType{
     /**
-     * @param {boolean} toClient 
+     * @param {boolean} toClient
      * @param {function} send 
      * @param {function} recieve - should take 1 parameter that is contents of message
      */
@@ -22,11 +22,22 @@ import { StartMenu } from "../menu/StartMenu";
         this.send = send;
         this.receive = (c)=>{
             for(let i = 0; i < this.receiveListeners.length; i++){
-                this.receiveListeners[i](c);
+                this.receiveListeners[i].listener(c);
             }
             recieve(c);
         };
         MessageType.idCounter++;
+    }
+    addReceiveListener(l){
+        this.receiveListeners.push(l);
+    }
+    removeReceiveListener(l){
+        for(let i = 0; i < this.receiveListeners.length; i++){
+            if(this.receiveListeners[i] === l){
+                this.receiveListeners.splice(i);
+                return;
+            }
+        }
     }
 }
 
@@ -38,6 +49,10 @@ let GameManager = {
         players : [],
         gameStarted : false,
 
+        start : function(){
+            GameManager.host.gameStarted = true;
+            GameManager.HOST_TO_CLIENT["START_GAME"].send(GameManager.host.players.map((p)=>{return p.name}));
+        },
         create : function(){
             GameManager.host.isHost = true;
             GameManager.host.roomCode = generateRandomString(4);
@@ -91,7 +106,6 @@ let GameManager = {
                     }
                     if(!alreadyJoined) GameManager.host.players.push(new PlayerState(contents.playerName));
                     GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, true);
-                    //Update the host's screen to show player joined
                 }
                 GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, false);
             }
@@ -110,6 +124,14 @@ let GameManager = {
                 if(contents.success){
                     Main.instance.changeMenu(<WaitJoinMenu/>);
                 }
+            }
+        ),
+        "START_GAME":new MessageType(true, 
+            (allPlayerNames)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["START_GAME"], {
+                allPlayerNames: allPlayerNames
+            })},
+            (contents)=>{
+                Main.instance.changeMenu(<MainMenu/>);
             }
         )
     }
