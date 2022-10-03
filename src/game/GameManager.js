@@ -17,9 +17,15 @@ import { StartMenu } from "../menu/StartMenu";
     static idCounter = 1;
     constructor(toClient, send, recieve){
         this.ID = MessageType.idCounter;
+        this.receiveListeners = []; //list of functions
         this.toClient = toClient;
         this.send = send;
-        this.receive = recieve;
+        this.receive = (c)=>{
+            for(let i = 0; i < this.receiveListeners.length; i++){
+                this.receiveListeners[i](c);
+            }
+            recieve(c);
+        };
         MessageType.idCounter++;
     }
 }

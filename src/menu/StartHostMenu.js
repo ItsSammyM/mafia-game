@@ -11,15 +11,20 @@ export class StartHostMenu extends React.Component {
 
         this.state = {
             roomCode : props.roomCode,
+            players : [],
         };
     }
     componentDidMount() {
+        if(GameManager.host.isHost)
+            GameManager.CLIENT_TO_HOST["ASK_JOIN"].receiveListeners.push((c)=>{
+                this.setState({players: GameManager.host.players});
+            });
     }
     componentWillUnmount() {
     }
     renderPlayers(){
         return(<div>
-            {GameManager.host.players.map((e)=>{return e.name}, this)}
+            {this.state.players.map((e)=>{return e.name}, this)}
         </div>);
     }
     render() {return (<div>
@@ -28,6 +33,7 @@ export class StartHostMenu extends React.Component {
         </div><br/>
         <div className="Main-body">
             {this.state.roomCode}<br/>
+            {this.renderPlayers()}<br/>
             <Button text="Start" onClick={()=>{}}/><br/>
         </div>
     </div>);}
