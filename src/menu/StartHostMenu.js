@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "../components/Button";
 import { TextInput } from "../components/TextInput";
 import GameManager from "../game/GameManager";
+import { Main } from "../Main";
 import "../styles/Main.css"
 
 export class StartHostMenu extends React.Component {
@@ -10,7 +11,6 @@ export class StartHostMenu extends React.Component {
 
         this.state = {
             roomCode : props.roomCode,
-            playersList : []
         };
     }
     componentDidMount() {
@@ -19,7 +19,7 @@ export class StartHostMenu extends React.Component {
     }
     renderPlayers(){
         return(<div>
-            {this.state.playersList.map((e)=>{return e.name}, this)}
+            {GameManager.host.players.map((e)=>{return e.name}, this)}
         </div>);
     }
     render() {return (<div>

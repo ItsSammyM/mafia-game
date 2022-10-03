@@ -85,6 +85,7 @@ let GameManager = {
                     }
                     if(!alreadyJoined) GameManager.host.players.push(new PlayerState(contents.playerName));
                     GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, true);
+                    //Update the host's screen to show player joined
                 }
                 GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, false);
             }
@@ -102,8 +103,6 @@ let GameManager = {
 
                 if(contents.success){
                     Main.instance.changeMenu(<WaitJoinMenu/>);
-                }else{
-                    Main.instance.changeMenu(<StartMenu/>);
                 }
             }
         )
