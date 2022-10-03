@@ -19,6 +19,18 @@ export class StartMenu extends React.Component {
     }
     componentWillUnmount() {
     }
+    joinButton(){
+        if(!this.state.nameInput)
+            return;
+        Main.instance.changeMenu(<StartJoinMenu playerName={this.state.nameInput}/>);
+    }
+    hostButton(){
+        if(!this.state.nameInput)
+            return;
+        GameManager.host.create();
+        GameManager.client.create(GameManager.host.roomCode, this.state.nameInput);
+        Main.instance.changeMenu(<StartHostMenu roomCode={GameManager.host.roomCode}/>);
+    }
     render() {return (<div>
         <div className="Main-header">
             Mafia
@@ -27,18 +39,13 @@ export class StartMenu extends React.Component {
         <div className="Main-body">
             {this.state.nameInput}{(()=>{if(this.state.nameInput) return(<br/>);})()}
             Name<br/>
-            <TextInput onChange={(e) => this.setState({nameInput: e.target.value})}/><br/>
+            <TextInput onEnter={()=>{this.joinButton()}} onChange={(e) => this.setState({nameInput: e.target.value})}/><br/>
             <br/>
             <Button text="Join" onClick={()=>{
-                if(!this.state.nameInput)
-                    return;
-                Main.instance.changeMenu(<StartJoinMenu/>);
+                this.joinButton();
             }}/><br/>
             <Button text="Host" onClick={()=>{
-                if(!this.state.nameInput)
-                    return;
-                Main.instance.changeMenu(<StartHostMenu/>)
-                GameManager.createClient(GameManager.createHost());
+                this.hostButton()
             }}/><br/>
         </div>
     </div>);}

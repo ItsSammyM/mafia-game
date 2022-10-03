@@ -21,20 +21,20 @@ export class PubNubWrapper{
         });
         this.subscribedChannels = []
     }
-    static createMessage(toClient, msgType, contents){
+    static createMessage(_toClient, _typeId, _contents){
         return(
             {
-                toClient : toClient,
-                typeId: msgType,
-                contents: contents
+                toClient : _toClient,
+                typeId: _typeId,
+                contents: _contents
             }
         );
     }
-    static createPayload(msgChannel, toClient, msgTypeId, contents){
+    static createPayload(_channel, toClient, typeId, contents){
         return(
             {
-                channel : msgChannel,
-                message: this.createMessage(toClient, msgTypeId, contents)
+                channel : _channel,
+                message: PubNubWrapper.createMessage(toClient, typeId, contents)
             }
         );
     }
@@ -46,7 +46,7 @@ export class PubNubWrapper{
         });
     };
     createAndPublish(msgChannel, toClient, msgTypeId, contents){
-        this.publish(this.createPayload(msgChannel, toClient, msgTypeId, contents));
+        this.publish(PubNubWrapper.createPayload(msgChannel, toClient, msgTypeId, contents));
     }
     subscribe(channel){
         if(this.subscribedChannels.indexOf(channel) !== -1)
@@ -78,7 +78,7 @@ export class PubNubWrapper{
      */
     addHostListener(func){
         this.pubnub.addListener({
-            message: (m) => {if(!m.toClient) func(m)}
+            message: (m) => {if(!m.message.toClient) func(m)}
         });
     }
     /**
@@ -87,7 +87,7 @@ export class PubNubWrapper{
      */
     addClientListener(func){
         this.pubnub.addListener({
-            message: (m) => {if(m.toClient) func(m)}
+            message: (m) => {if(m.message.toClient) func(m)}
         });
     }
 }
