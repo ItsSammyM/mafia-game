@@ -4,6 +4,9 @@ import "../styles/Main.css"
 /**
  * 
  * @param {Object} props 
+ * @param {function} props.onClick
+ * @param {boolean} props.notif
+ * @param {String} props.text
  * @returns {JSX}
  */
 export function Button(props){

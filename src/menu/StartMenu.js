@@ -28,7 +28,9 @@ export class StartMenu extends React.Component {
         if(!this.state.nameInput)
             return;
         GameManager.host.create();
-        GameManager.client.create(GameManager.host.roomCode, this.state.nameInput);
+        setTimeout(()=>{
+            GameManager.client.create(GameManager.host.roomCode, this.state.nameInput)
+        },100);
         Main.instance.changeMenu(<StartHostMenu roomCode={GameManager.host.roomCode}/>);
     }
     render() {return (<div>

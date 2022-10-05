@@ -1,9 +1,12 @@
 import { PubNubWrapper } from "./PubNubWrapper"
 import { generateRandomString } from "./functions"
 import { PlayerState } from "../gameStateHost/PlayerState";
+import { PlayerStateClient } from "../gameStateClient/PlayerStateClient";
 import { Main } from "../Main"
 import { WaitJoinMenu } from "../menu/WaitJoinMenu";
-import {MainMenu} from "../menu/MainMenu"
+import { MainMenu } from "../menu/MainMenu";
+import { ChatMessageStateClient } from "../gameStateClient/ChatMessageStateClient";
+import { ChatMessageState } from "../gameStateHost/ChatMessageState";
 
 /**
  * A type of message, with specified behaviors for how it should be sent and recieved
@@ -51,7 +54,25 @@ let GameManager = {
 
         start : function(){
             GameManager.host.gameStarted = true;
-            GameManager.HOST_TO_CLIENT["START_GAME"].send(GameManager.host.players.map((p)=>{return p.name}));
+
+            let informationList = [];
+            informationList.push(new ChatMessageState("NoTitle", "All Player", "#ff0000"))
+            let playerIndividualInformationList = [];
+            for(let i = 0; i < GameManager.host.players.length; i++){
+
+                playerIndividualInformationList.push({
+                    name : GameManager.host.players[i].name,
+                    informationList : (()=>{
+                        return [new ChatMessageState("NoTitle", "Single message sent just to you", "#0ff000")]
+                    })()
+                });
+            }
+
+            GameManager.HOST_TO_CLIENT["START_GAME"].send(
+                GameManager.host.players.map((p)=>{return p.name}),
+                playerIndividualInformationList,
+                informationList
+            );
         },
         create : function(){
             GameManager.host.isHost = true;
@@ -73,6 +94,10 @@ let GameManager = {
     client : {
         roomCode : "",
         playerName : "",
+
+        players : [],
+        information : [],
+
         create: function(_roomCode, _playerName){
             GameManager.client.roomCode = _roomCode;
             GameManager.client.playerName = _playerName;
@@ -127,13 +152,46 @@ let GameManager = {
             }
         ),
         "START_GAME":new MessageType(true, 
-            (allPlayerNames)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["START_GAME"], {
-                allPlayerNames: allPlayerNames
+            /**
+             * 
+             * @param {array[string]} allPlayerNames 
+             * @param {Object} playerIndividual - {
+             *  name : {string}
+             *  informationList : {array[ChatMessageState]}
+             * }
+             * @param {array[ChatMessageStateClient]} informationList
+             */
+            (allPlayerNames, playerIndividual, informationList)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["START_GAME"], {
+                playerIndividual  : playerIndividual,
+                allPlayerNames: allPlayerNames,
+                informationList: informationList,
             })},
             (contents)=>{
+                for(let i = 0; i < contents.allPlayerNames.length; i++){
+                    GameManager.client.players.push(new PlayerStateClient(contents.allPlayerNames[i]));
+                }
+
+                for(let i = 0; i < contents.informationList.length; i++){
+                    GameManager.client.information.push(new ChatMessageStateClient(contents.informationList[i].title, contents.informationList[i].text, contents.informationList[i].color));
+                }
+                //individual
+                let player = null;
+                for(let i = 0; i < contents.playerIndividual.length; i++){
+                    if (GameManager.client.playerName === contents.playerIndividual[i].name){
+                        player = contents.playerIndividual[i];
+                        break;
+                    }
+                }
+
+                if(player === null)
+                    alert("Error, GameManager- START_GAME_RECIEVE");
+
+                for(let i = 0; i < player.informationList.length; i++){
+                    GameManager.client.information.push(new ChatMessageStateClient(player.informationList[i].title, player.informationList[i].text, player.informationList[i].color));
+                }
                 Main.instance.changeMenu(<MainMenu/>);
             }
-        )
+        ),
     }
 };
 
@@ -149,4 +207,3 @@ export default GameManager;
     }
 }
 */
-
