@@ -1,7 +1,4 @@
 import React from "react";
-import { Button } from "../components/Button";
-import { TextInput } from "../components/TextInput";
-import GameManager from "../game/GameManager";
 import "../styles/Main.css"
 
 export class WaitJoinMenu extends React.Component {

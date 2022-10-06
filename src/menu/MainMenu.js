@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "../components/Button";
+import { Button } from "../menuComponents/Button";
 //import { TextInput } from "../components/TextInput";
 import { InformationMenu } from "./InformationMenu";
 import GameManager from "../game/GameManager";

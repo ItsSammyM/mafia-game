@@ -1,6 +1,6 @@
 import React from "react";
-import { Button } from "../components/Button";
-import { TextInput } from "../components/TextInput";
+import { Button } from "../menuComponents/Button";
+import { TextInput } from "../menuComponents/TextInput";
 import GameManager from "../game/GameManager";
 import { StartHostMenu } from "./StartHostMenu";
 import { StartJoinMenu } from "./StartJoinMenu";

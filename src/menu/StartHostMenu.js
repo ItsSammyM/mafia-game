@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "../components/Button";
+import { Button } from "../menuComponents/Button";
 import GameManager from "../game/GameManager";
 import "../styles/Main.css"
 
