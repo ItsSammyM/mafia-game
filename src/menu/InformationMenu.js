@@ -18,23 +18,35 @@ export class InformationMenu extends React.Component {
         this.setState({messages : GameManager.client.information})
     }
     componentWillUnmount() {
-
-    }
-    renderMessages(){
-        //this.color = color;
-        return(<div>
-            {this.state.messages.map((e, i)=>{return (<div key={i} className="Main-box">
-                {e.title+" "+e.text}
-            </div>)}, this)}
-        </div>);
+        //messages[i].title
+        //messages[i].text
+        //messages[i].color
     }
     render() {return (<div>
         <div className="Main-header">
             Information<br/>
         </div><br/>
+
         <div className="Main-body">
-            <Button text="Back" onClick={()=>{Main.instance.changeMenu(<MainMenu/>)}}/>
-            {this.renderMessages()}
+            <Button text="Back" onClick={()=>{Main.instance.changeMenu(<MainMenu/>)}}/><br/>
+            <br/>
+            {
+                this.state.messages.map(
+                    (e, i)=>{return (
+                        <Button 
+                            key={i} 
+                            className="Main-box" 
+                            color = {e.color}
+                            text={(()=>{return(
+                                <div>
+                                    {"<"+e.title+">"}<br/>
+                                    {e.text}<br/>
+                                </div>
+                            )})()}
+                        />
+                    )}
+                )
+            }
         </div>
     </div>);}
 }

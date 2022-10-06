@@ -33,8 +33,9 @@ export class MainMenu extends React.Component {
             Mafia<br/>
         </div><br/>
         <div className="Main-body">
-            <Button text="Infomation" onClick={()=>{Main.instance.changeMenu(<InformationMenu/>)}}/>
-            {this.renderPlayers()}
+            <Button text="Infomation" onClick={()=>{Main.instance.changeMenu(<InformationMenu/>)}}/><br/>
+            <br/>
+            {this.renderPlayers()}<br/>
         </div>
     </div>);}
 }

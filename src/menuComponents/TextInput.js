@@ -9,10 +9,12 @@ import "../styles/Main.css"
  * @param {function} props.onChange - param e
  * @param {function} props.onKeyPress - param e
  * @param {function} props.onEnter
+ * @param {String} props.color
  * @returns {JSX}
  */
 export function TextInput (props) {
     return (<input className={props.notif ? "Main-box-notif" : "Main-box"}
+        style={{"backgroundColor": props.color}}
         type="text"
         onKeyPress={
             (e) => {

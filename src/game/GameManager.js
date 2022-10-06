@@ -56,14 +56,14 @@ let GameManager = {
             GameManager.host.gameStarted = true;
 
             let informationList = [];
-            informationList.push(new ChatMessageState("NoTitle", "All Player", "#ff0000"))
+            informationList.push(new ChatMessageState("NoTitle", "All Player"))
             let playerIndividualInformationList = [];
             for(let i = 0; i < GameManager.host.players.length; i++){
 
                 playerIndividualInformationList.push({
                     name : GameManager.host.players[i].name,
                     informationList : (()=>{
-                        return [new ChatMessageState("NoTitle", "Single message sent just to you", "#0ff000")]
+                        return [new ChatMessageState("NoTitle", "Single message sent just to you")]
                     })()
                 });
             }
@@ -133,6 +133,20 @@ let GameManager = {
                     GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, true);
                 }
                 GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, false);
+            }
+        ),
+        "BUTTON_TARGET":new MessageType(false,
+            /**
+             * 
+             * @param {String} playerName 
+             * @param {array[String]} targetingList 
+             */
+            (playerName, targetingList)=>{GameManager.client.sendMessage(GameManager.CLIENT_TO_HOST["BUTTON_TARGET"], {
+                playerName: playerName,
+                targetingList: targetingList
+            })},
+            (contents)=>{
+                
             }
         ),
     },
