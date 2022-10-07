@@ -206,6 +206,10 @@ let GameManager = {
                 Main.instance.changeMenu(<MainMenu/>);
             }
         ),
+        "PHASE_START":new MessageType(true,
+            ()=>{},
+            (contents)=>{}
+        )
     }
 };
 
