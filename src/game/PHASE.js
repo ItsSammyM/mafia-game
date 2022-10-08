@@ -8,7 +8,7 @@ class Phase{
 const PHASES = {
     "Night":new Phase(10, 
         ()=>{
-
+            
         }, 
         ()=>{
             //set loop first

@@ -7,6 +7,7 @@ import { WaitJoinMenu } from "../menu/WaitJoinMenu";
 import { MainMenu } from "../menu/MainMenu";
 import { ChatMessageStateClient } from "../gameStateClient/ChatMessageStateClient";
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
+import { getRandomRole, ROLES } from "./ROLES";
 
 /**
  * A type of message, with specified behaviors for how it should be sent and recieved
@@ -56,22 +57,29 @@ let GameManager = {
             GameManager.host.gameStarted = true;
 
             let informationList = [];
-            informationList.push(new ChatMessageState("NoTitle", "All Player"))
             let playerIndividualInformationList = [];
+
+            informationList.push(new ChatMessageState("NoTitle", "All Player"));
+
+
             for(let i = 0; i < GameManager.host.players.length; i++){
+
+                GameManager.host.players[i].createPlayerRole(getRandomRole("Random", "Random"));
 
                 playerIndividualInformationList.push({
                     name : GameManager.host.players[i].name,
                     informationList : (()=>{
-                        return [new ChatMessageState("NoTitle", "Single message sent just to you")]
-                    })()
+                        return [new ChatMessageState(GameManager.host.players[i].role.persist.roleName, ROLES[GameManager.host.players[i].role.persist.roleName].basicDescription)];
+                    })(),
                 });
+
+                
             }
 
             GameManager.HOST_TO_CLIENT["START_GAME"].send(
                 GameManager.host.players.map((p)=>{return p.name}),
                 playerIndividualInformationList,
-                informationList
+                informationList,
             );
         },
         create : function(){

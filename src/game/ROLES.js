@@ -3,6 +3,7 @@ class Role{
      * @param {string} _name
      * @param {string} _faction 
      * @param {string} _alignment
+     * @param {string} _team
      * @param {int} _defense 
      * @param {bool} _roleblockable 
      * @param {bool} _witchable 
@@ -10,10 +11,12 @@ class Role{
      * @param {Object} _extraPersist 
      * @param {function} _doRole
      */
-    constructor(_name, _faction, _alignment, _defense, _roleblockable, _witchable, _isSuspicious, _extraPersist, _doRole){
+    constructor(_name, _basicDescription, _faction, _alignment, _team, _defense, _roleblockable, _witchable, _isSuspicious, _extraPersist, _doRole){
         this.name = _name;
+        this.basicDescription = _basicDescription;
 
         this.faction = _faction;
+        this.team = _team;
         this.alignment = _alignment;
 
         this.defense=_defense;
@@ -27,33 +30,42 @@ class Role{
         this.doRole=_doRole;
     }
 }
-class Faction{
+class TEAM{
     /**
      * @param {string} _name 
-     * @param {bool} _showFactionMembers 
-     * @param {array[string]} _alignments 
+     * @param {boolean} _showFactionMembers 
+     * @param {Array[string]} _alignments 
      */
-    constructor(_name, _showFactionMembers, _alignments){
+    constructor(_name){
         this.name = _name;
-        this.showFactionMembers = _showFactionMembers;
-        this.alignments = _alignments;
     }
 }
-export const FACTIONS = {
-    "Town":new Faction("Town", false, ["Investigative", "Protective", "Killing", "Support"]),
-    "Mafia":new Faction("Mafia", true, ["Killing", "Support", "Deception"])
+
+export const TEAMS = {
+    "Mafia":new TEAM("Mafia"),
 };
 export const ROLES = {
     "Sheriff":new Role(
-        "Sheriff", "Town", "Investigative", 
+        "Sheriff", "Target a player to find out if they're innocent or suspicious",
+        "Town", "Investigative", null,
         0, true, true, false, 
         {},
         (priority, player)=>{
             
         }
     ),
+    "Doctor":new Role(
+        "Doctor", "Target a player to save them from an attack, you can save yourself once",
+        "Town", "Protective", null,
+        0, true, true, false,
+        {selfHealed : false},
+        ()=>{
+
+        }
+    ),
     "Escort":new Role(
-        "Escort", "Town", "Support",
+        "Escort", "Target a player to roleblock them, they cannot use their role for that night", 
+        "Town", "Support", null,
         0, false, true, false, 
         {},
         (priority, player)=>{
@@ -61,13 +73,54 @@ export const ROLES = {
         }
     ),
     "Mafioso":new Role(
-        "Mafioso", "Mafia", "Killing",
+        "Mafioso", "Target a player to kill them, the godfathers choice could override yours",
+        "Mafia", "Killing", "Mafia",
         0, true, true, true,
         {},
         (priority, player)=>{
             
         }
-    )
+    ),
+}
+
+export function getRandomFaction(){
+    //get all factions
+    let allFactions = [];
+    for(let key in ROLES){
+        let r = ROLES[key];
+        if(!allFactions.includes(r.faction)) allFactions.push(r.faction);
+    }
+    return allFactions[
+        Math.floor(allFactions.length*Math.random())
+    ];
+}
+export function getRandomAlignment(faction){
+
+    if(faction==="Random") faction = getRandomFaction();
+
+    let allAlignments = [];
+    for(let key in ROLES){
+        let r = ROLES[key];
+        if(!allAlignments.includes(r.alignment) && r.faction===faction) allAlignments.push(r.alignment);
+    }
+    return allAlignments[
+        Math.floor(allAlignments.length*Math.random())
+    ];
+}
+export function getRandomRole(faction, alignment){
+
+    if(faction==="Random") faction = getRandomFaction();
+    if(alignment==="Random") alignment = getRandomAlignment(faction);
+
+
+    let allRoles = [];
+    for(let key in ROLES){
+        let r = ROLES[key];
+        if(!allRoles.includes(r.name) && r.faction === faction && r.alignment === alignment) allRoles.push(r.name);
+    }
+    return allRoles[
+        Math.floor(allRoles.length*Math.random())
+    ];
 }
 // export const ROLES = {
 //     Sheriff: {
