@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {Main} from "./Main"
+import GameManager from "./game/GameManager";
+
+GameManager.tick();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

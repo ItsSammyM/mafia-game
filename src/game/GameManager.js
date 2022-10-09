@@ -8,6 +8,7 @@ import { MainMenu } from "../menu/MainMenu";
 import { ChatMessageStateClient } from "../gameStateClient/ChatMessageStateClient";
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
 import { getRandomRole, ROLES } from "./ROLES";
+import { PhaseStateMachine } from "./PHASE";
 
 /**
  * A type of message, with specified behaviors for how it should be sent and recieved
@@ -25,10 +26,10 @@ import { getRandomRole, ROLES } from "./ROLES";
         this.toClient = toClient;
         this.send = send;
         this.receive = (c)=>{
+            recieve(c);
             for(let i = 0; i < this.receiveListeners.length; i++){
                 this.receiveListeners[i].listener(c);
             }
-            recieve(c);
         };
         MessageType.idCounter++;
     }
@@ -47,6 +48,15 @@ import { getRandomRole, ROLES } from "./ROLES";
 
 let GameManager = {
     pubNub : new PubNubWrapper(),
+    tick : function(){
+        
+        this.pubNub.tick();
+        if(GameManager.host) GameManager.host.tick();
+        if(GameManager.client) GameManager.client.tick()
+        setTimeout(()=>{
+            GameManager.tick();
+        },300)
+    },
     host : {
         isHost : false,
         roomCode : "",
@@ -77,6 +87,9 @@ let GameManager = {
                 playerIndividual,
                 informationList,
             );
+
+            PhaseStateMachine.startPhase("Night");
+            
         },
         create : function(){
             GameManager.host.isHost = true;
@@ -94,6 +107,10 @@ let GameManager = {
         sendMessage: function(messageType, contents){
             GameManager.pubNub.createAndPublish(GameManager.host.roomCode, true, messageType.ID, contents)
         },
+        tick : function(){
+            
+            PhaseStateMachine.tick();
+        }
     },
     client : {
         roomCode : "",
@@ -103,6 +120,7 @@ let GameManager = {
 
         players : [],
         information : [],
+        availableButtons : {},
 
         create: function(_roomCode, _playerName){
             GameManager.client.roomCode = _roomCode;
@@ -122,6 +140,9 @@ let GameManager = {
         sendMessage: function(messageType, contents){
             GameManager.pubNub.createAndPublish(GameManager.client.roomCode, false, messageType.ID, contents)
         },
+        tick : function(){
+
+        }
     },
     CLIENT_TO_HOST:{
         "ASK_JOIN":new MessageType(false,
@@ -185,6 +206,7 @@ let GameManager = {
                 informationList: informationList,
             })},
             (contents)=>{
+                console.log("RECIEVED H2C START_GAME");
                 for(let i = 0; i < contents.allPlayerNames.length; i++){
                     GameManager.client.players.push(new PlayerStateClient(contents.allPlayerNames[i]));
                 }
@@ -206,7 +228,13 @@ let GameManager = {
             /**
              * 
              * @param {String} newPhase 
-             * @param {Object} playerIndividual 
+             * @param {Object} playerIndividual - {
+             *  informationList : [Array[ChatMessageState]]
+             *  availableButtons : Object
+             *      "Name":{
+             *          type : {"Target", "Vote", "Whisper"}
+             *      }
+             * }
              * @param {Array[ChatMessageState]} informationList 
              */
             (phaseName, playerIndividual, informationList)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["START_PHASE"], {
@@ -215,18 +243,27 @@ let GameManager = {
                 informationList : informationList,
             })},
             (contents)=>{
+                console.log("H2C START_PHASE");
                 GameManager.client.phase = contents.phaseName;
 
-                for(let i = 0; i < contents.informationList.length; i++){
-                    GameManager.client.information.push(new ChatMessageStateClient(contents.informationList[i].title, contents.informationList[i].text, contents.informationList[i].color));
+                if(contents.informationList){
+                    for(let i = 0; i < contents.informationList.length; i++){
+                        GameManager.client.information.push(new ChatMessageStateClient(contents.informationList[i].title, contents.informationList[i].text, contents.informationList[i].color));
+                    }
                 }
-                //individual
-                
-                let player = contents.playerIndividual[GameManager.client.playerName];
-                
-                if(player===undefined||player===null) return;
-                for(let i = 0; i < player.informationList.length; i++){
-                    GameManager.client.information.push(new ChatMessageStateClient(player.informationList[i].title, player.informationList[i].text, player.informationList[i].color));
+
+                GameManager.client.availableButtons = {};
+                if(contents.playerIndividual){
+                    //individual
+                    let player = contents.playerIndividual[GameManager.client.playerName];
+                    if(player!==undefined&&player!==null){
+                        for(let i = 0; i < player.informationList.length; i++){
+                            GameManager.client.information.push(new ChatMessageStateClient(player.informationList[i].title, player.informationList[i].text, player.informationList[i].color));
+                        }
+                    }
+
+                    if(player && player.availableButtons)
+                        GameManager.client.availableButtons = player.availableButtons;
                 }
             }
         )

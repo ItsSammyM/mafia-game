@@ -18,7 +18,8 @@ export class PlayerRole{
         return ROLES[this.persist.roleName];
     }
     doMyRole(priority){
-        if(priority === null || this.role.roleblocked) return;
+
+        if(priority === null || this.cycle.roleblocked) return;
         
         this.getRoleObject().doRole(priority, this);
     }

@@ -20,6 +20,7 @@ export class PubNubWrapper{
             uuid: Date.now().toString() + " " + generateRandomString(5)
         });
         this.subscribedChannels = []
+        this.messagesToSend = []; //list of publishPayloads to send 1 time per tick
     }
     static createMessage(_toClient, _typeId, _contents){
         return(
@@ -38,12 +39,23 @@ export class PubNubWrapper{
             }
         );
     }
-    publish(publishPayload){
+    tick(){
+        if(this.messagesToSend.length <= 0) return;
+        let publishPayload = this.messagesToSend.shift();
         this.pubnub.publish(publishPayload, function(status, response) {
             //console.log("Sending " + publishPayload.message.type);
             // console.log(status, response);
             // console.log(publishPayload);
         });
+        
+    }
+    publish(publishPayload){
+        this.messagesToSend.push(publishPayload);
+        // this.pubnub.publish(publishPayload, function(status, response) {
+        //     //console.log("Sending " + publishPayload.message.type);
+        //     // console.log(status, response);
+        //     // console.log(publishPayload);
+        // });
     };
     createAndPublish(msgChannel, toClient, msgTypeId, contents){
         this.publish(PubNubWrapper.createPayload(msgChannel, toClient, msgTypeId, contents));

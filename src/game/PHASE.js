@@ -1,6 +1,5 @@
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
 import GameManager from "./GameManager";
-import { ROLES } from "./ROLES";
 
 class Phase{
     constructor(_maxTime, _onStart, _onTimeOut){
@@ -13,25 +12,46 @@ export let PhaseStateMachine = {
     currentPhase : null,
     timeLeft : 0,
     startPhase : (phaseName)=>{
-        currentPhase = phaseName;
-        PHASES[currentPhase].onStart();
+        PhaseStateMachine.currentPhase = phaseName;
+        PhaseStateMachine.timeLeft = PHASES[PhaseStateMachine.currentPhase].maxTime;
+        PHASES[PhaseStateMachine.currentPhase].onStart();
     },
     tick : ()=>{
-        if(currentPhase)
-            PhaseStateMachine.timeLeft--;
+        if(!PhaseStateMachine.currentPhase) return;
+        
+        PhaseStateMachine.timeLeft--;
 
         if(PhaseStateMachine.timeLeft===0){
-            PHASES[currentPhase].onTimeOut();
+            PHASES[PhaseStateMachine.currentPhase].onTimeOut();
         }
     }
 }
 const PHASES = {
     "Night":new Phase(10, 
         ()=>{
+            let playerIndividualMessage = {};
+            let informationListMessage = [];
+            
             //give players target buttons
             for(let i = 0; i < GameManager.host.players.length; i++){
-
+                let player = GameManager.host.players[i];
+                playerIndividualMessage[player.name] = {
+                    informationList : [],
+                    availableButtons : {}
+                }
+                //can target loop
+                for(let p = 0; p < GameManager.host.players.length; p++){
+                    let otherPlayer = GameManager.host.players[p];
+                    playerIndividualMessage[player.name].availableButtons[otherPlayer.name] = [];
+                    playerIndividualMessage[player.name].availableButtons[otherPlayer.name].push("Target")
+                }
             }
+            informationListMessage.push(new ChatMessageState("Night", "Do not speak, Target someone to use your ability on them."));
+
+
+            GameManager.HOST_TO_CLIENT["START_PHASE"].send(
+                "Night", playerIndividualMessage, informationListMessage
+            );
         }, 
         ()=>{
             //set loop first
@@ -45,7 +65,7 @@ const PHASES = {
                     
                     //set targetedBy
                     if(priority===0){
-                        for(let t = 0; t < player.role.targeting.length; t++){
+                        for(let t = 0; t < player.role.cycle.targeting.length; t++){
                             //let targeted = player.role.cycle.targeting[t];
                             //INCOMEPLETE INCOMPLETE INCOMPLETE
                         }
@@ -66,11 +86,12 @@ const PHASES = {
     ),
     "Morning":new Phase(10,
         ()=>{
-            playerIndividualMessage = {};
-            informationListMessage = [];
+            let playerIndividualMessage = {};
+            let informationListMessage = [];
+            
             informationListMessage.push(new ChatMessageState("Morning", "Do not speak"));
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
-                phaseName, playerIndividualMessage, informationListMessage
+                "Morning", playerIndividualMessage, informationListMessage
             );
         },
         ()=>{
