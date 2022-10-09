@@ -38,7 +38,7 @@ export class StartHostMenu extends React.Component {
             {this.state.roomCode}<br/>
             <br/>
             {this.renderPlayers()}<br/>
-            <Button text="Start" onClick={()=>{GameManager.host.start()}}/><br/>
+            <Button text="Start" onClick={()=>{GameManager.host.startGame()}}/><br/>
         </div>
     </div>);}
 }

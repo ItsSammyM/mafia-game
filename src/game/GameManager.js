@@ -53,32 +53,28 @@ let GameManager = {
         players : [],
         gameStarted : false,
 
-        start : function(){
+        startGame : function(){
             GameManager.host.gameStarted = true;
 
             let informationList = [];
-            let playerIndividualInformationList = [];
+            let playerIndividual = {};
 
             informationList.push(new ChatMessageState("NoTitle", "All Player"));
-
 
             for(let i = 0; i < GameManager.host.players.length; i++){
 
                 GameManager.host.players[i].createPlayerRole(getRandomRole("Random", "Random"));
 
-                playerIndividualInformationList.push({
-                    name : GameManager.host.players[i].name,
+                playerIndividual[GameManager.host.players[i].name] = {
                     informationList : (()=>{
                         return [new ChatMessageState(GameManager.host.players[i].role.persist.roleName, ROLES[GameManager.host.players[i].role.persist.roleName].basicDescription)];
                     })(),
-                });
-
-                
+                };   
             }
 
             GameManager.HOST_TO_CLIENT["START_GAME"].send(
                 GameManager.host.players.map((p)=>{return p.name}),
-                playerIndividualInformationList,
+                playerIndividual,
                 informationList,
             );
         },
@@ -102,6 +98,8 @@ let GameManager = {
     client : {
         roomCode : "",
         playerName : "",
+
+        phase: "",
 
         players : [],
         information : [],
@@ -175,10 +173,8 @@ let GameManager = {
         ),
         "START_GAME":new MessageType(true, 
             /**
-             * 
-             * @param {array[string]} allPlayerNames 
+             * @param {Array[String]} allPlayerNames 
              * @param {Object} playerIndividual - {
-             *  name : {string}
              *  informationList : {array[ChatMessageState]}
              * }
              * @param {array[ChatMessageStateClient]} informationList
@@ -197,26 +193,42 @@ let GameManager = {
                     GameManager.client.information.push(new ChatMessageStateClient(contents.informationList[i].title, contents.informationList[i].text, contents.informationList[i].color));
                 }
                 //individual
-                let player = null;
-                for(let i = 0; i < contents.playerIndividual.length; i++){
-                    if (GameManager.client.playerName === contents.playerIndividual[i].name){
-                        player = contents.playerIndividual[i];
-                        break;
-                    }
-                }
+                let player = contents.playerIndividual[GameManager.client.playerName];
 
-                if(player === null)
-                    alert("Error, GameManager- START_GAME_RECIEVE");
-
+                if(player===undefined||player===null) return;
                 for(let i = 0; i < player.informationList.length; i++){
                     GameManager.client.information.push(new ChatMessageStateClient(player.informationList[i].title, player.informationList[i].text, player.informationList[i].color));
                 }
                 Main.instance.changeMenu(<MainMenu/>);
             }
         ),
-        "PHASE_START":new MessageType(true,
-            ()=>{},
-            (contents)=>{}
+        "START_PHASE":new MessageType(true,
+            /**
+             * 
+             * @param {String} newPhase 
+             * @param {Object} playerIndividual 
+             * @param {Array[ChatMessageState]} informationList 
+             */
+            (phaseName, playerIndividual, informationList)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["START_PHASE"], {
+                phaseName : phaseName,
+                playerIndividual : playerIndividual,
+                informationList : informationList,
+            })},
+            (contents)=>{
+                GameManager.client.phase = contents.phaseName;
+
+                for(let i = 0; i < contents.informationList.length; i++){
+                    GameManager.client.information.push(new ChatMessageStateClient(contents.informationList[i].title, contents.informationList[i].text, contents.informationList[i].color));
+                }
+                //individual
+                
+                let player = contents.playerIndividual[GameManager.client.playerName];
+                
+                if(player===undefined||player===null) return;
+                for(let i = 0; i < player.informationList.length; i++){
+                    GameManager.client.information.push(new ChatMessageStateClient(player.informationList[i].title, player.informationList[i].text, player.informationList[i].color));
+                }
+            }
         )
     }
 };

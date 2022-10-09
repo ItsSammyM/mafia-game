@@ -11,7 +11,7 @@ class Role{
      * @param {Object} _extraPersist 
      * @param {function} _doRole
      */
-    constructor(_name, _basicDescription, _faction, _alignment, _team, _defense, _roleblockable, _witchable, _isSuspicious, _extraPersist, _doRole){
+    constructor(_name, _basicDescription, _faction, _alignment, _team, _defense, _roleblockable, _witchable, _isSuspicious, _extraPersist, _doRole, _canTargetFunction){
         this.name = _name;
         this.basicDescription = _basicDescription;
 
@@ -25,6 +25,11 @@ class Role{
         this.witchable=_witchable;
 
         this.isSuspicious=_isSuspicious;
+
+        this.canTargetFunction = _canTargetFunction ? _canTargetFunction : (myPlayer, otherPlayer)=>{
+            let otherInMyTeam = myPlayer.role.getRoleObject().team === otherPlayer.role.getRoleObject().team;
+            return myPlayer.name!==otherPlayer.name && otherPlayer.role.persist.alive && myPlayer.role.persist.alive && !otherInMyTeam; // im not targing myself AND were both alive AND were not on the same team
+        };
 
         this.extraPersist=_extraPersist;
         this.doRole=_doRole;
@@ -61,6 +66,14 @@ export const ROLES = {
         {selfHealed : false},
         ()=>{
 
+        },
+        (myPlayer, otherPlayer)=>{
+            
+            return (otherPlayer.role.persist.alive && myPlayer.role.persist.alive) && //were both alive
+            (
+                (myPlayer.name===otherPlayer.name && myPlayer.role.persist.extra.selfHealed) || //self healing
+                myPlayer.name!==otherPlayer.name //healing someone else
+            );
         }
     ),
     "Escort":new Role(
@@ -111,7 +124,6 @@ export function getRandomRole(faction, alignment){
 
     if(faction==="Random") faction = getRandomFaction();
     if(alignment==="Random") alignment = getRandomAlignment(faction);
-
 
     let allRoles = [];
     for(let key in ROLES){
