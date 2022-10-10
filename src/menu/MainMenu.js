@@ -43,10 +43,10 @@ export class MainMenu extends React.Component {
                 {e.name}<br/>
                 {(()=>{
                     if(e.name in this.state.availableButtons && this.state.availableButtons[e.name].includes("Target"))
-                        return (<div><Button text="Target"/><br/></div>);
+                        return (<div><Button text="Target" onClick={GameManager.client.onTarget(e.name)}/><br/></div>);
                     
                     if(e.name in this.state.availableButtons && this.state.availableButtons[e.name].includes("Vote"))
-                        return (<div><Button text="Vote"/><br/></div>);
+                        return (<div><Button text="Vote" onClick={GameManager.client.onVote(e.name)}/><br/></div>);
                 })()}
             </div>)}, this)}
         </div>);

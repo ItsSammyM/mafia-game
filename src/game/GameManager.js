@@ -122,6 +122,22 @@ let GameManager = {
         information : [],
         availableButtons : {},
 
+        targetingList : [],
+        votingList : [],
+        judgement : 0,
+
+        onTarget : function(name){
+            if(this.targetingList.includes(name)){
+                GameManager.client.targetingList.splice(GameManager.client.targetingList.indexOf(),1);
+            }else{
+                GameManager.client.targetingList.push(name);
+            }
+                
+            GameManager.CLIENT_TO_HOST["BUTTON_TARGET"].send(GameManager.client.playerName, GameManager.client.targetingList);
+        },
+        onVote : function(name){
+
+        },
         create: function(_roomCode, _playerName){
             GameManager.client.roomCode = _roomCode;
             GameManager.client.playerName = _playerName;
@@ -244,6 +260,9 @@ let GameManager = {
             })},
             (contents)=>{
                 console.log("H2C START_PHASE");
+                GameManager.client.targetingList = [];
+                GameManager.client.votingList = [];
+                GameManager.client.judgement = 0;
                 GameManager.client.phase = contents.phaseName;
 
                 if(contents.informationList){
