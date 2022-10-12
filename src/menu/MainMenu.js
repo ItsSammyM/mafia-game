@@ -7,7 +7,7 @@ import { Main } from "../Main";
 import "../styles/Main.css"
 
 export class MainMenu extends React.Component {
-    constructor(props) {
+    constructor(props){
         super(props);
 
         this.state = {
@@ -17,7 +17,6 @@ export class MainMenu extends React.Component {
 
             startPhaseListener : {
                 listener : (c)=>{
-                    console.log("ratoo");
                     this.setState({
                         header : GameManager.client.phase,
                         availableButtons : GameManager.client.availableButtons,
@@ -41,14 +40,24 @@ export class MainMenu extends React.Component {
         return(<div>
             {this.state.players.map((e)=>{return (<div key={e.name}>
                 {e.name}<br/>
+                
+                {(()=>{
+                    if(e.name in this.state.availableButtons && this.state.availableButtons[e.name].includes("Whisper"))
+                        return (<div><Button text="Whisper" onClick={() => {GameManager.client.clickWhisper(e.name)}}/><br/></div>);
+                })()}
+
                 {(()=>{
                     if(e.name in this.state.availableButtons && this.state.availableButtons[e.name].includes("Target"))
-                        return (<div><Button text="Target" onClick={GameManager.client.onTarget(e.name)}/><br/></div>);
-                    
-                    if(e.name in this.state.availableButtons && this.state.availableButtons[e.name].includes("Vote"))
-                        return (<div><Button text="Vote" onClick={GameManager.client.onVote(e.name)}/><br/></div>);
+                        return (<div><Button text="Target" onClick={() => {GameManager.client.clickTarget(e.name)}}/><br/></div>);
                 })()}
+
+                {(()=>{
+                    if(e.name in this.state.availableButtons && this.state.availableButtons[e.name].includes("Vote"))
+                        return (<div><Button text="Vote" onClick={()=>{GameManager.client.clickVote(e.name)}}/><br/></div>);
+                })()}
+
             </div>)}, this)}
+            <br/>
         </div>);
     }
     render() {return (<div>
@@ -56,6 +65,7 @@ export class MainMenu extends React.Component {
             {this.state.header}<br/>
         </div><br/>
         <div className="Main-body">
+            {GameManager.client.playerName}<br/>
             <Button text="Infomation" onClick={()=>{Main.instance.changeMenu(<InformationMenu/>)}}/><br/>
             <br/>
             {this.renderPlayers()}<br/>

@@ -39,11 +39,14 @@ const PHASES = {
                     informationList : [],
                     availableButtons : {}
                 }
+
                 //can target loop
                 for(let p = 0; p < GameManager.host.players.length; p++){
                     let otherPlayer = GameManager.host.players[p];
                     playerIndividualMessage[player.name].availableButtons[otherPlayer.name] = [];
-                    playerIndividualMessage[player.name].availableButtons[otherPlayer.name].push("Target");
+
+                    if(player.role.getRoleObject().canTargetFunction(player, otherPlayer))
+                        playerIndividualMessage[player.name].availableButtons[otherPlayer.name].push("Target");
                 }
             }
             informationListMessage.push(new ChatMessageState("Night", "Do not speak, Target someone to use your ability on them."));

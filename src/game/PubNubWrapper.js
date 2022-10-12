@@ -21,6 +21,19 @@ export class PubNubWrapper{
         });
         this.subscribedChannels = []
         this.messagesToSend = []; //list of publishPayloads to send 1 time per tick
+        
+
+        this.realListener = {
+            message : (m)=>{
+                for(let key in this.listeners){
+                    this.listeners[key](m);
+                }
+            },
+        };
+        this.listeners = {
+            
+        };
+        this.pubnub.addListener(this.realListener);
     }
     static createMessage(_toClient, _typeId, _contents){
         return(
@@ -80,26 +93,33 @@ export class PubNubWrapper{
         this.subscribedChannels = [];
     }
     addListener(func){
-        this.pubnub.addListener({
-            message: (m) => func(m)
-        });
+        
+        // this.pubnub.addListener({
+        //     message: (m) => func(m),
+        // });
     }
     /**
      * adds a listener that only listens to messages sent to host
      * @param {function} func 
      */
     addHostListener(func){
-        this.pubnub.addListener({
-            message: (m) => {if(!m.message.toClient) func(m)}
-        });
+        this.listeners["Host"] = func;
+        // this.pubnub.addListener({
+        //     message: (m) => {if(!m.message.toClient) func(m)},
+            
+        //     //status: (m) => {console.log(m)}
+        // });
     }
     /**
      * adds a listener that only listens to messages sent to clients
      * @param {function} func 
      */
     addClientListener(func){
-        this.pubnub.addListener({
-            message: (m) => {if(m.message.toClient) func(m)}
-        });
+        this.listeners["Client"] = func;
+        // this.pubnub.addListener({
+        //     message: (m) => {if(m.message.toClient) func(m)},
+            
+        //     //status: (m) => {console.log(m)}
+        // });
     }
 }

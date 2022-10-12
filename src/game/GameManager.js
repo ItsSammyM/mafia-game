@@ -126,7 +126,7 @@ let GameManager = {
         votingList : [],
         judgement : 0,
 
-        onTarget : function(name){
+        clickTarget : function(name){
             if(this.targetingList.includes(name)){
                 GameManager.client.targetingList.splice(GameManager.client.targetingList.indexOf(),1);
             }else{
@@ -135,7 +135,10 @@ let GameManager = {
                 
             GameManager.CLIENT_TO_HOST["BUTTON_TARGET"].send(GameManager.client.playerName, GameManager.client.targetingList);
         },
-        onVote : function(name){
+        clickVote : function(name){
+
+        },
+        clickWhisper : function(name){
 
         },
         create: function(_roomCode, _playerName){
@@ -157,7 +160,7 @@ let GameManager = {
             GameManager.pubNub.createAndPublish(GameManager.client.roomCode, false, messageType.ID, contents)
         },
         tick : function(){
-
+            
         }
     },
     CLIENT_TO_HOST:{
@@ -182,7 +185,7 @@ let GameManager = {
             /**
              * 
              * @param {String} playerName 
-             * @param {array[String]} targetingList 
+             * @param {Array[String]} targetingList 
              */
             (playerName, targetingList)=>{GameManager.client.sendMessage(GameManager.CLIENT_TO_HOST["BUTTON_TARGET"], {
                 playerName: playerName,
@@ -223,6 +226,8 @@ let GameManager = {
             })},
             (contents)=>{
                 console.log("RECIEVED H2C START_GAME");
+
+
                 for(let i = 0; i < contents.allPlayerNames.length; i++){
                     GameManager.client.players.push(new PlayerStateClient(contents.allPlayerNames[i]));
                 }
@@ -259,7 +264,6 @@ let GameManager = {
                 informationList : informationList,
             })},
             (contents)=>{
-                console.log("H2C START_PHASE");
                 GameManager.client.targetingList = [];
                 GameManager.client.votingList = [];
                 GameManager.client.judgement = 0;
