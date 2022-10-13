@@ -30,9 +30,7 @@ export class PubNubWrapper{
                 }
             },
         };
-        this.listeners = {
-            
-        };
+        this.listeners = {};
         this.pubnub.addListener(this.realListener);
     }
     static createMessage(_toClient, _typeId, _contents){

@@ -60,7 +60,7 @@ let GameManager = {
     host : {
         isHost : false,
         roomCode : "",
-        players : [],
+        players : {},
         gameStarted : false,
 
         startGame : function(){
@@ -122,18 +122,9 @@ let GameManager = {
         information : [],
         availableButtons : {},
 
-        targetingList : [],
-        votingList : [],
-        judgement : 0,
-
         clickTarget : function(name){
-            if(this.targetingList.includes(name)){
-                GameManager.client.targetingList.splice(GameManager.client.targetingList.indexOf(),1);
-            }else{
-                GameManager.client.targetingList.push(name);
-            }
                 
-            GameManager.CLIENT_TO_HOST["BUTTON_TARGET"].send(GameManager.client.playerName, GameManager.client.targetingList);
+            GameManager.CLIENT_TO_HOST["BUTTON_TARGET"].send(GameManager.client.playerName, name);
         },
         clickVote : function(name){
 
@@ -185,11 +176,11 @@ let GameManager = {
             /**
              * 
              * @param {String} playerName 
-             * @param {Array[String]} targetingList 
+             * @param {String} targetingName 
              */
-            (playerName, targetingList)=>{GameManager.client.sendMessage(GameManager.CLIENT_TO_HOST["BUTTON_TARGET"], {
+            (playerName, targetingName)=>{GameManager.client.sendMessage(GameManager.CLIENT_TO_HOST["BUTTON_TARGET"], {
                 playerName: playerName,
-                targetingList: targetingList
+                targetingName: targetingName
             })},
             (contents)=>{
                 
