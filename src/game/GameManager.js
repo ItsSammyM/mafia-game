@@ -71,19 +71,26 @@ let GameManager = {
 
             informationList.push(new ChatMessageState("NoTitle", "All Player"));
 
-            for(let i = 0; i < GameManager.host.players.length; i++){
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
 
-                GameManager.host.players[i].createPlayerRole(getRandomRole("Random", "Random"));
+                player.createPlayerRole(getRandomRole("Random", "Random"));
 
-                playerIndividual[GameManager.host.players[i].name] = {
+                playerIndividual[playerName] = {
                     informationList : (()=>{
-                        return [new ChatMessageState(GameManager.host.players[i].role.persist.roleName, ROLES[GameManager.host.players[i].role.persist.roleName].basicDescription)];
+                        return [new ChatMessageState(player.role.persist.roleName, player.role.getRoleObject().basicDescription)];
                     })(),
                 };   
             }
 
             GameManager.HOST_TO_CLIENT["START_GAME"].send(
-                GameManager.host.players.map((p)=>{return p.name}),
+                ((()=>{
+                    let out = [];
+                    for(let playerName in GameManager.host.players){
+                        out.push(playerName);
+                    }
+                    return out;
+                })()),
                 playerIndividual,
                 informationList,
             );
@@ -97,6 +104,7 @@ let GameManager = {
             GameManager.pubNub.subscribe(GameManager.host.roomCode);
 
             GameManager.pubNub.addHostListener((m)=>{
+                console.log("HOST RECIEVED")
                 for(const key in GameManager.CLIENT_TO_HOST){
                     if(GameManager.CLIENT_TO_HOST[key].ID !== m.message.typeId)
                         continue;
@@ -108,7 +116,6 @@ let GameManager = {
             GameManager.pubNub.createAndPublish(GameManager.host.roomCode, true, messageType.ID, contents)
         },
         tick : function(){
-            
             PhaseStateMachine.tick();
         }
     },
@@ -123,7 +130,6 @@ let GameManager = {
         availableButtons : {},
 
         clickTarget : function(name){
-                
             GameManager.CLIENT_TO_HOST["BUTTON_TARGET"].send(GameManager.client.playerName, name);
         },
         clickVote : function(name){
@@ -156,17 +162,19 @@ let GameManager = {
     },
     CLIENT_TO_HOST:{
         "ASK_JOIN":new MessageType(false,
-            (playerName)=>{GameManager.client.sendMessage(GameManager.CLIENT_TO_HOST["ASK_JOIN"], {
+            (playerName)=>{console.log("SYS"); GameManager.client.sendMessage(GameManager.CLIENT_TO_HOST["ASK_JOIN"], {
                 playerName: playerName
             })},
             (contents)=>{
+                console.log("FUCK")
                 if(!GameManager.host.gameStarted){
-                    let alreadyJoined = false
-                    for(let i = 0; i < GameManager.host.players.length; i++){
-                        if(GameManager.host.players[i].name === contents.playerName)
+                    let alreadyJoined = false;
+                    for(let playerName in GameManager.host.players){
+                        if(playerName === contents.playerName)
                             alreadyJoined = true;
+                            break;
                     }
-                    if(!alreadyJoined) GameManager.host.players.push(new PlayerState(contents.playerName));
+                    if(!alreadyJoined)GameManager.host.players[contents.playerName] = (new PlayerState(contents.playerName));
                     GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, true);
                 }
                 GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, false);
@@ -183,7 +191,7 @@ let GameManager = {
                 targetingName: targetingName
             })},
             (contents)=>{
-                
+                GameManager.host.players[contents.playerName].role.cycle.targeting.push(contents.targetingName);
             }
         ),
     },
@@ -194,9 +202,7 @@ let GameManager = {
                 success: success
             })},
             (contents)=>{
-                if(GameManager.host.isHost)
-                    return;
-
+                if(GameManager.host.isHost) return;
                 if(contents.success){
                     Main.instance.changeMenu(<WaitJoinMenu/>);
                 }

@@ -9,7 +9,7 @@ export class StartHostMenu extends React.Component {
 
         this.state = {
             roomCode : props.roomCode,
-            players : [],
+            players : {},
         };
         this.updatePlayers = {
             listener : (contents)=>{
@@ -26,7 +26,13 @@ export class StartHostMenu extends React.Component {
     }
     renderPlayers(){
         return(<div>
-            {this.state.players.map((e)=>{return (<div key={e.name}>{e.name}<br/></div>)}, this)}
+            {((players)=>{
+                let out = [];
+                for(let playerName in players){
+                    out.push(<div key={playerName}>{playerName}</div>);
+                }
+                return out;
+            })(this.state.players)}
         </div>);
     }
     render() {return (<div>

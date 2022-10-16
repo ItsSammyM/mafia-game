@@ -20,7 +20,7 @@ export let PhaseStateMachine = {
         if(!PhaseStateMachine.currentPhase) return;
         
         PhaseStateMachine.timeLeft--;
-
+        
         if(PhaseStateMachine.timeLeft===0){
             PHASES[PhaseStateMachine.currentPhase].onTimeOut();
         }
@@ -33,9 +33,10 @@ const PHASES = {
             let informationListMessage = [];
             
             //give players target buttons
-            for(let i = 0; i < GameManager.host.players.length; i++){
-                let player = GameManager.host.players[i];
-                playerIndividualMessage[player.name] = {
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+
+                playerIndividualMessage[playerName] = {
                     informationList : [],
                     availableButtons : {}
                 }
@@ -62,9 +63,9 @@ const PHASES = {
             for(let priority = -12; priority < 12; priority++){
                 //this loops through priorities
 
-                for(let playerIndex = 0; playerIndex < GameManager.host.players.length; playerIndex++){
+                for(let playerName in GameManager.host.players){
                     //loops through each player 
-                    let player = GameManager.host.players[playerIndex];
+                    let player = GameManager.host.players[playerName];
                     
                     //set targetedBy
                     if(priority===0){
@@ -78,8 +79,8 @@ const PHASES = {
                 }
             }
             //reset loop after
-            for(let i = 0; i < GameManager.host.players.length; i++){
-                let player = GameManager.host.players[i];
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
 
                 player.role.setCycle();
             }
