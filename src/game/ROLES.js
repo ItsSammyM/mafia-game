@@ -100,7 +100,7 @@ export const ROLES = {
         0, false, true, false, 
         {},
         (priority, player)=>{
-
+//Hi sammy this is Bea again. That's all bye!
         }
     ),
     "Mafioso":new Role(

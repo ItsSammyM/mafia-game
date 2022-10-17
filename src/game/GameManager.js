@@ -10,6 +10,8 @@ import { ChatMessageState } from "../gameStateHost/ChatMessageState";
 import { getRandomRole, ROLES } from "./ROLES";
 import { PhaseStateMachine } from "./PHASE";
 
+//Hi sammy it's Bea I think you're very cool :)
+
 /**
  * A type of message, with specified behaviors for how it should be sent and recieved
  */
@@ -80,7 +82,7 @@ let GameManager = {
                     informationList : (()=>{
                         return [new ChatMessageState(player.role.persist.roleName, player.role.getRoleObject().basicDescription)];
                     })(),
-                };   
+                };
             }
 
             GameManager.HOST_TO_CLIENT["START_GAME"].send(
@@ -125,7 +127,7 @@ let GameManager = {
 
         phase: "",
 
-        players : [],
+        players : {},
         information : [],
         availableButtons : {},
 
@@ -162,11 +164,10 @@ let GameManager = {
     },
     CLIENT_TO_HOST:{
         "ASK_JOIN":new MessageType(false,
-            (playerName)=>{console.log("SYS"); GameManager.client.sendMessage(GameManager.CLIENT_TO_HOST["ASK_JOIN"], {
+            (playerName)=>{GameManager.client.sendMessage(GameManager.CLIENT_TO_HOST["ASK_JOIN"], {
                 playerName: playerName
             })},
             (contents)=>{
-                console.log("FUCK")
                 if(!GameManager.host.gameStarted){
                     let alreadyJoined = false;
                     for(let playerName in GameManager.host.players){
@@ -192,6 +193,7 @@ let GameManager = {
             })},
             (contents)=>{
                 GameManager.host.players[contents.playerName].role.cycle.targeting.push(contents.targetingName);
+
             }
         ),
     },
@@ -226,7 +228,7 @@ let GameManager = {
 
 
                 for(let i = 0; i < contents.allPlayerNames.length; i++){
-                    GameManager.client.players.push(new PlayerStateClient(contents.allPlayerNames[i]));
+                    GameManager.client.players[contents.allPlayerNames[i]] = new PlayerStateClient(contents.allPlayerNames[i]);
                 }
 
                 for(let i = 0; i < contents.informationList.length; i++){
@@ -285,6 +287,24 @@ let GameManager = {
                     if(player && player.availableButtons)
                         GameManager.client.availableButtons = player.availableButtons;
                 }
+            }
+        ),
+        "BUTTON_TARGET_RESPONE":new MessageType(true,
+            /**
+             * 
+             * @param {Object} playerIndividual - {
+             *  playerTargeted : String
+             *  availableTargetButtons : Array[String] - names of players who you can target
+             * }
+             * 
+             */
+            (playerName, playerTargetedName, canTargetList)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONE"], {
+                playerName : playerName,
+                playerTargetedName : playerTargetedName,
+                canTargetList : canTargetList
+            })},
+            (contents)=>{
+                if(contents.playerName !== GameManager.client.playerName) return;
             }
         )
     }

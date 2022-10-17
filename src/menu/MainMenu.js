@@ -37,28 +37,31 @@ export class MainMenu extends React.Component {
         GameManager.HOST_TO_CLIENT["START_PHASE"].removeReceiveListener(this.state.startPhaseListener);
     }
     renderPlayers(){
-        return(<div>
-            {this.state.players.map((e)=>{return (<div key={e.name}>
-                {e.name}<br/>
-                
+
+        let out = []
+        for(let playerName in GameManager.client.players){
+            out.push(<div key={playerName}>
+                {playerName}<br/>
+
                 {(()=>{
-                    if(e.name in this.state.availableButtons && this.state.availableButtons[e.name].includes("Whisper"))
-                        return (<div><Button text="Whisper" onClick={() => {GameManager.client.clickWhisper(e.name)}}/><br/></div>);
+                    if(playerName in this.state.availableButtons && this.state.availableButtons[playerName].includes("Whisper"))
+                        return (<div><Button text="Whisper" onClick={() => {GameManager.client.clickWhisper(playerName)}}/><br/></div>);
                 })()}
 
                 {(()=>{
-                    if(e.name in this.state.availableButtons && this.state.availableButtons[e.name].includes("Target"))
-                        return (<div><Button text="Target" onClick={() => {GameManager.client.clickTarget(e.name)}}/><br/></div>);
+                    if(playerName in this.state.availableButtons && this.state.availableButtons[playerName].includes("Target"))
+                        return (<div><Button text="Target" onClick={() => {GameManager.client.clickTarget(playerName)}}/><br/></div>);
                 })()}
 
                 {(()=>{
-                    if(e.name in this.state.availableButtons && this.state.availableButtons[e.name].includes("Vote"))
-                        return (<div><Button text="Vote" onClick={()=>{GameManager.client.clickVote(e.name)}}/><br/></div>);
+                    if(playerName in this.state.availableButtons && this.state.availableButtons[playerName].includes("Vote"))
+                        return (<div><Button text="Vote" onClick={()=>{GameManager.client.clickVote(playerName)}}/><br/></div>);
                 })()}
 
-            </div>)}, this)}
-            <br/>
-        </div>);
+            </div>)
+        }
+
+        return(out);
     }
     render() {return (<div>
         <div className="Main-header">

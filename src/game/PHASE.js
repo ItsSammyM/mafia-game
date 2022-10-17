@@ -102,6 +102,7 @@ const PHASES = {
             
         }
     ),
+    //You're cool :)
     "Discussion":new Phase(10),
     "Voting":new Phase(10),
     "Testimony":new Phase(10),
