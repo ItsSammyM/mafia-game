@@ -3,10 +3,28 @@ import { ROLES } from "../game/ROLES";
 export class PlayerState{
     constructor(name){
         this.name = name;
+        this.availableButtons = {};
+        /*
+            {
+                "Name":{target:false,whisper:false,vote:false}
+            }
+        */
         this.role = null;
+    }
+    setUpAvailableButtons(players){
+        for(let playerName in players){
+            this.availableButtons[playerName] = {target:false, whisper: false, vote:false};
+        }
     }
     createPlayerRole(exact){
         this.role = new PlayerRole(exact);
+    }
+    addTarget(otherPlayer){
+        if(!this.role.getRoleObject().canTargetFunction(this, otherPlayer)) return;
+        this.role.cycle.targeting.push(otherPlayer);
+    }
+    clearTarget(){
+        this.role.cycle.targeting = [];
     }
 }
 export class PlayerRole{

@@ -1,6 +1,5 @@
 import React from "react";
 import { Button } from "../menuComponents/Button";
-//import { TextInput } from "../components/TextInput";
 import { InformationMenu } from "./InformationMenu";
 import GameManager from "../game/GameManager";
 import { Main } from "../Main";
@@ -15,7 +14,7 @@ export class MainMenu extends React.Component {
             header : "Mafia",
             availableButtons : {},
 
-            startPhaseListener : {
+            START_PHASE_LISTENER : {
                 listener : (c)=>{
                     this.setState({
                         header : GameManager.client.phase,
@@ -28,33 +27,32 @@ export class MainMenu extends React.Component {
     componentDidMount() {
         this.setState({
             players : GameManager.client.players,
-            header : GameManager.client.phase,
-            availableButtons : GameManager.client.availableButtons,
+            header : GameManager.client.phase, 
         });
-        GameManager.HOST_TO_CLIENT["START_PHASE"].addReceiveListener(this.state.startPhaseListener);
+        GameManager.HOST_TO_CLIENT["START_PHASE"].addReceiveListener(this.state.START_PHASE_LISTENER);
     }
     componentWillUnmount() {
-        GameManager.HOST_TO_CLIENT["START_PHASE"].removeReceiveListener(this.state.startPhaseListener);
+        GameManager.HOST_TO_CLIENT["START_PHASE"].removeReceiveListener(this.state.START_PHASE_LISTENER);
     }
     renderPlayers(){
 
         let out = []
-        for(let playerName in GameManager.client.players){
+        for(let playerName in this.state.players){
             out.push(<div key={playerName}>
                 {playerName}<br/>
 
                 {(()=>{
-                    if(playerName in this.state.availableButtons && this.state.availableButtons[playerName].includes("Whisper"))
+                    if(this.state.players[playerName].availableButtons.whisper)
                         return (<div><Button text="Whisper" onClick={() => {GameManager.client.clickWhisper(playerName)}}/><br/></div>);
                 })()}
 
                 {(()=>{
-                    if(playerName in this.state.availableButtons && this.state.availableButtons[playerName].includes("Target"))
+                    if(this.state.players[playerName].availableButtons.target)
                         return (<div><Button text="Target" onClick={() => {GameManager.client.clickTarget(playerName)}}/><br/></div>);
                 })()}
 
                 {(()=>{
-                    if(playerName in this.state.availableButtons && this.state.availableButtons[playerName].includes("Vote"))
+                    if(this.state.players[playerName].availableButtons.vote)
                         return (<div><Button text="Vote" onClick={()=>{GameManager.client.clickVote(playerName)}}/><br/></div>);
                 })()}
 
@@ -70,6 +68,7 @@ export class MainMenu extends React.Component {
         <div className="Main-body">
             {GameManager.client.playerName}<br/>
             <Button text="Infomation" onClick={()=>{Main.instance.changeMenu(<InformationMenu/>)}}/><br/>
+            <br/>
             <br/>
             {this.renderPlayers()}<br/>
         </div>

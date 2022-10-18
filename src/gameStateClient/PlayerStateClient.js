@@ -1,7 +1,10 @@
 export class PlayerStateClient{
     constructor(name){
         this.name = name;
-        this.availableButtons = [];
-        //Target Whisper Vote
+        this.availableButtons = {
+            target: false,
+            whisper: false,
+            vote: false,
+        };
     }
 }

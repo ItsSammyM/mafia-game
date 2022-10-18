@@ -36,12 +36,13 @@ class Role{
         this.isSuspicious=_isSuspicious;
 
         this.canTargetFunction = _canTargetFunction ? _canTargetFunction : (myPlayer, otherPlayer)=>{
-            let otherInMyTeam = myPlayer.role.getRoleObject().team === otherPlayer.role.getRoleObject().team;
-            return ( 
+            let otherInMyTeam = (myPlayer.role.getRoleObject().team === otherPlayer.role.getRoleObject().team) && myPlayer.role.getRoleObject().team!==null;
+            return (
                 myPlayer.name!==otherPlayer.name && //Not targeting myself
                 otherPlayer.role.persist.alive && //theyre alive
                 myPlayer.role.persist.alive && //im alive
-                !otherInMyTeam //not on same team
+                !otherInMyTeam && //not on same team
+                myPlayer.role.cycle.targeting.length < 1    //havent already targeted at least 1 person
             );
         };
 

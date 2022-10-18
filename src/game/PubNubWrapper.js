@@ -19,76 +19,66 @@ export class PubNubWrapper{
             subscribeKey : "sub-c-253627e6-df37-4bd4-ba07-57e843d14d3d",
             uuid: Date.now().toString() + " " + generateRandomString(5)
         });
-        this.subscribedChannels = []
+
+        this.channel = ""
         this.messagesToSend = []; //list of publishPayloads to send 1 time per tick
         
-
         this.realListener = {
-            message : (m)=>{
-                for(let key in this.listeners){
-                    this.listeners[key](m);
+            message : (m)=>{                
+                for(let i = 0; i < m.message.length; i++){                    
+                    for(let key in this.listeners){
+                        this.listeners[key](m.message[i]);
+                    }
                 }
+                
             },
         };
         this.listeners = {};
         this.pubnub.addListener(this.realListener);
     }
-    static createMessage(_toClient, _typeId, _contents){
+    static createMessage(_typeId, _contents){
         return(
             {
-                toClient : _toClient,
                 typeId: _typeId,
                 contents: _contents
             }
         );
     }
-    static createPayload(_channel, toClient, typeId, contents){
-        return(
-            {
-                channel : _channel,
-                message: PubNubWrapper.createMessage(toClient, typeId, contents)
-            }
-        );
-    }
     tick(){
         if(this.messagesToSend.length <= 0) return;
-        let publishPayload = this.messagesToSend.shift();
-        this.pubnub.publish(publishPayload, function(status, response) {
-            //console.log("Sending " + publishPayload.message.type);
-            // console.log(status, response);
-            // console.log(publishPayload);
-        });
-        
+        // console.log(this.messagesToSend)
+        this.pubnub.publish(
+            {
+                channel : this.channel,
+                message : this.messagesToSend,
+            }, 
+            function(status, response) {
+                //console.log("Sending " + publishPayload.message.type);
+                // console.log(status, response);
+                // console.log(publishPayload);
+            }
+        );
+        this.messagesToSend = [];
     }
-    publish(publishPayload){
-        this.messagesToSend.push(publishPayload);
+    publish(message){
+        this.messagesToSend.push(message);
         // this.pubnub.publish(publishPayload, function(status, response) {
         //     //console.log("Sending " + publishPayload.message.type);
         //     // console.log(status, response);
         //     // console.log(publishPayload);
         // });
     };
-    createAndPublish(msgChannel, toClient, msgTypeId, contents){
-        this.publish(PubNubWrapper.createPayload(msgChannel, toClient, msgTypeId, contents));
+    createAndPublish(toClient, msgTypeId, contents){
+        this.publish(PubNubWrapper.createMessage(toClient, msgTypeId, contents));
     }
     subscribe(channel){
-        if(this.subscribedChannels.indexOf(channel) !== -1)
-            return;
-        this.subscribedChannels.push(channel);
+        this.channel = channel;
         this.pubnub.subscribe({
             channels: [channel]
         });
     }
-    unsubscribe(channel){
-        this.pubnub.unsubscribe({
-            channels: [channel]
-        });
-        let i = this.subscribedChannels.indexOf(channel);
-        i !== -1 ? this.subscribedChannels.splice(i,1) : (()=>{})();
-    }
-    unsubscribeAll(){
+    unsubscribe(){
         this.pubnub.unsubscribeAll();
-        this.subscribedChannels = [];
     }
     addListener(func){
         

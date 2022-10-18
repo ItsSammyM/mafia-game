@@ -42,17 +42,19 @@ const PHASES = {
                 }
 
                 //can target loop
-                for(let p = 0; p < GameManager.host.players.length; p++){
-                    let otherPlayer = GameManager.host.players[p];
-                    playerIndividualMessage[player.name].availableButtons[otherPlayer.name] = [];
+                for(let otherPlayerName in GameManager.host.players){
+                    let otherPlayer = GameManager.host.players[otherPlayerName];
 
-                    if(player.role.getRoleObject().canTargetFunction(player, otherPlayer))
-                        playerIndividualMessage[player.name].availableButtons[otherPlayer.name].push("Target");
+                    // player.availableButtons[otherPlayer.name] = {target:false,whisper:false,vote:false};
+                    player.availableButtons[otherPlayerName].target = player.role.getRoleObject().canTargetFunction(player, otherPlayer);
+
+                    //console.log(player.availableButtons[otherPlayerName].target)
+                    //console.log(!player.role.getRoleObject().canTargetFunction.(player, otherPlayer))
                 }
+                playerIndividualMessage[playerName].availableButtons = player.availableButtons;
+                
             }
             informationListMessage.push(new ChatMessageState("Night", "Do not speak, Target someone to use your ability on them."));
-
-
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
                 "Night", playerIndividualMessage, informationListMessage
             );
@@ -93,7 +95,27 @@ const PHASES = {
             let playerIndividualMessage = {};
             let informationListMessage = [];
             
+            
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+
+                playerIndividualMessage[playerName] = {
+                    informationList : [],
+                    availableButtons : {}
+                }
+
+                for(let otherPlayerName in GameManager.host.players){
+                    let otherPlayer = GameManager.host.players[otherPlayerName];
+
+                    player.availableButtons[otherPlayerName].target = false;
+                    if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
+                }
+                
+                playerIndividualMessage[playerName].availableButtons = player.availableButtons;
+            }
+            
             informationListMessage.push(new ChatMessageState("Morning", "Do not speak"));
+
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
                 "Morning", playerIndividualMessage, informationListMessage
             );
@@ -102,7 +124,6 @@ const PHASES = {
             
         }
     ),
-    //You're cool :)
     "Discussion":new Phase(10),
     "Voting":new Phase(10),
     "Testimony":new Phase(10),
