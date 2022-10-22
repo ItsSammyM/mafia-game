@@ -1,3 +1,6 @@
+import { ChatMessageState } from "../gameStateHost/ChatMessageState";
+import GameManager from "./GameManager"
+
 class Role{
     /**
      * @param {string} _name
@@ -14,7 +17,7 @@ class Role{
     constructor(
 
         _name, _basicDescription, 
-        _faction, _alignment, _team, 
+        _faction, _alignment, _team, _maximumCount,
         _defense, _roleblockable, _witchable, _isSuspicious, 
         _extraPersist, 
         _doRole, 
@@ -34,6 +37,9 @@ class Role{
         this.witchable=_witchable;
 
         this.isSuspicious=_isSuspicious;
+
+        this.maximumCount = _maximumCount;
+        //-1 is infinite, 0 is you cant have one. 1 is normal unique
 
         this.canTargetFunction = _canTargetFunction ? _canTargetFunction : (myPlayer, otherPlayer)=>{
             let otherInMyTeam = (myPlayer.role.getRoleObject().team === otherPlayer.role.getRoleObject().team) && myPlayer.role.getRoleObject().team!==null;
@@ -67,16 +73,24 @@ export const TEAMS = {
 export const ROLES = {
     "Sheriff":new Role(
         "Sheriff", "Target a player to find out if they're innocent or suspicious",
-        "Town", "Investigative", null,
+        "Town", "Investigative", null, Infinity,
         0, true, true, false, 
         {},
         (priority, player)=>{
-            
+            if(priority !== 4) return;
+            if(player.role.cycle.targeting.length < 1) return;
+            if(!player.role.cycle.aliveNow) return;
+
+            player.role.cycle.nightInformation.push(new ChatMessageState(
+                null,
+                "Your target seems to be " + (player.role.cycle.targeting[0].role.cycle.isSuspicious ? "suspicious." : "innocent."),
+                GameManager.COLOR.GAME_TO_YOU
+            ));
         }
     ),
     "Doctor":new Role(
         "Doctor", "Target a player to save them from an attack, you can save yourself once",
-        "Town", "Protective", null,
+        "Town", "Protective", null, 0,
         0, true, true, false,
         {selfHealed : false},
         ()=>{
@@ -87,7 +101,7 @@ export const ROLES = {
             return (
                 otherPlayer.role.persist.alive && //theyre alive
                 myPlayer.role.persist.alive && //im alive
-                
+                myPlayer.role.cycle.targeting.length < 1 && //im targeting nobody already
                 (
                     (myPlayer.name===otherPlayer.name && !myPlayer.role.persist.extra.selfHealed) || //self healing
                     myPlayer.name!==otherPlayer.name //healing someone else
@@ -97,61 +111,156 @@ export const ROLES = {
     ),
     "Escort":new Role(
         "Escort", "Target a player to roleblock them, they cannot use their role for that night", 
-        "Town", "Support", null,
+        "Town", "Support", null, 0,
         0, false, true, false, 
         {},
         (priority, player)=>{
-//Hi sammy this is Bea again. That's all bye!
         }
     ),
     "Mafioso":new Role(
         "Mafioso", "Target a player to kill them, the godfathers choice could override yours",
-        "Mafia", "Killing", "Mafia",
+        "Mafia", "Killing", "Mafia", 1,
         0, true, true, true,
         {},
         (priority, player)=>{
-            
+            if(priority !== 6) return;
+            if(player.role.cycle.targeting.length < 1) return;
+            if(!player.role.cycle.aliveNow) return;
+
+            player.role.cycle.targeting[0].tryNightKill(player, 1);
         }
     ),
 }
 
-export function getRandomFaction(){
-    //get all factions
+/*
+Priority
+Everyones target is set first
+
+-12: Veteran(Decides Alert) Vigilante(Suicide) Jester(Kill) 
+-10: Transporter(Swaps)
+-8: Witch(Swaps)
+-6: Escort / Consort(Roleblock)
+-4 Godfather(Swap mafioso target and clear self)
+-2 bodyguard(swap)
+0: visits happen here
++2: Doctor(Heal), Blackmailer(Decide), Crusader(Heal), Arsonist(Douse), Framer, Disguiser
++4: Sheriff, Invest, Consig, Lookout, Tracker,
++6: Mafioso/Godfather, SerialKiller, Werewolf, Veteran, Vampire, Arsonist, Crusader, Bodyguard, Vigilante (All kill)
++8: Spy(Collect info) Amnesiac(Convert) Vampire(Convert) Forger(Change info), Janitor(Clean)
++10 Witch(Steal info)
+
+--------
+investigator idea
+
+Lets say rolelist is
+TI
+TI
+TS
+TP
+TK
+GF
+MAFIOSO
+MR
+MR
+NK
+NE
+
+Randomly generates investigative results before the start of each match. Wiki tab will show what all the options are
+
+Town Town Neutral Mafia Coven
+*/
+
+export function getRandomFaction(alreadyPickedRolesList){
+    //get all factions and pick random one
+    let a = getFactionList(alreadyPickedRolesList);
+    return a[
+        Math.floor(a.length*Math.random())
+    ];
+}
+export function getRandomAlignment(faction, alreadyPickedRolesList){
+
+    if(faction==="Random") faction = getRandomFaction(alreadyPickedRolesList);
+
+    let a = getAlignmentList(faction, alreadyPickedRolesList);
+    return a[
+        Math.floor(a.length*Math.random())
+    ];
+}
+export function getRandomRole(faction, alignment, alreadyPickedRolesList){
+
+    if(faction==="Random") faction = getRandomFaction(alreadyPickedRolesList);
+    if(alignment==="Random") alignment = getRandomAlignment(faction, alreadyPickedRolesList);
+
+    let a = getRoleList(faction, alignment, alreadyPickedRolesList)
+    return a[
+        Math.floor(a.length*Math.random())
+    ];
+}
+
+export function getFactionList(alreadyPickedRolesList){
     let allFactions = [];
-    for(let key in ROLES){
-        let r = ROLES[key];
-        if(!allFactions.includes(r.faction)) allFactions.push(r.faction);
+    for(let roleName in ROLES){
+        let r = ROLES[roleName];
+
+        //how many of this role is already picked
+        let alreadyPickedCount = 0;
+        for(let i in alreadyPickedRolesList){
+            if(roleName === alreadyPickedRolesList[i]){
+                alreadyPickedCount++;
+            }
+        }
+
+        if(
+            !allFactions.includes(r.faction) &&
+            alreadyPickedCount < r.maximumCount
+        ) 
+        allFactions.push(r.faction);
     }
-    return allFactions[
-        Math.floor(allFactions.length*Math.random())
-    ];
+    return allFactions;
 }
-export function getRandomAlignment(faction){
-
-    if(faction==="Random") faction = getRandomFaction();
-
+export function getAlignmentList(faction, alreadyPickedRolesList){
     let allAlignments = [];
-    for(let key in ROLES){
-        let r = ROLES[key];
-        if(!allAlignments.includes(r.alignment) && r.faction===faction) allAlignments.push(r.alignment);
+    for(let roleName in ROLES){
+        let r = ROLES[roleName];
+
+        //how many of this role is already picked
+        let alreadyPickedCount = 0;
+        for(let i in alreadyPickedRolesList){
+            if(roleName === alreadyPickedRolesList[i]){
+                alreadyPickedCount++;
+            }
+        }
+
+        if(
+            !allAlignments.includes(r.alignment) && 
+            alreadyPickedCount < r.maximumCount &&
+            r.faction===faction
+        ) 
+        allAlignments.push(r.alignment);
     }
-    return allAlignments[
-        Math.floor(allAlignments.length*Math.random())
-    ];
+    return allAlignments;
 }
-export function getRandomRole(faction, alignment){
-
-    if(faction==="Random") faction = getRandomFaction();
-    if(alignment==="Random") alignment = getRandomAlignment(faction);
-
+export function getRoleList(faction, alignment, alreadyPickedRolesList){
     let allRoles = [];
-    for(let key in ROLES){
-        let r = ROLES[key];
-        if(!allRoles.includes(r.name) && r.faction === faction && r.alignment === alignment) allRoles.push(r.name);
+    for(let roleName in ROLES){
+        let r = ROLES[roleName];
+
+        //how many of this role is already picked
+        let alreadyPickedCount = 0;
+        for(let i in alreadyPickedRolesList){
+            if(roleName === alreadyPickedRolesList[i]){
+                alreadyPickedCount++;
+            }
+        }
+
+        if(
+            !allRoles.includes(r.name) && 
+            alreadyPickedCount < r.maximumCount &&
+            r.faction === faction && r.alignment === alignment
+        ) 
+        allRoles.push(r.name);
     }
-    return allRoles[
-        Math.floor(allRoles.length*Math.random())
-    ];
+    return allRoles;
 }
 // export const ROLES = {
 //     Sheriff: {
@@ -357,3 +466,4 @@ export function getRandomRole(faction, alignment){
 //         }
 //     }
 // }
+

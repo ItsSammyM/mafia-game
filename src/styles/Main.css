@@ -28,7 +28,7 @@
     font-size: calc(20px + 2vmin);
     -webkit-text-stroke: 1px rgb(0, 0, 0);
     font-weight: 500;
-    color: rgb(143, 143, 143);
+    color: rgb(173, 173, 173);
     /* align-items: center;
     justify-content: center; */
 }
@@ -41,11 +41,3 @@
     /* align-items: center;
     justify-content: center; */
 }
-/* .Main-box-notif {
-    color: #000000;
-    background-color: #fae457;
-    font-size: calc(12px + 2vmin);
-    width: 90%;
-    border: 5px solid black;
-} 
-*/

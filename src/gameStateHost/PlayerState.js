@@ -1,4 +1,6 @@
+import GameManager from "../game/GameManager";
 import { ROLES } from "../game/ROLES";
+import { ChatMessageState } from "./ChatMessageState";
 
 export class PlayerState{
     constructor(name){
@@ -19,12 +21,45 @@ export class PlayerState{
     createPlayerRole(exact){
         this.role = new PlayerRole(exact);
     }
+    doMyRole(priority){
+        if(!this.role) return;
+        this.role.doMyRole(priority, this);
+    }
+    /**
+     * Adds new player to end of targeting list only if role allows
+     * if canTargetFunction returns true then push to list
+     * @param {PlayerState} otherPlayer 
+     * @returns Null
+     */
     addTarget(otherPlayer){
         if(!this.role.getRoleObject().canTargetFunction(this, otherPlayer)) return;
         this.role.cycle.targeting.push(otherPlayer);
     }
+    /**
+     * Makes it so the player is targeting nobody
+     * sets targeting to = []
+     * returns true if there were people targeted in the first place
+     */
     clearTarget(){
         this.role.cycle.targeting = [];
+    }
+    /**
+     * returns true if at least 1 person is being targeted
+     */
+    isTargetingSomeone(){
+        return this.role.cycle.targeting.length > 0;
+    }
+    tryNightKill(attacker, attackPower){
+        if(this.role.cycle.defense >= attackPower){
+            //safe
+            attacker.role.cycle.nightInformation.push(new ChatMessageState(null, "Your target had defense and survived.", GameManager.COLOR.GAME_TO_YOU));
+            this.role.cycle.nightInformation.push(new ChatMessageState(null, "You were attacked but had defense and survived.", GameManager.COLOR.GAME_TO_YOU));
+        }else{
+            //die
+            this.role.cycle.nightInformation.push(new ChatMessageState(null, "You were attacked and died.", GameManager.COLOR.GAME_TO_YOU));
+            this.role.persist.alive = false;
+        }
+        
     }
 }
 export class PlayerRole{
@@ -35,11 +70,12 @@ export class PlayerRole{
     getRoleObject(){
         return ROLES[this.persist.roleName];
     }
-    doMyRole(priority){
+    doMyRole(priority, player){
 
-        if(priority === null || this.cycle.roleblocked) return;
+        if(priority === null) return;
+        if(this.cycle.roleblocked && this.getRoleObject().roleblockable) return; //if your roleblocked
         
-        this.getRoleObject().doRole(priority, this);
+        this.getRoleObject().doRole(priority, player);
     }
     setPersist(roleName){
         this.persist = {
@@ -50,6 +86,7 @@ export class PlayerRole{
                 // framed : false,
                 // revealed : false,
                 // selfHealed : false,
+                // diedOnCycle : 2
             }
         };
         //copy extra persist over from role
@@ -57,7 +94,9 @@ export class PlayerRole{
             this.persist.extra[key] = ROLES[roleName].extraPersist[key];
         }
     }
-    //runs right after night
+    /**
+     * runs at morning end
+     */
     setCycle(){
         this.cycle = {
             votedBy: [],
@@ -66,18 +105,21 @@ export class PlayerRole{
             targetedBy : [],
             targeting : [],
 
-            roleBlocked : false,
+            roleblocked : false,
             aliveNow : this.persist.alive,
 
             defense : ROLES[this.persist.roleName].defense,
             isSuspicious : ROLES[this.persist.roleName].isSuspicious,
 
+            nightInformation : [],
+
             extra : {
                 //idk this is for weird stuff exclusively
-                //healedByDoc
-                //savedByBodyguard
-                //
-            }
+                //healedByDoc : false,
+                //savedByBodyguard : false,
+                //killedTonight : false
+            },
+            
         }
     }
 }

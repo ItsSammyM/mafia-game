@@ -6,5 +6,6 @@ export class PlayerStateClient{
             whisper: false,
             vote: false,
         };
+        this.votedForNumber = 0;
     }
 }

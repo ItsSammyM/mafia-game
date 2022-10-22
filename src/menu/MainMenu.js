@@ -13,12 +13,24 @@ export class MainMenu extends React.Component {
             players: [],
             header : "Mafia",
             availableButtons : {},
+            phaseName : "",
+
+            targetedPlayerNames : [],
 
             START_PHASE_LISTENER : {
                 listener : (c)=>{
                     this.setState({
-                        header : GameManager.client.phase,
+                        header : GameManager.client.phaseName + " " + GameManager.client.cycleNumber,
                         availableButtons : GameManager.client.availableButtons,
+                        phaseName : GameManager.client.phaseName
+                    });
+                }
+            },
+            BUTTON_TARGET_RESPONE_LISTENER : {
+                listener : (c)=>{
+                    this.setState({
+                        availableButtons : GameManager.client.availableButtons,
+                        targetedPlayerNames : GameManager.client.cycle.targetedPlayerNames,
                     });
                 }
             }
@@ -27,15 +39,18 @@ export class MainMenu extends React.Component {
     componentDidMount() {
         this.setState({
             players : GameManager.client.players,
-            header : GameManager.client.phase, 
         });
+        this.state.START_PHASE_LISTENER.listener(null)
         GameManager.HOST_TO_CLIENT["START_PHASE"].addReceiveListener(this.state.START_PHASE_LISTENER);
+        GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONSE"].addReceiveListener(this.state.BUTTON_TARGET_RESPONE_LISTENER);
+        GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].addReceiveListener(this.state.BUTTON_TARGET_RESPONE_LISTENER);
     }
     componentWillUnmount() {
         GameManager.HOST_TO_CLIENT["START_PHASE"].removeReceiveListener(this.state.START_PHASE_LISTENER);
+        GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONSE"].removeReceiveListener(this.state.BUTTON_TARGET_RESPONE_LISTENER);
+        GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].removeReceiveListener(this.state.BUTTON_TARGET_RESPONE_LISTENER);
     }
     renderPlayers(){
-
         let out = []
         for(let playerName in this.state.players){
             out.push(<div key={playerName}>
@@ -61,14 +76,33 @@ export class MainMenu extends React.Component {
 
         return(out);
     }
+    renderPhase(phaseName){
+        switch(phaseName){
+            case "Night":
+                return(<div>
+                    
+                    {(()=>{if(this.state.targetedPlayerNames.length > 0) return <div>
+                        
+                        My Targets: <br/>
+                        {this.state.targetedPlayerNames.map((p, i)=><div key={i}>{p}</div>)}<br/>
+                        <Button text="Clear Targets" onClick={()=>{GameManager.client.clickClearTarget()}}/><br/>
+                    </div>})()} 
+                    
+                </div>);
+            default:
+                return;
+        }
+    }
     render() {return (<div>
         <div className="Main-header">
             {this.state.header}<br/>
         </div><br/>
+
         <div className="Main-body">
             {GameManager.client.playerName}<br/>
             <Button text="Infomation" onClick={()=>{Main.instance.changeMenu(<InformationMenu/>)}}/><br/>
             <br/>
+            {this.renderPhase(this.state.phaseName)}
             <br/>
             {this.renderPlayers()}<br/>
         </div>

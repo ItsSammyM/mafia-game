@@ -15,20 +15,34 @@ export class InformationMenu extends React.Component {
         };
     }
     componentDidMount() {
-        this.setState({messages : GameManager.client.information})
+        this.setState({messages : GameManager.client.information});
+        this.scrollToBottom();
     }
     componentWillUnmount() {
-        //messages[i].title
-        //messages[i].text
-        //messages[i].color
+
     }
+    componentDidUpdate() {
+        //if(this.bottomIsInViewport(500))
+            this.scrollToBottom();
+    }
+    scrollToBottom() {
+        this.buttomOfPage.scrollIntoView({ behavior: "smooth" });
+    }
+    bottomIsInViewport(offset = 0) {
+        if (!this.buttomOfPage) return false;
+        const top = this.buttomOfPage.getBoundingClientRect().top;
+        return (top + offset) >= 0 && (top - offset) <= window.innerHeight;
+    }
+    renderFixed(){return<div style={{position: "fixed", bottom: 10, width: "100%"}}>
+        <Button text="Back" onClick={()=>{Main.instance.changeMenu(<MainMenu/>)}}/><br/>
+    </div>}
     render() {return (<div>
         <div className="Main-header">
             Information<br/>
         </div><br/>
 
         <div className="Main-body">
-            <Button text="Back" onClick={()=>{Main.instance.changeMenu(<MainMenu/>)}}/><br/>
+            
             <br/>
             {
                 this.state.messages.map(
@@ -39,7 +53,7 @@ export class InformationMenu extends React.Component {
                             color = {e.color}
                             text={(()=>{return(
                                 <div>
-                                    {"<"+e.title+">"}<br/>
+                                    {(() => {if(e.title) return (<div>{"<"+e.title+">"}<br/></div>)})()}
                                     {e.text}<br/>
                                 </div>
                             )})()}
@@ -47,6 +61,13 @@ export class InformationMenu extends React.Component {
                     )}
                 )
             }
+            {this.renderFixed()}
+            
         </div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br ref={(el) => { this.buttomOfPage = el; }}/>
     </div>);}
 }
