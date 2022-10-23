@@ -200,6 +200,10 @@ let GameManager = {
             targetedPlayerNames : [],
             votedForName : "",
         },
+        setCycle(){GameManager.client.cycle = {
+            targetedPlayerNames : [],
+            votedForName : "",
+        }},
         
 
         clickTarget : function(name){
@@ -406,13 +410,9 @@ let GameManager = {
                 informationList : informationList,
             })},
             (contents)=>{
-                console.log("SUSSY");
-                GameManager.client.targetingList = [];
-                GameManager.client.votingList = [];
-                GameManager.client.judgement = 0;
-
                 GameManager.client.phaseName = contents.phaseName;
                 GameManager.client.cycleNumber = contents.cycleNumber;
+                GameManager.client.setCycle();
 
                 if(contents.informationList){
                     for(let i = 0; i < contents.informationList.length; i++){
@@ -437,8 +437,6 @@ let GameManager = {
                         }
                     }
                 }
-                
-                console.log("BAKA");
             }
         ),
         "BUTTON_TARGET_RESPONSE":new MessageType(true,

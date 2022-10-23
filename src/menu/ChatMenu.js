@@ -1,7 +1,6 @@
 import React from "react";
 import { Button } from "../menuComponents/Button";
 // import { TextInput } from "../components/TextInput";
-import GameManager from "../game/GameManager";
 import { MainMenu } from "./MainMenu";
 import { Main } from "../Main";
 import "../styles/Main.css"

@@ -95,9 +95,9 @@ const PHASES = {
                 }
             }
             //reset loop after
-            for(let playerName in GameManager.host.players){
-                let player = GameManager.host.players[playerName];
-            }
+            // for(let playerName in GameManager.host.players){
+            //     let player = GameManager.host.players[playerName];
+            // }
 
             PhaseStateMachine.startPhase("Morning");
         }
