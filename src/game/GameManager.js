@@ -501,7 +501,7 @@ let GameManager = {
             (contents)=>{
                 //create message saying someone was voted for in chat
 
-                GameManager.client.informationChat.addMessage(new ChatMessageStateClient("Vote", contents.playerName+" voted for "+contents.playerVotedName, GameManager.COLOR.GAME_TO_YOU));
+                GameManager.client.informationChat.addMessage(new ChatMessageStateClient("Vote", contents.playerName+" voted for "+contents.playerVotedName, GameManager.COLOR.CHAT));
 
                 if(contents.playerName !== GameManager.client.playerName)
                     return;
@@ -517,7 +517,7 @@ let GameManager = {
             (contents)=>{
                 //create message saying someone was voted for in chat
 
-                GameManager.client.informationChat.addMessage(new ChatMessageStateClient("Clear Votes", contents.playerName+" stopped voting for "+contents.currentPlayerVotedName, GameManager.COLOR.GAME_TO_YOU));
+                GameManager.client.informationChat.addMessage(new ChatMessageStateClient("Clear Votes", contents.playerName+" stopped voting for "+contents.currentPlayerVotedName, GameManager.COLOR.CHAT));
 
                 if(contents.playerName !== GameManager.client.playerName)
                     return;

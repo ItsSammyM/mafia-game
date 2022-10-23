@@ -1,0 +1,10 @@
+show room code
+
+name character limit
+message character limit
+
+stop players from spamming buttons
+
+voting while dead
+clear vote even though you voted nobody
+cant vote for someone 2x

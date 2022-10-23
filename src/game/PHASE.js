@@ -199,7 +199,7 @@ const PHASES = {
             let playerIndividualMessage = {};
             let informationListMessage = [];
 
-            informationListMessage.push(new ChatMessageState("Voting "+GameManager.host.cycleNumber, "Vote for a player to put them on trail. You need at least "+GameManager.host.cycle.numVotesNeeded+" votes to trial someone.", GameManager.COLOR.GAME_TO_ALL));
+            informationListMessage.push(new ChatMessageState("Voting "+GameManager.host.cycleNumber, "Vote for a player to put them on trial. You need at least "+GameManager.host.cycle.numVotesNeeded+" votes to trial someone.", GameManager.COLOR.GAME_TO_ALL));
 
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
