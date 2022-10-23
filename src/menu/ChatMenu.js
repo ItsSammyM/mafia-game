@@ -6,20 +6,33 @@ import { MainMenu } from "./MainMenu";
 import { Main } from "../Main";
 import "../styles/Main.css"
 
-export class InformationMenu extends React.Component {
+export class ChatMenu extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            messages: []
+            title : props.chatState.title,
+            messages: props.chatState.allMessages,
+
+            chatState : props.chatState,
+
+            UPDATE_LISTENER : {
+                listener : () => {
+                    this.setState({
+                        messages : this.state.chatState.allMessages
+                    });
+                }
+            }
         };
     }
     componentDidMount() {
-        this.setState({messages : GameManager.client.information});
+        this.setState({messages : this.state.chatState.allMessages});
         this.scrollToBottom();
+
+        this.state.chatState.addUpdateListener(this.state.UPDATE_LISTENER);
     }
     componentWillUnmount() {
-
+        this.state.chatState.removeUpdateListener(this.state.UPDATE_LISTENER);
     }
     componentDidUpdate() {
         //if(this.bottomIsInViewport(500))
@@ -34,11 +47,14 @@ export class InformationMenu extends React.Component {
         return (top + offset) >= 0 && (top - offset) <= window.innerHeight;
     }
     renderFixed(){return<div style={{position: "fixed", bottom: 10, width: "100%"}}>
-        <Button text="Back" onClick={()=>{Main.instance.changeMenu(<MainMenu/>)}}/><br/>
+        <Button text="Back" onClick={()=>{
+            Main.instance.changeMenu(<MainMenu/>);
+            this.state.chatState.checkChat();
+        }}/><br/>
     </div>}
     render() {return (<div>
         <div className="Main-header">
-            Information<br/>
+            {this.state.title}<br/>
         </div><br/>
 
         <div className="Main-body">
@@ -47,7 +63,7 @@ export class InformationMenu extends React.Component {
             {
                 this.state.messages.map(
                     (e, i)=>{return (
-                        <Button 
+                        <Button
                             key={i} 
                             className="Main-box" 
                             color = {e.color}

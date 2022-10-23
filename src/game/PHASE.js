@@ -32,7 +32,9 @@ const PHASES = {
         ()=>{
             let playerIndividualMessage = {};
             let informationListMessage = [];
-            
+
+            informationListMessage.push(new ChatMessageState("Night "+GameManager.host.cycleNumber, "Do not speak, Target someone to use your ability on them.", GameManager.COLOR.GAME_TO_ALL));
+
             //give players target buttons
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
@@ -51,13 +53,14 @@ const PHASES = {
                     player.availableButtons[otherPlayerName].vote = false;
                     player.availableButtons[otherPlayerName].whisper = false;
 
-                    //console.log(player.availableButtons[otherPlayerName].target)
                     //console.log(!player.role.getRoleObject().canTargetFunction.(player, otherPlayer))
                 }
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
-                
+                player.informationChat.addMessages(playerIndividualMessage[playerName].informationList);
+                player.informationChat.addMessages(informationListMessage);
             }
-            informationListMessage.push(new ChatMessageState("Night "+GameManager.host.cycleNumber, "Do not speak, Target someone to use your ability on them.", GameManager.COLOR.GAME_TO_ALL));
+            
+            
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
                 "Night", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
             );
@@ -103,7 +106,8 @@ const PHASES = {
         ()=>{
             let playerIndividualMessage = {};
             let informationListMessage = [];
-            
+
+            informationListMessage.push(new ChatMessageState("Morning "+GameManager.host.cycleNumber, "Do not speak, collect information.", GameManager.COLOR.GAME_TO_ALL));
             
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
@@ -126,10 +130,12 @@ const PHASES = {
                 }
                 
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
+
+                player.informationChat.addMessages(playerIndividualMessage[playerName].informationList);
+                player.informationChat.addMessages(informationListMessage);
             }
             
-            informationListMessage.push(new ChatMessageState("Morning "+GameManager.host.cycleNumber, "Do not speak, collect information.", GameManager.COLOR.GAME_TO_ALL));
-
+            
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
                 "Morning", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
             );
@@ -151,6 +157,8 @@ const PHASES = {
             let playerIndividualMessage = {};
             let informationListMessage = [];
 
+            informationListMessage.push(new ChatMessageState("Discussion "+GameManager.host.cycleNumber, "Talk about what you know and convince people to do what you want.", GameManager.COLOR.GAME_TO_ALL));
+
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
@@ -168,10 +176,12 @@ const PHASES = {
                 }
                 
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
+
+                player.informationChat.addMessages(playerIndividualMessage[playerName].informationList);
+                player.informationChat.addMessages(informationListMessage);
             }
 
-            informationListMessage.push(new ChatMessageState("Discussion "+GameManager.host.cycleNumber, "Talk about what you know and convince people to do what you want.", GameManager.COLOR.GAME_TO_ALL));
-
+            
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
                 "Discussion", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
             );
@@ -186,11 +196,10 @@ const PHASES = {
     ),
     "Voting":new Phase(10,
         ()=>{
-
-            let numVotesNeeded = Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.alive}).length / 2) + 1;
-
             let playerIndividualMessage = {};
             let informationListMessage = [];
+
+            informationListMessage.push(new ChatMessageState("Voting "+GameManager.host.cycleNumber, "Vote for a player to put them on trail. You need at least "+GameManager.host.cycle.numVotesNeeded+" votes to trial someone.", GameManager.COLOR.GAME_TO_ALL));
 
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
@@ -201,17 +210,23 @@ const PHASES = {
                 }
 
                 for(let otherPlayerName in GameManager.host.players){
-                    //let otherPlayer = GameManager.host.players[otherPlayerName];
+                    let otherPlayer = GameManager.host.players[otherPlayerName];
 
                     player.availableButtons[otherPlayerName].target = false;
-                    if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].vote = true;
+                    if(
+                        playerName !== otherPlayerName &&
+                        player.role.persist.alive &&
+                        otherPlayer.role.persist.alive
+                    )
+                        player.availableButtons[otherPlayerName].vote = true;
                     //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
                 }
                 
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
-            }
 
-            informationListMessage.push(new ChatMessageState("Voting "+GameManager.host.cycleNumber, "Vote for a player to put them on trail. You need at least "+numVotesNeeded+" votes to trial someone.", GameManager.COLOR.GAME_TO_ALL));
+                player.informationChat.addMessages(playerIndividualMessage[playerName].informationList);
+                player.informationChat.addMessages(informationListMessage);
+            }
 
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
                 "Voting", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage

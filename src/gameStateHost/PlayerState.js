@@ -1,10 +1,12 @@
 import GameManager from "../game/GameManager";
 import { ROLES } from "../game/ROLES";
 import { ChatMessageState } from "./ChatMessageState";
+import { ChatState } from "./ChatState";
 
 export class PlayerState{
     constructor(name){
         this.name = name;
+        this.informationChat = new ChatState("Information");
         this.availableButtons = {};
         /*
             {

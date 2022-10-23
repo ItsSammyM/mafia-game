@@ -1,8 +1,8 @@
 import React from "react";
 import { Button } from "../menuComponents/Button";
-import { InformationMenu } from "./InformationMenu";
 import GameManager from "../game/GameManager";
 import { Main } from "../Main";
+import { ChatMenu } from "./ChatMenu";
 import "../styles/Main.css"
 
 export class MainMenu extends React.Component {
@@ -10,27 +10,33 @@ export class MainMenu extends React.Component {
         super(props);
 
         this.state = {
-            players: [],
+            players: {},
             header : "Mafia",
-            availableButtons : {},
             phaseName : "",
 
             targetedPlayerNames : [],
+            votedForName : "",
 
             START_PHASE_LISTENER : {
                 listener : (c)=>{
                     this.setState({
                         header : GameManager.client.phaseName + " " + GameManager.client.cycleNumber,
-                        availableButtons : GameManager.client.availableButtons,
+                        players : GameManager.client.players,
                         phaseName : GameManager.client.phaseName
                     });
                 }
             },
-            BUTTON_TARGET_RESPONE_LISTENER : {
+            BUTTON_TARGET_RESPONSE_LISTENER : {
                 listener : (c)=>{
                     this.setState({
-                        availableButtons : GameManager.client.availableButtons,
                         targetedPlayerNames : GameManager.client.cycle.targetedPlayerNames,
+                    });
+                }
+            },
+            BUTTON_VOTE_RESPONSE_LISTENER : {
+                listener : (c)=>{
+                    this.setState({
+                        votingPlayerName : GameManager.client.cycle.votedForName,
                     });
                 }
             }
@@ -40,15 +46,24 @@ export class MainMenu extends React.Component {
         this.setState({
             players : GameManager.client.players,
         });
-        this.state.START_PHASE_LISTENER.listener(null)
+        this.state.START_PHASE_LISTENER.listener(null);
+
         GameManager.HOST_TO_CLIENT["START_PHASE"].addReceiveListener(this.state.START_PHASE_LISTENER);
-        GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONSE"].addReceiveListener(this.state.BUTTON_TARGET_RESPONE_LISTENER);
-        GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].addReceiveListener(this.state.BUTTON_TARGET_RESPONE_LISTENER);
+
+        GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONSE"].addReceiveListener(this.state.BUTTON_TARGET_RESPONSE_LISTENER);
+        GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].addReceiveListener(this.state.BUTTON_TARGET_RESPONSE_LISTENER);
+
+        GameManager.HOST_TO_CLIENT["BUTTON_VOTE_RESPONSE"].addReceiveListener(this.state.BUTTON_VOTE_RESPONSE_LISTENER);
+        GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].addReceiveListener(this.state.BUTTON_VOTE_RESPONSE_LISTENER);
     }
     componentWillUnmount() {
         GameManager.HOST_TO_CLIENT["START_PHASE"].removeReceiveListener(this.state.START_PHASE_LISTENER);
-        GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONSE"].removeReceiveListener(this.state.BUTTON_TARGET_RESPONE_LISTENER);
-        GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].removeReceiveListener(this.state.BUTTON_TARGET_RESPONE_LISTENER);
+
+        GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONSE"].removeReceiveListener(this.state.BUTTON_TARGET_RESPONSE_LISTENER);
+        GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].removeReceiveListener(this.state.BUTTON_TARGET_RESPONSE_LISTENER);
+
+        GameManager.HOST_TO_CLIENT["BUTTON_VOTE_RESPONSE"].removeReceiveListener(this.state.BUTTON_VOTE_RESPONSE_LISTENER);
+        GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].removeReceiveListener(this.state.BUTTON_VOTE_RESPONSE_LISTENER);
     }
     renderPlayers(){
         let out = []
@@ -89,6 +104,13 @@ export class MainMenu extends React.Component {
                     </div>})()} 
                     
                 </div>);
+            case "Voting":
+                return(<div>
+                    
+                    My Vote: {this.state.votingPlayerName}<br/>
+                    <Button text="Clear Vote" onClick={()=>{GameManager.client.clickClearVote()}}/><br/>
+                    
+                </div>);
             default:
                 return;
         }
@@ -100,7 +122,7 @@ export class MainMenu extends React.Component {
 
         <div className="Main-body">
             {GameManager.client.playerName}<br/>
-            <Button text="Infomation" onClick={()=>{Main.instance.changeMenu(<InformationMenu/>)}}/><br/>
+            <Button text="Infomation" onClick={()=>{Main.instance.changeMenu(<ChatMenu chatState={GameManager.client.informationChat}/>)}} color={GameManager.client.informationChat.notification ? GameManager.COLOR.IMPORTANT : null}/><br/>
             <br/>
             {this.renderPhase(this.state.phaseName)}
             <br/>
