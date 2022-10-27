@@ -1,6 +1,3 @@
-show room code
-
-name character limit
 message character limit
 
 stop players from spamming buttons
@@ -12,14 +9,15 @@ cant vote for someone 2x
 https://emojipedia.org/search/?q=lips
 give all roles emojis
 
-Consort 💄
-Janitor 🧹
-Escort 💋
 Mafioso 🌹
 
 Blackmailer 🪡 ✉️
+Consort 💄
+Janitor 🧹
+
 
 Transporter 🐎
+Escort 💋
 
 Tracker 👣
 Lookout 🔭
@@ -32,5 +30,6 @@ Crusader 🛡️
 
 Veteran 🎖️
 vigilante 🔫
+
 
 Witch 🧙‍♀️

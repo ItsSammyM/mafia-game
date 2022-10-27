@@ -102,7 +102,7 @@ export class PlayerRole{
     setCycle(){
         this.cycle = {
             votedBy: [],
-            voting: "",
+            voting: null,
 
             targetedBy : [],
             targeting : [],

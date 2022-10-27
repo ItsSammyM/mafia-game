@@ -54,11 +54,13 @@ let GameManager = {
 
     COLOR : {
         IMPORTANT : "#cbcb00",  //#fae457
-        GAME_TO_YOU : "#007800",
-        GAME_TO_ALL : "#005000",
-        CHAT : "#000078",
-        MY_CHAT : "#0000a0",
+        GAME_TO_YOU : "#007800",    //light green
+        GAME_TO_ALL : "#005000",    //dark green
+        CHAT : "#0000c8",   //dark blue
+        MY_CHAT : "#0000c0",    //light blue
     },
+    MAX_NAME_LENGTH : 20,
+    MAX_MESSAGE_LENGTH : 100,
 
     pubNub : new PubNubWrapper(),
     tick : function(){
@@ -113,7 +115,7 @@ let GameManager = {
             let roleList = [
             //  [faction, alignment, exact]
                 [null, null, "Mafioso"],
-                [null, null, "Sheriff"],
+                ["Town", "Investigative", null],
             ];
             shuffleList(roleList);
 
@@ -142,6 +144,7 @@ let GameManager = {
 
                 playerIndividual[playerName] = {
                     informationList : [new ChatMessageState(player.role.persist.roleName, player.role.getRoleObject().basicDescription, GameManager.COLOR.GAME_TO_YOU)],
+                    roleName : player.role.persist.roleName,
                 };
                 player.informationChat.addMessages(
                     playerIndividual[playerName].informationList
@@ -187,6 +190,8 @@ let GameManager = {
     },
     client : {
         roomCode : "",
+
+        roleName: "",
         playerName : "",
 
         phaseName: "",
@@ -249,17 +254,31 @@ let GameManager = {
                 playerName: playerName
             })},
             (contents)=>{
+                
+                contents.playerName = contents.playerName.substring(0, GameManager.MAX_NAME_LENGTH);
+
+                let alreadyJoined = false;
+                for(let playerName in GameManager.host.players){
+                    if(playerName === contents.playerName)
+                        alreadyJoined = true;
+                        break;
+                }
+
                 if(!GameManager.host.gameStarted){
-                    let alreadyJoined = false;
-                    for(let playerName in GameManager.host.players){
-                        if(playerName === contents.playerName)
-                            alreadyJoined = true;
-                            break;
-                    }
                     if(!alreadyJoined)GameManager.host.players[contents.playerName] = (new PlayerState(contents.playerName));
                     GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, true);
+                }else{
+
+                    // LATE JOINING IMPLEment LAteR
+                    // if(alreadyJoined){
+                    //     GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, true, true);
+                    // }else{
+                    //     GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, false);
+                    // }
+                     
                 }
-                GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, false);
+
+                
                 
             }
         ),
@@ -337,6 +356,7 @@ let GameManager = {
             (contents)=>{
                 if(PhaseStateMachine.currentPhase !== "Voting") return;
                 let player = GameManager.host.players[contents.playerName];
+                if(player.voting == null)
                 
                 GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].send(contents.playerName, player.role.cycle.voting);
                 player.role.cycle.voting = "";
@@ -345,14 +365,20 @@ let GameManager = {
     },
     HOST_TO_CLIENT:{
         "ASK_JOIN_RESPONSE":new MessageType(true, 
-            (playerName, success)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"], {
+            (playerName, success, sendToMain=false)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"], {
                 playerName: playerName,
-                success: success
+                success: success,
+                sendToMain : sendToMain,
             })},
             (contents)=>{
                 if(GameManager.host.isHost) return;
                 if(contents.success){
-                    Main.instance.changeMenu(<WaitJoinMenu/>);
+
+                    if(contents.sendToMain){
+                        Main.instance.changeMenu(<MainMenu/>);
+                    }else{
+                        Main.instance.changeMenu(<WaitJoinMenu/>);
+                    }
                 }
             }
         ),
@@ -387,6 +413,7 @@ let GameManager = {
                             player.informationList[i].title, player.informationList[i].text, player.informationList[i].color
                         ));
                     }
+                    GameManager.client.roleName = player.roleName;
                 }
                 Main.instance.changeMenu(<MainMenu/>);
             }

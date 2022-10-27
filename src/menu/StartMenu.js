@@ -41,7 +41,7 @@ export class StartMenu extends React.Component {
         <div className="Main-body">
             {this.state.nameInput}{(()=>{if(this.state.nameInput) return(<br/>);})()}
             Name<br/>
-            <TextInput onEnter={()=>{this.joinButton()}} onChange={(e) => this.setState({nameInput: e.target.value})}/><br/>
+            <TextInput onEnter={()=>{this.joinButton()}} onChange={(e) => this.setState({nameInput: e.target.value.substring(0,GameManager.MAX_NAME_LENGTH)})}/><br/>
             <br/>
             <Button text="Join" onClick={()=>{
                 this.joinButton();

@@ -16,7 +16,7 @@ class Role{
      */
     constructor(
 
-        _name, _basicDescription, 
+        _name, _basicDescription, _emoji,
         _faction, _alignment, _team, _maximumCount,
         _defense, _roleblockable, _witchable, _isSuspicious, 
         _extraPersist, 
@@ -25,6 +25,7 @@ class Role{
     
         ){
         this.name = _name;
+        this.emoji = _emoji;
         this.basicDescription = _basicDescription;
 
         this.faction = _faction;
@@ -72,7 +73,7 @@ export const TEAMS = {
 };
 export const ROLES = {
     "Sheriff":new Role(
-        "Sheriff", "Target a player to find out if they're innocent or suspicious",
+        "Sheriff", "Target a player to find out if they're innocent or suspicious", "🕵️",
         "Town", "Investigative", null, Infinity,
         0, true, true, false, 
         {},
@@ -89,7 +90,7 @@ export const ROLES = {
         }
     ),
     "Doctor":new Role(
-        "Doctor", "Target a player to save them from an attack, you can save yourself once",
+        "Doctor", "Target a player to save them from an attack, you can save yourself once", "💉",
         "Town", "Protective", null, 0,
         0, true, true, false,
         {selfHealed : false},
@@ -110,7 +111,7 @@ export const ROLES = {
         }
     ),
     "Escort":new Role(
-        "Escort", "Target a player to roleblock them, they cannot use their role for that night", 
+        "Escort", "Target a player to roleblock them, they cannot use their role for that night", "💋",
         "Town", "Support", null, 0,
         0, false, true, false, 
         {},
@@ -118,7 +119,7 @@ export const ROLES = {
         }
     ),
     "Mafioso":new Role(
-        "Mafioso", "Target a player to kill them, the godfathers choice could override yours",
+        "Mafioso", "Target a player to kill them, the godfathers choice could override yours", "🌹",
         "Mafia", "Killing", "Mafia", 1,
         0, true, true, true,
         {},
