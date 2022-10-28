@@ -1,43 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-color: #F45B69;
+    --white: #fff;
+    --black: #000;
+}
+
 *{
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Verdana, Tahoma, sans-serif;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 400;
     /* vertical-align: top;
     align-items: center; */
     /* justify-content: center; */
     /* display: inline-block; */
 }
+
+input, button {
+    border: none;
+    outline: none;
+}
+
+input {
+    text-indent: 0.4em;
+}
+
+input:focus {
+    border: 0.1em solid var(--black);
+}
+
 .Main {
     /* text-align: center; */
-    background-color: #2d3646;
+    background-color: var(--primary-color);
     min-height: 100vh;
     /*align-items: center;*/
     text-align: center;
     /*justify-content: center; */
 }
+
 .Main-header {
     /* justify-content: center; */
     font-size: calc(40px + 2vmin);
     font-weight: 900;
-    -webkit-text-stroke: 3px rgb(0, 0, 0);
-    color: rgb(220, 220, 220);
-    /* align-items: center; */
+    color: var(--white);
+    /* ali
+    gn-items: center; */
 }
+
 .Main-body {
     font-size: calc(20px + 2vmin);
-    -webkit-text-stroke: 1px rgb(0, 0, 0);
     font-weight: 500;
-    color: rgb(173, 173, 173);
+    color: var(--white);
     /* align-items: center;
     justify-content: center; */
 }
+
 .Main-box {
-    color: #000000;
-    background-color: #ffffff;
     font-size: calc(12px + 2vmin);
     width: 90%;
-    border: 5px solid black;
+    border-radius: 0.5rem;
     /* align-items: center;
     justify-content: center; */
+    transition: opacity 200ms ease-in-out;
+}
+
+.Main-box:hover {
+    opacity: 0.8;
+    cursor: pointer;
 }

@@ -15,6 +15,7 @@ export function TextInput (props) {
     return (<input className={"Main-box"}
         style={{"backgroundColor": props.color}}
         type="text"
+        placeholder="Start Typing..."
         onKeyPress={
             (e) => {
                 if(e.code === "Enter") {
