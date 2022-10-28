@@ -53,11 +53,11 @@ import { ChatStateClient } from "../gameStateClient/ChatStateClient";
 let GameManager = {
 
     COLOR : {
-        IMPORTANT : "#cbcb00",  //#fae457
-        GAME_TO_YOU : "#007800",    //light green
-        GAME_TO_ALL : "#005000",    //dark green
-        CHAT : "#0000c8",   //dark blue
-        MY_CHAT : "#0000c0",    //light blue
+        IMPORTANT : "#5C7AFF",  // Blue Crayola
+        GAME_TO_YOU : "#4A8FE7",    // United Nations Blue
+        GAME_TO_ALL : "#73FBD3",    // Aquamarine
+        CHAT : "#44E5E7",   // Flourescent Blue
+        MY_CHAT : "#59D2FE",    // Vivid Sky Blue
     },
     MAX_NAME_LENGTH : 20,
     MAX_MESSAGE_LENGTH : 100,

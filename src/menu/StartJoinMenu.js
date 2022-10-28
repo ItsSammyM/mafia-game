@@ -13,7 +13,7 @@ export class StartJoinMenu extends React.Component {
         super(props);
 
         this.state = {
-            roomCodeInput:"",
+            roomCodeInput:"Room Code",
             playerName : props.playerName
         };
     }
@@ -33,7 +33,6 @@ export class StartJoinMenu extends React.Component {
         <div className="Main-body">
             {this.state.playerName}<br/>
             {this.state.roomCodeInput}{(()=>{if(this.state.roomCodeInput) return(<br/>);})()}
-            Room Code<br/>
             <TextInput onEnter={()=>{this.joinButton()}} onChange={(e)=>{this.setState({roomCodeInput:e.target.value.toLowerCase()})}}/><br/>
             <br/>
             <Button text="Join" onClick={()=>{
