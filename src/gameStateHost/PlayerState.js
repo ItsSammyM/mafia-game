@@ -104,6 +104,8 @@ export class PlayerRole{
             votedBy: [],
             voting: null,
 
+            judgement : 0,
+
             targetedBy : [],
             targeting : [],
 

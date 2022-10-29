@@ -19,6 +19,8 @@ export class MainMenu extends React.Component {
 
             targetedPlayerNames : [],
             votedForName : null,
+            judgementStatus : 0,
+            playerOnTrialName : null,
 
             START_PHASE_LISTENER : {
                 listener : (c)=>{
@@ -45,6 +47,21 @@ export class MainMenu extends React.Component {
                         votedForName : GameManager.client.cycle.votedForName,
                     });
                 }
+            },
+            BUTTON_JUDEMENT_RESPONSE_LISTENER : {
+                listener : (c)=>{
+                    console.log("HI3")
+                    this.setState({
+                        judgementStatus : GameManager.client.cycle.judgementStatus,
+                    });
+                }
+            },
+            PLAYER_ON_TRIAL_LISTENER : {
+                listener : (c)=>{
+                    this.setState({
+                        playerOnTrialName : GameManager.client.cycle.playerOnTrialName,
+                    });
+                }
             }
         };
     }
@@ -59,6 +76,10 @@ export class MainMenu extends React.Component {
 
             targetedPlayerNames : GameManager.client.cycle.targetedPlayerNames,
             votingPlayerName : GameManager.client.cycle.votedForName,
+
+            judgementStatus : GameManager.client.cycle.judgementStatus,
+
+            playerOnTrialName : GameManager.client.cycle.playerOnTrialName,
         });
         this.state.START_PHASE_LISTENER.listener(null);
 
@@ -69,6 +90,10 @@ export class MainMenu extends React.Component {
 
         GameManager.HOST_TO_CLIENT["BUTTON_VOTE_RESPONSE"].addReceiveListener(this.state.BUTTON_VOTE_RESPONSE_LISTENER);
         GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].addReceiveListener(this.state.BUTTON_VOTE_RESPONSE_LISTENER);
+    
+        GameManager.HOST_TO_CLIENT["BUTTON_JUDGEMENT_RESPONSE"].addReceiveListener(this.state.BUTTON_JUDEMENT_RESPONSE_LISTENER);
+
+        GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].addReceiveListener(this.state.PLAYER_ON_TRIAL_LISTENER);
     }
     componentWillUnmount() {
         GameManager.HOST_TO_CLIENT["START_PHASE"].removeReceiveListener(this.state.START_PHASE_LISTENER);
@@ -78,6 +103,10 @@ export class MainMenu extends React.Component {
 
         GameManager.HOST_TO_CLIENT["BUTTON_VOTE_RESPONSE"].removeReceiveListener(this.state.BUTTON_VOTE_RESPONSE_LISTENER);
         GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].removeReceiveListener(this.state.BUTTON_VOTE_RESPONSE_LISTENER);
+    
+        GameManager.HOST_TO_CLIENT["BUTTON_JUDGEMENT_RESPONSE"].removeReceiveListener(this.state.BUTTON_JUDEMENT_RESPONSE_LISTENER);
+
+        GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].removeReceiveListener(this.state.PLAYER_ON_TRIAL_LISTENER);
     }
     renderPlayers(){
         let out = []
@@ -129,6 +158,30 @@ export class MainMenu extends React.Component {
                     
                     
                 </div>);
+            case "Testimony":
+                return(<div>
+                    Trial<br/>
+                    {"<<"+this.state.playerOnTrialName+">>"}<br/>
+                </div>);
+            case "Judgement":
+                return(<div>
+                    Trial<br/>
+                    {"<<"+this.state.playerOnTrialName+">>"}<br/>
+                    {(()=>{if(this.state.playerOnTrialName !== GameManager.client.playerName) return <div>
+                        My Vote: {(()=>{
+                            if(this.state.judgementStatus === -1){
+                                return "Guilty";
+                            }else if(this.state.judgementStatus === 1){
+                                return "Innocent";
+                            }else{
+                                return "Abstain";
+                            }
+
+                        })()}<br/>
+                        <Button text="Innocent" onClick={()=>{GameManager.client.clickJudgement(1)}}/><br/>
+                        <Button text="Guilty" onClick={()=>{GameManager.client.clickJudgement(-1)}}/><br/>
+                    </div>})()}
+                </div>);
             default:
                 return;
         }
@@ -144,7 +197,7 @@ export class MainMenu extends React.Component {
 
         <div className="Main-body">
             {GameManager.client.playerName} the {this.state.roleName}<br/>
-            <Button text="Infomation" onClick={()=>{Main.instance.changeMenu(<ChatMenu chatState={GameManager.client.informationChat}/>)}} color={GameManager.client.informationChat.notification ? GameManager.COLOR.IMPORTANT : null}/><br/>
+            <Button text="Information" onClick={()=>{Main.instance.changeMenu(<ChatMenu chatState={GameManager.client.informationChat}/>)}} color={GameManager.client.informationChat.notification ? GameManager.COLOR.IMPORTANT : null}/><br/>
             <br/>
             {this.renderPhase(this.state.phaseName)}
             <br/>

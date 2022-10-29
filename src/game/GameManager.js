@@ -109,7 +109,6 @@ let GameManager = {
         someoneVoted(){
 
             let playerVoted = null;
-
             //reset votedBy
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
@@ -120,7 +119,11 @@ let GameManager = {
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
-                player.role.cycle.voting.role.cycle.votedBy.push(player);
+                if(player.role.cycle.voting){
+                    player.role.cycle.voting.role.cycle.votedBy.push(player);
+                }
+
+                
             }
             //check if someone voted
             for(let playerName in GameManager.host.players){
@@ -131,7 +134,6 @@ let GameManager = {
                     break;
                 }
             }
-
             return playerVoted;
         },
 
@@ -235,13 +237,15 @@ let GameManager = {
         cycle : {
             targetedPlayerNames : [],
             votedForName : null,
+            judgementStatus : 0,
+            playerOnTrialName : null,
         },
-        setCycle(){GameManager.client.cycle = {
+        setPhase(){GameManager.client.cycle = {
             targetedPlayerNames : [],
             votedForName : null,
+            judgementStatus : 0,
         }},
         
-
         clickTarget : function(name){
             GameManager.CLIENT_TO_HOST["BUTTON_TARGET"].send(GameManager.client.playerName, name);
         },
@@ -253,6 +257,12 @@ let GameManager = {
         },
         clickClearVote : function(){
             GameManager.CLIENT_TO_HOST["BUTTON_CLEAR_VOTE"].send(GameManager.client.playerName);
+        },
+        clickJudgement : function(judgement){
+            //1 is innocent
+            //-1 is guilty
+            //0 is abstain
+            GameManager.CLIENT_TO_HOST["BUTTON_JUDGEMENT"].send(GameManager.client.playerName, judgement);
         },
         clickWhisper : function(name){
 
@@ -383,8 +393,10 @@ let GameManager = {
                 GameManager.HOST_TO_CLIENT["BUTTON_VOTE_RESPONSE"].send(contents.playerName, contents.playerVotedName);
                 
                 let playerOnTrial = GameManager.host.someoneVoted();
+
                 if(playerOnTrial !== null){
                     GameManager.host.cycle.playerOnTrial = playerOnTrial;
+                    GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycle.playerOnTrial.name);
                     PhaseStateMachine.startPhase("Testimony");
                 }
             },
@@ -397,12 +409,27 @@ let GameManager = {
                 if(PhaseStateMachine.currentPhase !== "Voting") return;
                 let player = GameManager.host.players[contents.playerName];
 
-                if(player.role.cycle.voting != null && player.role.persist.alive){
-                    GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].send(contents.playerName, player.role.cycle.voting.name);
-                    player.role.cycle.voting = null;
-                }                
+                if(player.role.cycle.voting == null || !player.role.persist.alive) return;
+
+                GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].send(contents.playerName, player.role.cycle.voting.name);
+                player.role.cycle.voting = null;
+                                
             }
-        ),        
+        ),
+        "BUTTON_JUDGEMENT":new MessageType(false,
+            (playerName, judgement)=>{GameManager.client.sendMessage(GameManager.CLIENT_TO_HOST["BUTTON_JUDGEMENT"], {
+                playerName : playerName,
+                judgement : judgement,
+            })},
+            (contents)=>{
+                if(PhaseStateMachine.currentPhase !== "Judgement") return;
+                let player = GameManager.host.players[contents.playerName];
+
+                if(!player.role.persist.alive) return;
+                GameManager.HOST_TO_CLIENT["BUTTON_JUDGEMENT_RESPONSE"].send(contents.playerName, contents.judgement);
+                player.role.cycle.judgement = contents.judgement;
+            }
+        ),
     },
     HOST_TO_CLIENT:{
         "ASK_JOIN_RESPONSE":new MessageType(true, 
@@ -480,7 +507,7 @@ let GameManager = {
             (contents)=>{
                 GameManager.client.phaseName = contents.phaseName;
                 GameManager.client.cycleNumber = contents.cycleNumber;
-                GameManager.client.setCycle();
+                GameManager.client.setPhase();
 
                 if(contents.informationList){
                     for(let i = 0; i < contents.informationList.length; i++){
@@ -505,6 +532,14 @@ let GameManager = {
                         }
                     }
                 }
+            }
+        ),
+        "PLAYER_ON_TRIAL":new MessageType(true,
+            (playerOnTrialName)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"], {
+                playerOnTrialName : playerOnTrialName,
+            })},
+            (contents)=>{
+                GameManager.client.cycle.playerOnTrialName = contents.playerOnTrialName;
             }
         ),
         "BUTTON_TARGET_RESPONSE":new MessageType(true,
@@ -593,6 +628,18 @@ let GameManager = {
                 GameManager.client.cycle.votedForName = null;
             }
         ),
+        "BUTTON_JUDGEMENT_RESPONSE":new MessageType(false,
+            (playerName, judgement)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["BUTTON_JUDGEMENT_RESPONSE"], {
+                playerName : playerName,
+                judgement : judgement,
+            })},
+            (contents)=>{
+
+                if(contents.playerName !== GameManager.client.playerName) return;
+                GameManager.client.cycle.judgementStatus = contents.judgement;
+            }
+        ),
+        
     }
 };
 export default GameManager;

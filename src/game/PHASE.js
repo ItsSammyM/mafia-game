@@ -28,7 +28,7 @@ export let PhaseStateMachine = {
     }
 }
 const PHASES = {
-    "Night":new Phase(10, 
+    "Night":new Phase(5, 
         ()=>{
             let playerIndividualMessage = {};
             let informationListMessage = [];
@@ -102,7 +102,7 @@ const PHASES = {
             PhaseStateMachine.startPhase("Morning");
         }
     ),
-    "Morning":new Phase(10,
+    "Morning":new Phase(1,
         ()=>{
             let playerIndividualMessage = {};
             let informationListMessage = [];
@@ -152,7 +152,7 @@ const PHASES = {
             PhaseStateMachine.startPhase("Discussion");
         }
     ),
-    "Discussion":new Phase(10,
+    "Discussion":new Phase(1,
         ()=>{
             let playerIndividualMessage = {};
             let informationListMessage = [];
@@ -240,16 +240,13 @@ const PHASES = {
             );
         },
         ()=>{
-            
             //if somebody is voted then voting wouldnt have timed out
-            //if nobody is voted
             PhaseStateMachine.startPhase("Night");
         } 
     ),
-    "Testimony":new Phase(10,
+    "Testimony":new Phase(1,
         ()=>{
             //GameManager.host.cycle.playerOnTrial
-
             let playerIndividualMessage = {};
             let informationListMessage = [];
 
@@ -291,10 +288,58 @@ const PHASES = {
     ),
     "Judgement":new Phase(10, 
         ()=>{
+            let playerIndividualMessage = {};
+            let informationListMessage = [];
 
+            informationListMessage.push(new ChatMessageState(
+                "Judgement "+GameManager.host.cycleNumber,
+                GameManager.host.cycle.playerOnTrial.name+" is on trial, vote them innocent, guilty, or dont vote at all", 
+                GameManager.COLOR.GAME_TO_ALL
+            ));
+
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+
+                playerIndividualMessage[playerName] = {
+                    informationList : [],
+                    availableButtons : {}
+                }
+
+                for(let otherPlayerName in GameManager.host.players){
+                    //let otherPlayer = GameManager.host.players[otherPlayerName];
+
+                    player.availableButtons[otherPlayerName].target = false;
+                    player.availableButtons[otherPlayerName].vote = false;
+                    //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
+                }
+
+                playerIndividualMessage[playerName].availableButtons = player.availableButtons;
+
+                player.informationChat.addMessages(playerIndividualMessage[playerName].informationList);
+                player.informationChat.addMessages(informationListMessage);
+            }
+
+            GameManager.HOST_TO_CLIENT["START_PHASE"].send(
+                "Judgement", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
+            );
         },
         ()=>{
+            let totalJudgement = 0;
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
 
+                totalJudgement += player.role.cycle.judgement;
+            }
+
+            if(totalJudgement < 0){
+                //guilty
+                GameManager.host.cycle.playerOnTrial.role.persist.alive = false;
+                PhaseStateMachine.startPhase("Night");
+            }else{
+                //innocent
+                PhaseStateMachine.startPhase("Voting");
+            }
+            GameManager.host.cycle.playerOnTrial = null;
         }
     ),
 }
