@@ -25,7 +25,10 @@ export class MainMenu extends React.Component {
                     this.setState({
                         header : GameManager.client.phaseName + " " + GameManager.client.cycleNumber,
                         players : GameManager.client.players,
-                        phaseName : GameManager.client.phaseName
+                        phaseName : GameManager.client.phaseName,
+
+                        targetedPlayerNames : [],
+                        votedForName : null,
                     });
                 }
             },

@@ -196,10 +196,17 @@ const PHASES = {
     ),
     "Voting":new Phase(10,
         ()=>{
+            GameManager.host.cycle.numVotesNeeded = Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.role.persist.alive}).length / 2) + 1;
+            GameManager.host.cycle.playerOnTrial = null;
+
             let playerIndividualMessage = {};
             let informationListMessage = [];
 
-            informationListMessage.push(new ChatMessageState("Voting "+GameManager.host.cycleNumber, "Vote for a player to put them on trial. You need at least "+GameManager.host.cycle.numVotesNeeded+" votes to trial someone.", GameManager.COLOR.GAME_TO_ALL));
+            informationListMessage.push(new ChatMessageState(
+                "Voting "+GameManager.host.cycleNumber,
+                "Vote for a player to put them on trial. You need at least "+GameManager.host.cycle.numVotesNeeded+" votes to trial someone.",
+                GameManager.COLOR.GAME_TO_ALL
+            ));
 
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
@@ -233,10 +240,61 @@ const PHASES = {
             );
         },
         ()=>{
+            
+            //if somebody is voted then voting wouldnt have timed out
             //if nobody is voted
             PhaseStateMachine.startPhase("Night");
         } 
     ),
-    "Testimony":new Phase(10),
-    "Judgement":new Phase(10),
+    "Testimony":new Phase(10,
+        ()=>{
+            //GameManager.host.cycle.playerOnTrial
+
+            let playerIndividualMessage = {};
+            let informationListMessage = [];
+
+            informationListMessage.push(new ChatMessageState(
+                "Testimony "+GameManager.host.cycleNumber,
+                GameManager.host.cycle.playerOnTrial.name+" is on trial, stay silent while they defend themself", 
+                GameManager.COLOR.GAME_TO_ALL
+            ));
+
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+
+                playerIndividualMessage[playerName] = {
+                    informationList : [],
+                    availableButtons : {}
+                }
+
+                for(let otherPlayerName in GameManager.host.players){
+                    //let otherPlayer = GameManager.host.players[otherPlayerName];
+
+                    player.availableButtons[otherPlayerName].target = false;
+                    player.availableButtons[otherPlayerName].vote = false;
+                    //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
+                }
+
+                playerIndividualMessage[playerName].availableButtons = player.availableButtons;
+
+                player.informationChat.addMessages(playerIndividualMessage[playerName].informationList);
+                player.informationChat.addMessages(informationListMessage);
+            }
+
+            GameManager.HOST_TO_CLIENT["START_PHASE"].send(
+                "Testimony", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
+            );
+        },
+        ()=>{
+            PhaseStateMachine.startPhase("Judgement");
+        }
+    ),
+    "Judgement":new Phase(10, 
+        ()=>{
+
+        },
+        ()=>{
+
+        }
+    ),
 }

@@ -2,22 +2,21 @@ message character limit
 
 stop players from spamming buttons
 
-voting while dead
-clear vote even though you voted nobody
 cant vote for someone 2x
+Stop players from refreshing
 
 https://emojipedia.org/search/?q=lips
 give all roles emojis
 
 Mafioso 🌹
 
-Blackmailer 🪡 ✉️
+Blackmailer 🪡 ✉️ 🤐
 Consort 💄
 Janitor 🧹
 
-
-Transporter 🐎
+Transporter 🐎🚕
 Escort 💋
+Medium🔮
 
 Tracker 👣
 Lookout 🔭

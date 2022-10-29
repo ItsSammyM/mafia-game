@@ -56,8 +56,8 @@ let GameManager = {
         IMPORTANT : "#cbcb00",  //#fae457
         GAME_TO_YOU : "#007800",    //light green
         GAME_TO_ALL : "#005000",    //dark green
-        CHAT : "#0000c8",   //dark blue
-        MY_CHAT : "#0000c0",    //light blue
+        CHAT : "#00a0c8",   //dark blue
+        MY_CHAT : "#00a0c0",    //light blue
     },
     MAX_NAME_LENGTH : 20,
     MAX_MESSAGE_LENGTH : 100,
@@ -82,11 +82,13 @@ let GameManager = {
         cycle : {
             trialsLeftToday : 0, //how many trials are allowed left today
             numVotesNeeded : 9999,
+            playerOnTrial : null,
         },
         setCycle(){
             GameManager.host.cycle = {
                 trialsLeftToday : 3,
-                numVotesNeeded : Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.role.persist.alive}).length / 2) + 1
+                numVotesNeeded : Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.role.persist.alive}).length / 2) + 1,
+                playerOnTrial : null,
             }
         },
         /**
@@ -102,6 +104,35 @@ let GameManager = {
                     out.push(player);
             }
             return out;
+        },
+
+        someoneVoted(){
+
+            let playerVoted = null;
+
+            //reset votedBy
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+
+                player.role.cycle.votedBy = [];
+            }
+            //set votedBy
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+
+                player.role.cycle.voting.role.cycle.votedBy.push(player);
+            }
+            //check if someone voted
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+
+                if(GameManager.host.cycle.numVotesNeeded <= player.role.cycle.votedBy.length){
+                    playerVoted = player;
+                    break;
+                }
+            }
+
+            return playerVoted;
         },
 
         startGame : function(){
@@ -203,11 +234,11 @@ let GameManager = {
 
         cycle : {
             targetedPlayerNames : [],
-            votedForName : "",
+            votedForName : null,
         },
         setCycle(){GameManager.client.cycle = {
             targetedPlayerNames : [],
-            votedForName : "",
+            votedForName : null,
         }},
         
 
@@ -342,11 +373,20 @@ let GameManager = {
                 if(PhaseStateMachine.currentPhase !== "Voting") return;
 
                 let player = GameManager.host.players[contents.playerName];
-                //let playerVoted = GameManager.host.players[contents.playerVotedName];
+                let playerVoted = GameManager.host.players[contents.playerVotedName];
                 
-                player.role.cycle.voting = contents.playerVotedName;
+
+                if(player.role.persist.alive && playerVoted.role.persist.alive && player !== playerVoted){
+                    player.role.cycle.voting = playerVoted;
+                }
 
                 GameManager.HOST_TO_CLIENT["BUTTON_VOTE_RESPONSE"].send(contents.playerName, contents.playerVotedName);
+                
+                let playerOnTrial = GameManager.host.someoneVoted();
+                if(playerOnTrial !== null){
+                    GameManager.host.cycle.playerOnTrial = playerOnTrial;
+                    PhaseStateMachine.startPhase("Testimony");
+                }
             },
         ),
         "BUTTON_CLEAR_VOTE":new MessageType(false,
@@ -356,10 +396,11 @@ let GameManager = {
             (contents)=>{
                 if(PhaseStateMachine.currentPhase !== "Voting") return;
                 let player = GameManager.host.players[contents.playerName];
-                if(player.voting == null)
-                
-                GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].send(contents.playerName, player.role.cycle.voting);
-                player.role.cycle.voting = "";
+
+                if(player.role.cycle.voting != null && player.role.persist.alive){
+                    GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].send(contents.playerName, player.role.cycle.voting.name);
+                    player.role.cycle.voting = null;
+                }                
             }
         ),        
     },
@@ -549,7 +590,7 @@ let GameManager = {
                 if(contents.playerName !== GameManager.client.playerName)
                     return;
 
-                GameManager.client.cycle.votedForName = "";
+                GameManager.client.cycle.votedForName = null;
             }
         ),
     }
