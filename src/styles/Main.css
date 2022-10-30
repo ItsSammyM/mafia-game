@@ -11,9 +11,10 @@
 .Main {
     /* text-align: center; */
     background-color: #2d3646;
-    min-height: 100vh;
+    max-height: 100vh;
     /*align-items: center;*/
     text-align: center;
+    overflow: hidden;
     /*justify-content: center; */
 }
 .Main-header {
@@ -44,20 +45,22 @@
 }
 .splitScreen {
     display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr ;
 }
-.topPane {
+.leftPane {
     grid-column: 1;
     grid-row: 1;
-    height: 50vh;
     overflow-y: scroll;
-    border-bottom: 5px solid black;
+    overflow-x: hidden;
+    border-right: 1px solid black;
+    max-height: 100vh; 
   }
-.bottomPane {
-    grid-column: 1;
-    grid-row: 2;
-    height: 50vh;
+.rightPane {
+    grid-column: 2;
+    grid-row: 1;
     overflow-y: scroll;
-    border-top: 5px solid black;
+    overflow-x: hidden;
+    border-left: 1px solid black;
+    max-height: 100vh; 
 }

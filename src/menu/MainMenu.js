@@ -212,8 +212,8 @@ export class MainMenu extends React.Component {
     render(){return(
 
         <div className={"splitScreen"}>
-          <div className={"topPane"}>{<div><ChatMenu chatState={GameManager.client.informationChat}/></div>}</div>
-          <div className={"bottomPane"}>{this.renderMain()}</div>
+          <div className={"leftPane"}>{<div><ChatMenu chatState={GameManager.client.informationChat}/></div>}</div>
+          <div className={"rightPane"}>{this.renderMain()}</div>
         </div>)
         
     }
