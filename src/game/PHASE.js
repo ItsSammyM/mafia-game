@@ -139,7 +139,7 @@ const PHASES = {
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
                 "Morning", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
             );
-
+            GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
         },
         ()=>{
             for(let playerName in GameManager.host.players){
@@ -333,13 +333,14 @@ const PHASES = {
 
             if(totalJudgement < 0){
                 //guilty
-                GameManager.host.cycle.playerOnTrial.role.persist.alive = false;
+                GameManager.host.cycle.playerOnTrial.die();
                 PhaseStateMachine.startPhase("Night");
             }else{
                 //innocent
                 PhaseStateMachine.startPhase("Voting");
             }
             GameManager.host.cycle.playerOnTrial = null;
+            GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
         }
     ),
 }

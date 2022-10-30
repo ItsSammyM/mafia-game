@@ -7,5 +7,7 @@ export class PlayerStateClient{
             vote: false,
         };
         this.votedForNumber = 0;
+        this.alive = true;
+        this.suffixes = [];
     }
 }

@@ -14,6 +14,7 @@ export class PlayerState{
             }
         */
         this.role = null;
+        this.suffixes = [];
     }
     setUpAvailableButtons(players){
         for(let playerName in players){
@@ -59,9 +60,13 @@ export class PlayerState{
         }else{
             //die
             this.role.cycle.nightInformation.push(new ChatMessageState(null, "You were attacked and died.", GameManager.COLOR.GAME_TO_YOU));
-            this.role.persist.alive = false;
+            this.die();
         }
         
+    }
+    die(){
+        this.suffixes.push("died");
+        this.role.persist.alive = false;
     }
 }
 export class PlayerRole{

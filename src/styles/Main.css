@@ -38,6 +38,26 @@
     font-size: calc(12px + 2vmin);
     width: 90%;
     border: 5px solid black;
+    display:inline-block
     /* align-items: center;
     justify-content: center; */
+}
+.splitScreen {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+.topPane {
+    grid-column: 1;
+    grid-row: 1;
+    height: 50vh;
+    overflow-y: scroll;
+    border-bottom: 5px solid black;
+  }
+.bottomPane {
+    grid-column: 1;
+    grid-row: 2;
+    height: 50vh;
+    overflow-y: scroll;
+    border-top: 5px solid black;
 }

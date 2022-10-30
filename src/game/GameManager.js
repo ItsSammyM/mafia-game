@@ -197,7 +197,7 @@ let GameManager = {
                 playerIndividual,
                 informationList,
             );
-
+            GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
             PhaseStateMachine.startPhase("Discussion");
         },
         create : function(){
@@ -542,6 +542,40 @@ let GameManager = {
                 GameManager.client.cycle.playerOnTrialName = contents.playerOnTrialName;
             }
         ),
+        "UPDATE_PLAYERS":new MessageType(true,
+            ()=>{
+                /*
+                {
+                    playerName:{
+                        suffixes : ["Dead",  "Mayor", "5 Votes"],
+                        alive : false
+                    }
+                }
+                */
+                let playersObject = {};
+                for(let playerName in GameManager.host.players){
+                    let player = GameManager.host.players[playerName];
+                    playersObject[playerName] = {
+                        suffixes : player.suffixes,
+                        alive : player.role.persist.alive,
+                    };
+                }
+                GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"], {
+                    players: playersObject,
+                });
+            },
+            (contents)=>{
+                for(let playerName in contents.players){
+                    let msgPlayer = contents.players[playerName];
+                    let player = GameManager.client.players[playerName];
+                    if(!player) continue;
+
+                    player.suffixes = msgPlayer.suffixes;
+                    player.alive = msgPlayer.alive;
+                }
+                
+            }    
+        ),
         "BUTTON_TARGET_RESPONSE":new MessageType(true,
             /**
              * 
@@ -640,7 +674,7 @@ let GameManager = {
             }
         ),
         
-    }
+    },
 };
 export default GameManager;
 /*

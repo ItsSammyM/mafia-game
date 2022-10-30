@@ -76,7 +76,7 @@ export class ChatMenu extends React.Component {
                     )}
                 )
             }
-            {this.renderFixed()}
+            {/*this.renderFixed()*/}
             
         </div>
         <br/>
