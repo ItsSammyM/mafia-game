@@ -43,24 +43,3 @@
     /* align-items: center;
     justify-content: center; */
 }
-.splitScreen {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr ;
-}
-.leftPane {
-    grid-column: 1;
-    grid-row: 1;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    border-right: 1px solid black;
-    max-height: 100vh; 
-  }
-.rightPane {
-    grid-column: 2;
-    grid-row: 1;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    border-left: 1px solid black;
-    max-height: 100vh; 
-}

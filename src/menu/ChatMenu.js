@@ -1,40 +1,40 @@
 import React from "react";
 import { Button } from "../menuComponents/Button";
-// import { TextInput } from "../components/TextInput";
-import { MainMenu } from "./MainMenu";
-import { Main } from "../Main";
 import "../styles/Main.css"
+import GameManager from "../game/GameManager";
+import { TextInput } from "../menuComponents/TextInput";
 
 export class ChatMenu extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            title : props.chatState.title,
-            messages: props.chatState.allMessages,
+            chatMessageList : GameManager.client.chatMessageList,
 
-            chatState : props.chatState,
+            enteredMessage : "",
+            onChangeMessageListener : props.onChangeMessageListener,
 
             UPDATE_LISTENER : {
                 listener : () => {
                     this.setState({
-                        messages : this.state.chatState.allMessages
+                        chatMessageList : GameManager.client.chatMessageList,
                     });
                 }
             }
         };
     }
     componentDidMount() {
-        this.setState({messages : this.state.chatState.allMessages});
+        this.setState({
+            chatMessageList : GameManager.client.chatMessageList,
+        });
+        GameManager.client.addMessageListener(this.state.UPDATE_LISTENER);
         this.scrollToBottom();
-
-        this.state.chatState.addUpdateListener(this.state.UPDATE_LISTENER);
     }
     componentWillUnmount() {
-        this.state.chatState.removeUpdateListener(this.state.UPDATE_LISTENER);
+        GameManager.client.removeMessageListener(this.state.UPDATE_LISTENER);
     }
     componentDidUpdate() {
-        //if(this.bottomIsInViewport(500))
+        if(this.bottomIsInViewport(3000))   //used to be 500
             this.scrollToBottom();
     }
     scrollToBottom() {
@@ -45,22 +45,25 @@ export class ChatMenu extends React.Component {
         const top = this.buttomOfPage.getBoundingClientRect().top;
         return (top + offset) >= 0 && (top - offset) <= window.innerHeight;
     }
-    renderFixed(){return<div style={{position: "fixed", bottom: 10, width: "100%"}}>
-        <Button text="Back" onClick={()=>{
-            Main.instance.changeMenu(<MainMenu/>);
-            this.state.chatState.checkChat();
+    renderFixed(){return<div style={{position: "sticky", bottom: 10, width: "100%"}}>
+        <Button text="Send" onClick={()=>{
+            console.log(this.state.enteredMessage)
+        }}/><br/>
+        <Button text="Send-Alibi" onClick={()=>{
+        }}/><br/>
+        <TextInput onChange={(e)=>{
+            this.setState({enteredMessage : e.target.value});
+            this.state.onChangeMessageListener(e.target.value)
         }}/><br/>
     </div>}
     render() {return (<div>
-        <div className="Main-header">
+        {/* <div className="Main-header">
             {this.state.title}<br/>
-        </div><br/>
+        </div><br/> */}
 
         <div className="Main-body">
-            
-            <br/>
             {
-                this.state.messages.map(
+                this.state.chatMessageList.map(
                     (e, i)=>{return (
                         <Button
                             key={i} 
@@ -76,13 +79,10 @@ export class ChatMenu extends React.Component {
                     )}
                 )
             }
-            {/*this.renderFixed()*/}
             
+            <br/>
+            <br ref={(el) => { this.buttomOfPage = el; }}/>
+            {this.renderFixed()}
         </div>
-        <br/>
-        <br/>
-        <br/>
-        <br/>
-        <br ref={(el) => { this.buttomOfPage = el; }}/>
     </div>);}
 }

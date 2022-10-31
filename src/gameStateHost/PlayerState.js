@@ -1,12 +1,11 @@
 import GameManager from "../game/GameManager";
 import { ROLES } from "../game/ROLES";
 import { ChatMessageState } from "./ChatMessageState";
-import { ChatState } from "./ChatState";
 
 export class PlayerState{
     constructor(name){
         this.name = name;
-        this.informationChat = new ChatState("Information");
+        this.chatMessageList = [];
         this.availableButtons = {};
         /*
             {
@@ -15,6 +14,28 @@ export class PlayerState{
         */
         this.role = null;
         this.suffixes = [];
+    }
+    canVote(otherPlayer){
+        if(
+            this.name !== otherPlayer.name &&
+            this.role.persist.alive &&
+            otherPlayer.role.persist.alive &&
+            this.role.cycle.voting !== otherPlayer
+        ){
+            this.availableButtons[otherPlayer.name].vote = true;
+        }else{
+            this.availableButtons[otherPlayer.name].vote = false;
+        }
+            
+        return this.availableButtons[otherPlayer.name].vote;
+    }
+    addMessage(m){
+        this.chatMessageList.push(m);
+    }
+    addMessages(m){
+        for(let i in m){
+            this.chatMessageList.push(m[i]);
+        }
     }
     setUpAvailableButtons(players){
         for(let playerName in players){
@@ -46,11 +67,10 @@ export class PlayerState{
     clearTarget(){
         this.role.cycle.targeting = [];
     }
-    /**
-     * returns true if at least 1 person is being targeted
-     */
-    isTargetingSomeone(){
-        return this.role.cycle.targeting.length > 0;
+    roleblock(){
+        this.role.cycle.roleblocked = true;
+        if(!this.role.getRoleObject().roleblockable) this.role.cycle.nightInformation.push(new ChatMessageState(null, "Someone attempted to roleblock you but you were immune.", GameManager.COLOR.GAME_TO_YOU));
+        else this.role.cycle.nightInformation.push(new ChatMessageState(null, "You were roleblocked.", GameManager.COLOR.GAME_TO_YOU));
     }
     tryNightKill(attacker, attackPower){
         if(this.role.cycle.defense >= attackPower){
@@ -131,6 +151,8 @@ export class PlayerRole{
             
         }
     }
+
+    
 }
 /*
 this.name = _name;

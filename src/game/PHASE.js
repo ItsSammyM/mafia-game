@@ -56,8 +56,8 @@ const PHASES = {
                     //console.log(!player.role.getRoleObject().canTargetFunction.(player, otherPlayer))
                 }
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
-                player.informationChat.addMessages(playerIndividualMessage[playerName].informationList);
-                player.informationChat.addMessages(informationListMessage);
+                player.addMessages(playerIndividualMessage[playerName].informationList);
+                player.addMessages(informationListMessage);
             }
             
             
@@ -131,8 +131,8 @@ const PHASES = {
                 
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
 
-                player.informationChat.addMessages(playerIndividualMessage[playerName].informationList);
-                player.informationChat.addMessages(informationListMessage);
+                player.addMessages(playerIndividualMessage[playerName].informationList);
+                player.addMessages(informationListMessage);
             }
             
             
@@ -177,8 +177,8 @@ const PHASES = {
                 
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
 
-                player.informationChat.addMessages(playerIndividualMessage[playerName].informationList);
-                player.informationChat.addMessages(informationListMessage);
+                player.addMessages(playerIndividualMessage[playerName].informationList);
+                player.addMessages(informationListMessage);
             }
 
             
@@ -220,19 +220,15 @@ const PHASES = {
                     let otherPlayer = GameManager.host.players[otherPlayerName];
 
                     player.availableButtons[otherPlayerName].target = false;
-                    if(
-                        playerName !== otherPlayerName &&
-                        player.role.persist.alive &&
-                        otherPlayer.role.persist.alive
-                    )
-                        player.availableButtons[otherPlayerName].vote = true;
+                    player.canVote(otherPlayer);
+                    //player.availableButtons[otherPlayerName].vote = true;
                     //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
                 }
                 
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
 
-                player.informationChat.addMessages(playerIndividualMessage[playerName].informationList);
-                player.informationChat.addMessages(informationListMessage);
+                player.addMessages(playerIndividualMessage[playerName].informationList);
+                player.addMessages(informationListMessage);
             }
 
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
@@ -274,8 +270,8 @@ const PHASES = {
 
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
 
-                player.informationChat.addMessages(playerIndividualMessage[playerName].informationList);
-                player.informationChat.addMessages(informationListMessage);
+                player.addMessages(playerIndividualMessage[playerName].informationList);
+                player.addMessages(informationListMessage);
             }
 
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
@@ -315,8 +311,8 @@ const PHASES = {
 
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
 
-                player.informationChat.addMessages(playerIndividualMessage[playerName].informationList);
-                player.informationChat.addMessages(informationListMessage);
+                player.addMessages(playerIndividualMessage[playerName].informationList);
+                player.addMessages(informationListMessage);
             }
 
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(

@@ -72,6 +72,7 @@ export const TEAMS = {
     "Mafia":new TEAM("Mafia"),
 };
 export const ROLES = {
+    //#region Town
     "Sheriff":new Role(
         "Sheriff", "Target a player to find out if they're innocent or suspicious", "🕵️",
         "Town", "Investigative", null, Infinity,
@@ -112,12 +113,19 @@ export const ROLES = {
     ),
     "Escort":new Role(
         "Escort", "Target a player to roleblock them, they cannot use their role for that night", "💋",
-        "Town", "Support", null, 0,
+        "Town", "Support", null, Infinity,
         0, false, true, false, 
         {},
         (priority, player)=>{
+            if(priority !== -6) return;
+            if(player.role.cycle.targeting.length < 1) return;
+            if(!player.role.cycle.aliveNow) return;
+
+            player.role.cycle.targeting[0].roleblock();
         }
     ),
+    //#endregion
+    //#region Mafa
     "Mafioso":new Role(
         "Mafioso", "Target a player to kill them, the godfathers choice could override yours", "🌹",
         "Mafia", "Killing", "Mafia", 1,
@@ -131,6 +139,20 @@ export const ROLES = {
             player.role.cycle.targeting[0].tryNightKill(player, 1);
         }
     ),
+    "Consort":new Role(
+        "Consort", "Target a player to roleblock them, they cannot use their role for that night", "💄",
+        "Mafia", "Support", null, Infinity,
+        0, false, true, false, 
+        {},
+        (priority, player)=>{
+            if(priority !== -6) return;
+            if(player.role.cycle.targeting.length < 1) return;
+            if(!player.role.cycle.aliveNow) return;
+
+            player.role.cycle.targeting[0].roleblock();
+        }
+    ),
+    //#endregion
 }
 
 /*
