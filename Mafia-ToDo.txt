@@ -2,8 +2,8 @@ message character limit
 
 stop players from spamming buttons
 
-cant vote for someone 2x
-Stop players from refreshing
+drop down for what role you think someone is on player list
+The tyler thing
 
 https://emojipedia.org/search/?q=lips
 give all roles emojis
@@ -29,6 +29,5 @@ Crusader 🛡️
 
 Veteran 🎖️
 vigilante 🔫
-
 
 Witch 🧙‍♀️

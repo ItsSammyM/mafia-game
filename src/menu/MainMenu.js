@@ -1,7 +1,6 @@
 import React from "react";
 import { Button } from "../menuComponents/Button";
 import GameManager from "../game/GameManager";
-import { Main } from "../Main";
 import { ChatMenu } from "./ChatMenu";
 import "../styles/Main.css"
 import { mergeSort } from "../game/functions";
@@ -103,6 +102,9 @@ export class MainMenu extends React.Component {
 
         GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].addReceiveListener(this.state.PLAYER_ON_TRIAL_LISTENER);
         GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].addReceiveListener(this.state.UPDATE_PLAYERS_LISTENERS);
+
+        
+
     }
     componentWillUnmount() {
         GameManager.HOST_TO_CLIENT["START_PHASE"].removeReceiveListener(this.state.START_PHASE_LISTENER);
@@ -117,6 +119,9 @@ export class MainMenu extends React.Component {
 
         GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].removeReceiveListener(this.state.PLAYER_ON_TRIAL_LISTENER);
         GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].removeReceiveListener(this.state.UPDATE_PLAYERS_LISTENERS);
+
+        this.state.keyboardDidHideListener.remove();
+        this.state.keyboardDidShowListener.remove();
     }
     renderPlayers() {
         let out = [];
@@ -158,6 +163,7 @@ export class MainMenu extends React.Component {
         return(out);
     }
     renderPhase(phaseName){
+
         switch(phaseName){
             case "Night":
                 return(<div>
@@ -228,8 +234,6 @@ export class MainMenu extends React.Component {
 
         <div className="Main-body">
             {GameManager.client.playerName} the {this.state.roleName}<br/>
-            <Button text="Information" onClick={()=>{Main.instance.changeMenu(<ChatMenu chatState={GameManager.client.informationChat}/>)}} color={GameManager.client.informationChat.notification ? GameManager.COLOR.IMPORTANT : null}/><br/>
-            <br/>
             {this.renderPhase(this.state.phaseName)}
             <br/>
             {this.renderPlayers()}<br/>

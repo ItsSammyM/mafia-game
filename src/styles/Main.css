@@ -11,7 +11,7 @@
 .Main {
     /* text-align: center; */
     background-color: #2d3646;
-    max-height: 100vh;
+    height: 100vh;
     /*align-items: center;*/
     text-align: center;
     overflow: hidden;

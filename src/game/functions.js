@@ -1,5 +1,3 @@
-//Hi sammy this is bea you are a good friend and you should feel good about yourself :)
-
 /**
  * randomly shuffles array
  * @param {array} l 
