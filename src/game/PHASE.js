@@ -12,7 +12,7 @@ export let PhaseStateMachine = {
     currentPhase : null,
     phaseStartTime : 0,
     startPhase : (phaseName)=>{
-        PhaseStateMachine.phaseStartTime = (new Date()).getTime();
+        PhaseStateMachine.phaseStartTime = Date.now();
 
         PhaseStateMachine.currentPhase = phaseName;
         PHASES[PhaseStateMachine.currentPhase].onStart();
@@ -20,7 +20,7 @@ export let PhaseStateMachine = {
     tick : ()=>{
         if(!PhaseStateMachine.currentPhase) return;
         
-        let timePassed = (new Date()).getTime() - PhaseStateMachine.phaseStartTime;
+        let timePassed = Date.now() - PhaseStateMachine.phaseStartTime;
         
         if(timePassed > PHASES[PhaseStateMachine.currentPhase].maxTimeSeconds*1000){
             PHASES[PhaseStateMachine.currentPhase].onTimeOut();
@@ -40,7 +40,6 @@ const PHASES = {
                 let player = GameManager.host.players[playerName];
 
                 playerIndividualMessage[playerName] = {
-                    informationList : [],
                     availableButtons : {}
                 }
 
@@ -56,14 +55,15 @@ const PHASES = {
                     //console.log(!player.role.getRoleObject().canTargetFunction.(player, otherPlayer))
                 }
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
-                player.addMessages(playerIndividualMessage[playerName].informationList);
+                //player.addMessages(playerIndividualMessage[playerName].informationList);
                 player.addMessages(informationListMessage);
             }
             
             
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
-                "Night", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
+                "Night", GameManager.host.cycleNumber, playerIndividualMessage
             );
+            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
         }, 
         ()=>{
             //set loop first
@@ -113,13 +113,8 @@ const PHASES = {
                 let player = GameManager.host.players[playerName];
 
                 playerIndividualMessage[playerName] = {
-                    informationList : [],
                     availableButtons : {}
-                }
-
-                for(let i in player.role.cycle.nightInformation){
-                    playerIndividualMessage[playerName].informationList.push(player.role.cycle.nightInformation[i]);
-                }
+                }                
 
                 for(let otherPlayerName in GameManager.host.players){
                     //let otherPlayer = GameManager.host.players[otherPlayerName];
@@ -131,15 +126,16 @@ const PHASES = {
                 
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
 
-                player.addMessages(playerIndividualMessage[playerName].informationList);
+                
                 player.addMessages(informationListMessage);
+                player.addMessages(player.role.cycle.nightInformation);
             }
-            
-            
+
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
-                "Morning", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
+                "Morning", GameManager.host.cycleNumber, playerIndividualMessage
             );
             GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
+            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
         },
         ()=>{
             for(let playerName in GameManager.host.players){
@@ -163,7 +159,6 @@ const PHASES = {
                 let player = GameManager.host.players[playerName];
 
                 playerIndividualMessage[playerName] = {
-                    informationList : [],
                     availableButtons : {}
                 }
 
@@ -177,14 +172,16 @@ const PHASES = {
                 
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
 
-                player.addMessages(playerIndividualMessage[playerName].informationList);
+                
                 player.addMessages(informationListMessage);
+                //player.addMessages(playerIndividualMessage[playerName].informationList);
             }
 
             
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
-                "Discussion", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
+                "Discussion", GameManager.host.cycleNumber, playerIndividualMessage
             );
+            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
         },
         ()=>{
             if(GameManager.host.cycle.trialsLeftToday > 0){
@@ -212,7 +209,6 @@ const PHASES = {
                 let player = GameManager.host.players[playerName];
 
                 playerIndividualMessage[playerName] = {
-                    informationList : [],
                     availableButtons : {}
                 }
 
@@ -227,13 +223,14 @@ const PHASES = {
                 
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
 
-                player.addMessages(playerIndividualMessage[playerName].informationList);
                 player.addMessages(informationListMessage);
+                //player.addMessages(playerIndividualMessage[playerName].informationList);
             }
 
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
                 "Voting", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
             );
+            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
         },
         ()=>{
             //if somebody is voted then voting wouldnt have timed out
@@ -256,7 +253,6 @@ const PHASES = {
                 let player = GameManager.host.players[playerName];
 
                 playerIndividualMessage[playerName] = {
-                    informationList : [],
                     availableButtons : {}
                 }
 
@@ -270,13 +266,14 @@ const PHASES = {
 
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
 
-                player.addMessages(playerIndividualMessage[playerName].informationList);
                 player.addMessages(informationListMessage);
+                //player.addMessages(playerIndividualMessage[playerName].informationList);
             }
 
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
                 "Testimony", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
             );
+            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
         },
         ()=>{
             PhaseStateMachine.startPhase("Judgement");
@@ -297,7 +294,6 @@ const PHASES = {
                 let player = GameManager.host.players[playerName];
 
                 playerIndividualMessage[playerName] = {
-                    informationList : [],
                     availableButtons : {}
                 }
 
@@ -311,13 +307,14 @@ const PHASES = {
 
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
 
-                player.addMessages(playerIndividualMessage[playerName].informationList);
                 player.addMessages(informationListMessage);
+                //player.addMessages(playerIndividualMessage[playerName].informationList);
             }
 
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
                 "Judgement", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
             );
+            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
         },
         ()=>{
             let totalJudgement = 0;

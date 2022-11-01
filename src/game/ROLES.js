@@ -61,15 +61,15 @@ class TEAM{
     /**
      * @param {string} _name 
      * @param {boolean} _showFactionMembers 
-     * @param {Array[string]} _alignments 
      */
-    constructor(_name){
+    constructor(_name, _showFactionMembers){
         this.name = _name;
+        this.showFactionMembers = _showFactionMembers;
     }
 }
 
 export const TEAMS = {
-    "Mafia":new TEAM("Mafia"),
+    "Mafia":new TEAM("Mafia", true),
 };
 export const ROLES = {
     //#region Town

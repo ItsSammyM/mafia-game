@@ -221,7 +221,7 @@ export class PlayerListMenu extends React.Component {
                 <div className="Main-box">
                     {this.renderPhase(this.state.phaseName)}
                 </div><br/>
-                
+                <br/>
                 
                 {this.renderPlayers()}<br/>
             </div>

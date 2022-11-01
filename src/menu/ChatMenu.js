@@ -14,6 +14,8 @@ export class ChatMenu extends React.Component {
             enteredMessage : "",
             onChangeMessageListener : props.onChangeMessageListener,
 
+            sendBarHeader : "All",
+
             UPDATE_LISTENER : {
                 listener : () => {
                     this.setState({
@@ -34,26 +36,54 @@ export class ChatMenu extends React.Component {
         GameManager.client.removeMessageListener(this.state.UPDATE_LISTENER);
     }
     componentDidUpdate() {
-        if(this.bottomIsInViewport(3000))   //used to be 500
+        if(this.bottomIsInViewport(500))   //used to be 500
             this.scrollToBottom();
     }
+
     scrollToBottom() {
         this.buttomOfPage.scrollIntoView({ behavior: "smooth" });
     }
     bottomIsInViewport(offset = 0) {
         if (!this.buttomOfPage) return false;
         const top = this.buttomOfPage.getBoundingClientRect().top;
+        //if top is between 0 and height then true
+        //else false
         return (top + offset) >= 0 && (top - offset) <= window.innerHeight;
     }
+
+    sendButton(){
+        if(this.state.enteredMessage===""||!this.state.enteredMessage) return;
+
+        GameManager.client.clickSendMessage(this.state.enteredMessage);
+        this.changeEnteredMessage("");
+    }
+    changeEnteredMessage(m){
+        this.setState({enteredMessage : m});
+            this.state.onChangeMessageListener(m);
+
+
+        if(!m || m===""){
+            setTimeout(()=>{
+                //if(this.bottomIsInViewport(500))
+                    this.scrollToBottom();
+            },100)
+        }
+    }
+
     renderFixed(){return<div style={{position: "sticky", bottom: 10, width: "100%"}}>
+        {this.state.sendBarHeader}<br/>
         <Button text="Send" onClick={()=>{
-            console.log(this.state.enteredMessage)
+            this.sendButton();
         }}/><br/>
         <Button text="Send-Alibi" onClick={()=>{
         }}/><br/>
-        <TextInput onChange={(e)=>{
-            this.setState({enteredMessage : e.target.value});
-            this.state.onChangeMessageListener(e.target.value)
+        <TextInput 
+            value={this.state.enteredMessage}
+            onEnter={()=>{
+                this.sendButton();
+            }}
+            onChange={(e)=>{
+                this.changeEnteredMessage(e.target.value.substring(0,GameManager.MAX_MESSAGE_LENGTH));
         }}/><br/>
     </div>}
     render() {return (<div>

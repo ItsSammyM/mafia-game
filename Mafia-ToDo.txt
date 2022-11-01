@@ -1,9 +1,15 @@
-message character limit
-
 stop players from spamming buttons
+drop down for what role you think someone is on player list - The tyler thing
 
-drop down for what role you think someone is on player list
-The tyler thing
+fix overflow y on pages besides main
+--------
+i want this role
+i dont want this faction/alignment
+Thomas thing
+---------
+Entire wikipedia for game including priorities
+Graveyard
+RoleList
 
 https://town-of-salem.fandom.com/wiki/Victory#:~:text=the%20same%20faction.-,Town%20Victory,one%20of%20them%20is%20killed.
 https://emojipedia.org/search/?q=lips

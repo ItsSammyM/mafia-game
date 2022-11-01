@@ -7,11 +7,8 @@ import { WaitJoinMenu } from "../menu/WaitJoinMenu";
 import { MainMenu } from "../menu/MainMenu";
 import { ChatMessageStateClient } from "../gameStateClient/ChatMessageStateClient";
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
-import { getRandomRole } from "./ROLES";
+import { getRandomRole, TEAMS } from "./ROLES";
 import { PhaseStateMachine } from "./PHASE";
-
-//Hi sammy it's Bea I think you're very cool :)
-
 /**
  * A type of message, with specified behaviors for how it should be sent and recieved
  */
@@ -59,7 +56,7 @@ let GameManager = {
         MY_CHAT : "#00a0c0",    //light blue
     },
     MAX_NAME_LENGTH : 20,
-    MAX_MESSAGE_LENGTH : 100,
+    MAX_MESSAGE_LENGTH : 300,
 
     pubNub : new PubNubWrapper(),
     tick : function(){
@@ -76,6 +73,11 @@ let GameManager = {
         roomCode : "",
         players : {},
         gameStarted : false,
+
+        chatGroups : {
+            "Dead":[],//list of all dead players
+            "All":[]//list of all players
+        },
 
         cycleNumber : 1, //game starts with day 1, then goes into night 1, //increments on morning timeout
         cycle : {
@@ -103,6 +105,13 @@ let GameManager = {
                     out.push(player);
             }
             return out;
+        },
+        getAllPlayerNames(){
+            let allOtherPlayers = [];
+            for(let otherPlayerName in GameManager.host.players){
+                allOtherPlayers.push(otherPlayerName);
+            }
+            return allOtherPlayers;
         },
 
         someoneVoted(){
@@ -147,7 +156,7 @@ let GameManager = {
             let roleList = [
             //  [faction, alignment, exact]
                 [null, null, "Mafioso"],
-                ["Mafia", "Support", null],
+                [null, null, "Sheriff"],
             ];
             shuffleList(roleList);
 
@@ -158,6 +167,7 @@ let GameManager = {
 
                 player.setUpAvailableButtons(GameManager.host.players);
 
+                //give random role
                 let roleName = "";
                 if(!roleList[index]){
                     roleName = getRandomRole("Random", "Random", alreadyPickedRolesList);
@@ -170,20 +180,39 @@ let GameManager = {
                         alreadyPickedRolesList
                     );
                 }
-
+                //add to role list
                 alreadyPickedRolesList.push(roleName);
-                player.createPlayerRole(roleName);
+                player.createPlayerRole(roleName); //actually create role
 
+                //tell players whats going on
                 playerIndividual[playerName] = {
-                    informationList : [new ChatMessageState(player.role.getRoleObject().faction+" "+player.role.getRoleObject().alignment+", "+player.role.persist.roleName, player.role.getRoleObject().basicDescription, GameManager.COLOR.GAME_TO_YOU)],
                     roleName : player.role.persist.roleName,
                 };
                 player.addMessages(
-                    playerIndividual[playerName].informationList
+                    [new ChatMessageState(
+                        player.role.getRoleObject().faction+" "+player.role.getRoleObject().alignment+", "+player.role.persist.roleName, 
+                        player.role.getRoleObject().basicDescription, 
+                        GameManager.COLOR.GAME_TO_YOU
+                    )]
                 );
                 player.addMessages(informationList);
                 index++;
             }
+
+            //after roleList is picked, create extra chat groups
+            for(let teamName in TEAMS){
+                GameManager.host.chatGroups[teamName] = []; //add all people who are of roles that are in the team
+                //INCOMPLETE
+            }
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+
+                GameManager.host.chatGroups[playerName] = [player]; //also add blackmailer
+                GameManager.host.chatGroups["All"].push(player);
+            }
+
+            //GameManager.host.players["Sam"].addSuffix("Joe", "Mayor");
+            //MAKE IT SO MAFIA CAN SEE EACHOTHERS ROLES
 
             GameManager.HOST_TO_CLIENT["START_GAME"].send(
                 ((()=>{
@@ -194,9 +223,9 @@ let GameManager = {
                     return out;
                 })()),
                 playerIndividual,
-                informationList,
             );
             GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
+            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
             PhaseStateMachine.startPhase("Discussion");
         },
         create : function(){
@@ -225,6 +254,8 @@ let GameManager = {
 
         roleName: "",
         playerName : "",
+
+        chatGroupSendList : ["All"],
 
         phaseName: "",
         cycleNumber : 1,
@@ -273,23 +304,55 @@ let GameManager = {
             judgementStatus : 0,
         }},
         
+
+        timeLastButtonClickedms : 0,
+        numOfPressesInTimeFrame : 0,
+
+        spamPreventer : function(){
+            this.numOfPressesInTimeFrame++;
+            if(Date.now() - this.timeLastButtonClickedms < 500 && this.numOfPressesInTimeFrame > 2) return true;
+            GameManager.client.timeLastButtonClickedms = Date.now();
+            this.numOfPressesInTimeFrame=0;
+            return false;
+        },
         clickTarget : function(name){
+            if(this.spamPreventer()) return;
+
             GameManager.CLIENT_TO_HOST["BUTTON_TARGET"].send(GameManager.client.playerName, name);
         },
         clickClearTarget : function(){
+            if(this.spamPreventer()) return;
+
             GameManager.CLIENT_TO_HOST["BUTTON_CLEAR_TARGETS"].send(GameManager.client.playerName);
         },
         clickVote : function(name){
+            if(this.spamPreventer()) return;
+
             GameManager.CLIENT_TO_HOST["BUTTON_VOTE"].send(GameManager.client.playerName, name);
         },
         clickClearVote : function(){
+            if(this.spamPreventer()) return;
+
             GameManager.CLIENT_TO_HOST["BUTTON_CLEAR_VOTE"].send(GameManager.client.playerName);
         },
         clickJudgement : function(judgement){
+            if(this.spamPreventer()) return;
+
             //1 is innocent
             //-1 is guilty
             //0 is abstain
             GameManager.CLIENT_TO_HOST["BUTTON_JUDGEMENT"].send(GameManager.client.playerName, judgement);
+        },
+        clickSendMessage : function(message){
+            if(this.spamPreventer()) return;
+
+            GameManager.CLIENT_TO_HOST["SEND_MESSAGE"].send(
+                GameManager.client.playerName, ["All"], 
+                new ChatMessageStateClient(
+                    GameManager.client.playerName,
+                    message,
+                    GameManager.COLOR.CHAT
+                ));
         },
         clickWhisper : function(name){
 
@@ -323,7 +386,8 @@ let GameManager = {
             })},
             (contents)=>{
                 
-                contents.playerName = contents.playerName.substring(0, GameManager.MAX_NAME_LENGTH);
+                contents.playerName = contents.playerName.substring(0, GameManager.MAX_NAME_LENGTH).trim();
+                if(contents.playerName===""||!contents.playerName) return;
 
                 let alreadyJoined = false;
                 for(let playerName in GameManager.host.players){
@@ -376,7 +440,12 @@ let GameManager = {
 
                     if(player.role.getRoleObject().canTargetFunction(player, otherPlayer)) canTargetList.push(otherPlayerName);
                 }
-                GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONSE"].send(contents.playerName, contents.targetingName, player.role.cycle.targeting.map((p)=>p.name), canTargetList);
+                
+                player.addMessage(new ChatMessageStateClient("Target", "You targeted "+targetedPlayer.name, GameManager.COLOR.GAME_TO_YOU));
+                
+                //GameManager.client.addMessage(new ChatMessageStateClient("Target", "You targeted "+contents.playerTargetedName, GameManager.COLOR.GAME_TO_YOU));
+                GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONSE"].send(contents.playerName, player.role.cycle.targeting.map((p)=>p.name), canTargetList);
+                GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
             }
         ),
         "BUTTON_CLEAR_TARGETS":new MessageType(false,
@@ -396,8 +465,10 @@ let GameManager = {
 
                     if(player.role.getRoleObject().canTargetFunction(player, otherPlayer)) canTargetList.push(otherPlayerName);
                 }
+                player.addMessage(new ChatMessageStateClient("Clear Targets", "Your targets have been reset", GameManager.COLOR.GAME_TO_YOU));
 
-                GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].send(contents.playerName, canTargetList)
+                GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].send(contents.playerName, canTargetList);
+                GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
             }
         ),
         "BUTTON_VOTE":new MessageType(false, 
@@ -420,11 +491,14 @@ let GameManager = {
 
                 let canVoteList = [];
                 for(let otherPlayerName in GameManager.host.players){
-                    if(player.canVote(GameManager.host.players[otherPlayerName]))
+                    let otherPlayer = GameManager.host.players[otherPlayerName]
+                    otherPlayer.addMessage(new ChatMessageStateClient("Vote", contents.playerName+" voted for "+contents.playerVotedName, GameManager.COLOR.CHAT));
+                    if(player.canVote(otherPlayer))
                         canVoteList.push(otherPlayerName);
                 }
 
                 GameManager.HOST_TO_CLIENT["BUTTON_VOTE_RESPONSE"].send(contents.playerName, contents.playerVotedName, canVoteList);
+                GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
                 
                 let playerOnTrial = GameManager.host.someoneVoted();
 
@@ -451,12 +525,14 @@ let GameManager = {
 
                 let canVoteList = [];
                 for(let otherPlayerName in GameManager.host.players){
-                    if(player.canVote(GameManager.host.players[otherPlayerName]))
+                    let otherPlayer = GameManager.host.players[otherPlayerName];
+                    otherPlayer.addMessage(new ChatMessageStateClient("Clear Votes", contents.playerName+" stopped voting for "+playerVotingName, GameManager.COLOR.CHAT));
+                    if(player.canVote(otherPlayer))
                         canVoteList.push(otherPlayerName);
                 }
 
-                GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].send(contents.playerName, playerVotingName, canVoteList);
-                
+                GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].send(contents.playerName, canVoteList);
+                GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
                                 
             }
         ),
@@ -473,6 +549,37 @@ let GameManager = {
                 GameManager.HOST_TO_CLIENT["BUTTON_JUDGEMENT_RESPONSE"].send(contents.playerName, contents.judgement);
                 player.role.cycle.judgement = contents.judgement;
             }
+        ),
+        "SEND_MESSAGE":new MessageType(false,
+            (playerName, chatGroups, chatMessage)=>{GameManager.client.sendMessage(GameManager.CLIENT_TO_HOST["SEND_MESSAGE"], {
+                playerName:playerName,
+                chatGroups:chatGroups,
+                chatMessage:chatMessage,
+            })},
+            (contents)=>{
+                contents.chatMessage.text = contents.chatMessage.text.substring(0,GameManager.MAX_MESSAGE_LENGTH).trim();
+                if(contents.chatMessage.text===""||!contents.chatMessage.text) return;
+                let playersWhoGotMessageAlready = [];
+
+                for(let chatGroup in GameManager.host.chatGroups){
+                    let playerList = GameManager.host.chatGroups[chatGroup];
+
+                    if(!contents.chatGroups.includes(chatGroup)) continue;
+
+                    for(let playerName in GameManager.host.players){
+                        let player = GameManager.host.players[playerName];
+
+                        if(playersWhoGotMessageAlready.includes(player)) continue;
+                        if(!playerList.includes(player)) continue;
+
+                        player.addMessage(new ChatMessageState(contents.chatMessage.title, contents.chatMessage.text, contents.chatMessage.color));
+                        playersWhoGotMessageAlready.push(player);
+                    }
+                }
+
+                GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
+            }
+
         ),
     },
     HOST_TO_CLIENT:{
@@ -502,29 +609,28 @@ let GameManager = {
              * }
              * @param {array[ChatMessageStateClient]} informationList
              */
-            (allPlayerNames, playerIndividual, informationList)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["START_GAME"], {
+            (allPlayerNames, playerIndividual)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["START_GAME"], {
                 playerIndividual  : playerIndividual,
                 allPlayerNames: allPlayerNames,
-                informationList: informationList,
             })},
             (contents)=>{
                 for(let i = 0; i < contents.allPlayerNames.length; i++){
                     GameManager.client.players[contents.allPlayerNames[i]] = new PlayerStateClient(contents.allPlayerNames[i]);
                 }
 
-                for(let i = 0; i < contents.informationList.length; i++){
-                    GameManager.client.addMessage(new ChatMessageStateClient(
-                        contents.informationList[i].title, contents.informationList[i].text, contents.informationList[i].color
-                    ));
-                }
+                // for(let i = 0; i < contents.informationList.length; i++){
+                //     GameManager.client.addMessage(new ChatMessageStateClient(
+                //         contents.informationList[i].title, contents.informationList[i].text, contents.informationList[i].color
+                //     ));
+                // }
                 //individual
                 let player = contents.playerIndividual[GameManager.client.playerName];
                 if(player){
-                    for(let i = 0; i < player.informationList.length; i++){
-                        GameManager.client.addMessage(new ChatMessageStateClient(
-                            player.informationList[i].title, player.informationList[i].text, player.informationList[i].color
-                        ));
-                    }
+                    // for(let i = 0; i < player.informationList.length; i++){
+                    //     GameManager.client.addMessage(new ChatMessageStateClient(
+                    //         player.informationList[i].title, player.informationList[i].text, player.informationList[i].color
+                    //     ));
+                    // }
                     GameManager.client.roleName = player.roleName;
                 }
                 Main.instance.changeMenu(<MainMenu/>);
@@ -542,34 +648,33 @@ let GameManager = {
              *      }
              * @param {Array[ChatMessageState]} informationList 
              */
-            (phaseName, cycleNumber, playerIndividual, informationList)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["START_PHASE"], {
+            (phaseName, cycleNumber, playerIndividual)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["START_PHASE"], {
                 phaseName : phaseName,
                 cycleNumber : cycleNumber,
                 playerIndividual : playerIndividual,
-                informationList : informationList,
             })},
             (contents)=>{
                 GameManager.client.phaseName = contents.phaseName;
                 GameManager.client.cycleNumber = contents.cycleNumber;
                 GameManager.client.setPhase();
 
-                if(contents.informationList){
-                    for(let i = 0; i < contents.informationList.length; i++){
-                        GameManager.client.addMessage(new ChatMessageStateClient(
-                            contents.informationList[i].title, contents.informationList[i].text, contents.informationList[i].color
-                        ));
-                    }
-                }
+                // if(contents.informationList){
+                //     for(let i = 0; i < contents.informationList.length; i++){
+                //         GameManager.client.addMessage(new ChatMessageStateClient(
+                //             contents.informationList[i].title, contents.informationList[i].text, contents.informationList[i].color
+                //         ));
+                //     }
+                // }
 
                 if(contents.playerIndividual){
                     //individual
                     let player = contents.playerIndividual[GameManager.client.playerName];
                     if(player){
-                        for(let i = 0; i < player.informationList.length; i++){
-                            GameManager.client.addMessage(new ChatMessageStateClient(
-                                player.informationList[i].title, player.informationList[i].text, player.informationList[i].color
-                            ));
-                        }
+                        // for(let i = 0; i < player.informationList.length; i++){
+                        //     GameManager.client.addMessage(new ChatMessageStateClient(
+                        //         player.informationList[i].title, player.informationList[i].text, player.informationList[i].color
+                        //     ));
+                        // }
                         for(let otherPlayerName in player.availableButtons){
                             GameManager.client.players[otherPlayerName].availableButtons = player.availableButtons[otherPlayerName];
                             
@@ -590,32 +695,60 @@ let GameManager = {
             ()=>{
                 /*
                 {
-                    playerName:{
-                        suffixes : ["Dead",  "Mayor", "5 Votes"],
-                        alive : false
+                    myPlayer:{  //my CLient
+                        otherPlayerName:{   
+                            suffixes : ["Dead",  "Mayor", "5 Votes"],
+                            alive : false
+                        },
+                        otherPlayerName2:{ //what i see jimmy guy as
+                            suffixes : ["Dead",  "Mayor", "5 Votes"],
+                            alive : false
+                        },
+                    },
+                    myPlayer2:{ //jimmys client
+                        otherPlayerName:{ //what jimmy sees me as
+                            suffixes : ["Dead",  "Mayor", "5 Votes"],
+                            alive : false
+                        },
+                        otherPlayerName2:{  
+                            suffixes : ["Dead",  "Mayor", "5 Votes"],
+                            alive : false
+                        },
                     }
                 }
                 */
                 let playersObject = {};
                 for(let playerName in GameManager.host.players){
                     let player = GameManager.host.players[playerName];
-                    playersObject[playerName] = {
-                        suffixes : player.suffixes,
-                        alive : player.role.persist.alive,
-                    };
+                    
+
+                    playersObject[playerName] = {};
+
+                    for(let otherPlayerName in GameManager.host.players){
+                        let otherPlayer = GameManager.host.players[otherPlayerName];
+
+                        playersObject[playerName][otherPlayerName] = {
+                            suffixes : player.suffixes[otherPlayerName],
+                            alive : otherPlayer.role.persist.alive
+                        }
+                    }
                 }
+
                 GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"], {
                     players: playersObject,
                 });
             },
             (contents)=>{
-                for(let playerName in contents.players){
-                    let msgPlayer = contents.players[playerName];
-                    let player = GameManager.client.players[playerName];
-                    if(!player) continue;
 
-                    player.suffixes = msgPlayer.suffixes;
-                    player.alive = msgPlayer.alive;
+                for(let otherPlayerName in contents.players[GameManager.client.playerName]){
+                    let otherPlayerMsg = contents.players[GameManager.client.playerName][otherPlayerName];
+
+                    let otherPlayer = GameManager.client.players[otherPlayerName];
+
+                    if(!otherPlayer) continue;
+
+                    otherPlayer.suffixes = otherPlayerMsg.suffixes;
+                    otherPlayer.alive = otherPlayerMsg.alive;
                 }
                 
             }    
@@ -629,9 +762,8 @@ let GameManager = {
              * }
              * 
              */
-            (playerName, playerTargetedName, targetedList, canTargetList)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONSE"], {
+            (playerName, targetedList, canTargetList)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONSE"], {
                 playerName : playerName,
-                playerTargetedName : playerTargetedName,
                 targetedList : targetedList,
                 canTargetList : canTargetList
             })},
@@ -644,7 +776,6 @@ let GameManager = {
                     player.availableButtons.target = contents.canTargetList.includes(playerName);
                 }
 
-                GameManager.client.addMessage(new ChatMessageStateClient("Target", "You targeted "+contents.playerTargetedName, GameManager.COLOR.GAME_TO_YOU));
                 GameManager.client.cycle.targetedPlayerNames = contents.targetedList;
             }
         ),
@@ -670,7 +801,7 @@ let GameManager = {
                     player.availableButtons.target = contents.canTargetList.includes(playerName);
                 }
                 
-                GameManager.client.addMessage(new ChatMessageStateClient("Clear Targets", "Your targets have been reset", GameManager.COLOR.GAME_TO_YOU));
+                //GameManager.client.addMessage(new ChatMessageStateClient("Clear Targets", "Your targets have been reset", GameManager.COLOR.GAME_TO_YOU));
                 GameManager.client.cycle.targetedPlayerNames = [];
             }
         ),
@@ -683,7 +814,7 @@ let GameManager = {
             (contents)=>{
                 //create message saying someone was voted for in chat
 
-                GameManager.client.addMessage(new ChatMessageStateClient("Vote", contents.playerName+" voted for "+contents.playerVotedName, GameManager.COLOR.CHAT));
+                //GameManager.client.addMessage(new ChatMessageStateClient("Vote", contents.playerName+" voted for "+contents.playerVotedName, GameManager.COLOR.CHAT));
 
                 if(contents.playerName !== GameManager.client.playerName)
                     return;
@@ -697,15 +828,14 @@ let GameManager = {
             }
         ),
         "BUTTON_CLEAR_VOTE_RESPONSE":new MessageType(false,
-            (playerName, currentPlayerVotedName, canVoteList)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"], {
+            (playerName, canVoteList)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"], {
                 playerName : playerName,
-                currentPlayerVotedName : currentPlayerVotedName,
                 canVoteList : canVoteList,
             })},
             (contents)=>{
                 //create message saying someone was voted for in chat
 
-                GameManager.client.addMessage(new ChatMessageStateClient("Clear Votes", contents.playerName+" stopped voting for "+contents.currentPlayerVotedName, GameManager.COLOR.CHAT));
+                //GameManager.client.addMessage(new ChatMessageStateClient("Clear Votes", contents.playerName+" stopped voting for "+contents.currentPlayerVotedName, GameManager.COLOR.CHAT));
 
                 if(contents.playerName !== GameManager.client.playerName)
                     return;
@@ -729,7 +859,33 @@ let GameManager = {
                 GameManager.client.cycle.judgementStatus = contents.judgement;
             }
         ),
-        
+        "SEND_UNSENT_MESSAGES":new MessageType(false,
+            ()=>{
+                
+                let playerIndividual = {};
+                for(let playerName in GameManager.host.players){
+                    playerIndividual[playerName] = GameManager.host.players[playerName].getUnsentMessages();
+                }
+                GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"], {
+                /**
+                 * playerIndividual : {
+                 *  Name : [ChatMessage, ChatMessage]
+                 *  OtherName : [ChatMessage, ChatMessage]
+                 * }
+                 */
+                playerIndividual : playerIndividual,
+            })},
+            (contents)=>{
+                if(!contents.playerIndividual[GameManager.client.playerName]) return;
+
+                GameManager.client.addMessages(contents.playerIndividual[GameManager.client.playerName].map((p)=>{
+                    // try{
+                    //     eval(p.text);
+                    // }catch{}
+                    return new ChatMessageStateClient(p.title, p.text, p.color)
+                }));
+            }
+        ),
     },
 };
 export default GameManager;

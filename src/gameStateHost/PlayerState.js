@@ -6,42 +6,49 @@ export class PlayerState{
     constructor(name){
         this.name = name;
         this.chatMessageList = [];
+        this.unsentMessageList = [];
+
+        this.role = null;
+
         this.availableButtons = {};
         /*
             {
                 "Name":{target:false,whisper:false,vote:false}
             }
         */
-        this.role = null;
-        this.suffixes = [];
-    }
-    canVote(otherPlayer){
-        if(
-            this.name !== otherPlayer.name &&
-            this.role.persist.alive &&
-            otherPlayer.role.persist.alive &&
-            this.role.cycle.voting !== otherPlayer
-        ){
-            this.availableButtons[otherPlayer.name].vote = true;
-        }else{
-            this.availableButtons[otherPlayer.name].vote = false;
+        this.suffixes = {};//what i see other players as
+        /*
+        {
+            "otherPlayerName":["Dead", "Mayor"]
         }
-            
-        return this.availableButtons[otherPlayer.name].vote;
+
+        */
     }
+    
     addMessage(m){
         this.chatMessageList.push(m);
+        this.unsentMessageList.push(m)
     }
     addMessages(m){
         for(let i in m){
-            this.chatMessageList.push(m[i]);
+            this.addMessage(m[i]);
         }
     }
+    getUnsentMessages(){
+        return this.unsentMessageList.splice(0,this.unsentMessageList.length);
+    }
+
     setUpAvailableButtons(players){
         for(let playerName in players){
             this.availableButtons[playerName] = {target:false, whisper: false, vote:false};
+            this.suffixes[playerName] = [];
         }
     }
+
+    addSuffix(playerWithSuffix, suffix){
+        this.suffixes[playerWithSuffix].push(suffix);
+    }
+
     createPlayerRole(exact){
         this.role = new PlayerRole(exact);
     }
@@ -59,6 +66,20 @@ export class PlayerState{
         if(!this.role.getRoleObject().canTargetFunction(this, otherPlayer)) return;
         this.role.cycle.targeting.push(otherPlayer);
     }
+    canVote(otherPlayer){
+        if(
+            this.name !== otherPlayer.name &&
+            this.role.persist.alive &&
+            otherPlayer.role.persist.alive &&
+            this.role.cycle.voting !== otherPlayer
+        ){
+            this.availableButtons[otherPlayer.name].vote = true;
+        }else{
+            this.availableButtons[otherPlayer.name].vote = false;
+        }
+            
+        return this.availableButtons[otherPlayer.name].vote;
+    }
     /**
      * Makes it so the player is targeting nobody
      * sets targeting to = []
@@ -67,6 +88,8 @@ export class PlayerState{
     clearTarget(){
         this.role.cycle.targeting = [];
     }
+
+
     roleblock(){
         this.role.cycle.roleblocked = true;
         if(!this.role.getRoleObject().roleblockable) this.role.cycle.nightInformation.push(new ChatMessageState(null, "Someone attempted to roleblock you but you were immune.", GameManager.COLOR.GAME_TO_YOU));
@@ -85,7 +108,11 @@ export class PlayerState{
         
     }
     die(){
-        this.suffixes.push("died");
+        for(let playerName in GameManager.host.players){
+            //all other players ... should see on me,,,, that i died
+            GameManager.host.players[playerName].addSuffix(this.name, "Died");
+        }
+        
         this.role.persist.alive = false;
     }
 }
