@@ -1,7 +1,7 @@
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
 import GameManager from "./GameManager"
 
-class Role{
+export class Role{
     /**
      * @param {string} _name
      * @param {string} _faction 
@@ -43,7 +43,7 @@ class Role{
         //-1 is infinite, 0 is you cant have one. 1 is normal unique
 
         this.canTargetFunction = _canTargetFunction ? _canTargetFunction : (myPlayer, otherPlayer)=>{
-            let otherInMyTeam = (myPlayer.role.getRoleObject().team === otherPlayer.role.getRoleObject().team) && myPlayer.role.getRoleObject().team!==null;
+            let otherInMyTeam = Role.onSameTeam(myPlayer, otherPlayer);
             return (
                 myPlayer.name!==otherPlayer.name && //Not targeting myself
                 otherPlayer.role.persist.alive && //theyre alive
@@ -55,6 +55,10 @@ class Role{
 
         this.extraPersist=_extraPersist;
         this.doRole=_doRole;
+    }
+    static onSameTeam(playerA, playerB){
+        return playerA.role.getRoleObject().team === playerB.role.getRoleObject().team && //same team
+        playerA.role.getRoleObject().team!==null;  //not null
     }
 }
 class TEAM{
@@ -141,8 +145,8 @@ export const ROLES = {
     ),
     "Consort":new Role(
         "Consort", "Target a player to roleblock them, they cannot use their role for that night", "💄",
-        "Mafia", "Support", null, Infinity,
-        0, false, true, false, 
+        "Mafia", "Support", "Mafia", Infinity,
+        0, false, true, true, 
         {},
         (priority, player)=>{
             if(priority !== -6) return;

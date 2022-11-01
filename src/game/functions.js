@@ -3,13 +3,19 @@
  * @param {array} l 
  */
 export function shuffleList(l){
-for(let i = 0; i < l.length; i++){
-let r = Math.floor(Math.random()*l.length);
-let t = l[r];
-l[r] = l[i];
-l[i] = t;
+    for(let i = 0; i < l.length; i++){
+        let r = Math.floor(Math.random()*l.length);
+        let t = l[r];
+        l[r] = l[i];
+        l[i] = t;
+    }
 }
-}
+/**
+ * 
+ * @param {Array} a array to sort
+ * @param {Function} compareFunc takes 2 parameters and returns integer, if integer is positive then first param should come first
+ * @returns {Array} sorted array
+ */
 export function mergeSort(a, compareFunc){
     if(a.length <= 1) return a;
 

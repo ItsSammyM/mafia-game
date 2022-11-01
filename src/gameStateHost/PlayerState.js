@@ -46,7 +46,8 @@ export class PlayerState{
     }
 
     addSuffix(playerWithSuffix, suffix){
-        this.suffixes[playerWithSuffix].push(suffix);
+        if(!this.suffixes[playerWithSuffix].includes(suffix))
+            this.suffixes[playerWithSuffix].push(suffix);
     }
 
     createPlayerRole(exact){
@@ -178,8 +179,6 @@ export class PlayerRole{
             
         }
     }
-
-    
 }
 /*
 this.name = _name;

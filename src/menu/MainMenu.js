@@ -4,20 +4,29 @@ import "../styles/Main.css"
 import { PlayerListMenu } from "./PlayerlistMenu";
 
 export class MainMenu extends React.Component {
+    static instance;
     constructor(props){
         super(props);
+
+        
+
         this.state = {
             enteredMessage : "",
+
+            rightPanel : <PlayerListMenu/>,
         }
     }
     componentDidMount() {
-
+        MainMenu.instance = this;
     }
     componentWillUnmount() {
-
+        MainMenu.instance = undefined;
     }
     onChangeMessageListener(msg){
         this.setState({enteredMessage : msg})
+    }
+    setRightPanel(s){
+        this.setState({rightPanel : s})
     }
     render(){return(
         
@@ -36,7 +45,9 @@ export class MainMenu extends React.Component {
                     borderRight: "1px solid black",
                     maxHeight : "100vh",
                     width: !(!msg || msg==="") ? "100vw" : "50vw",
-                }}>{<div><ChatMenu onChangeMessageListener={(msg) => this.onChangeMessageListener(msg)}/></div>}</div>)
+                }}>
+                    <ChatMenu onChangeMessageListener={(msg) => this.onChangeMessageListener(msg)}/>
+                </div>)
             })(this.state.enteredMessage)}
 
             {((msg)=>{
@@ -48,7 +59,9 @@ export class MainMenu extends React.Component {
                         overflowX: "hidden",
                         borderLeft: "1px solid black",
                         maxHeight : "100vh",
-                    }}>{<div><PlayerListMenu/></div>}</div>)
+                    }}>
+                        {this.state.rightPanel}
+                    </div>)
             })(this.state.enteredMessage)}
         </div>
     )}

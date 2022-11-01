@@ -1,5 +1,5 @@
 import { PubNubWrapper } from "./PubNubWrapper"
-import { generateRandomString, shuffleList} from "./functions"
+import { generateRandomString, shuffleList, mergeSort} from "./functions"
 import { PlayerState } from "../gameStateHost/PlayerState";
 import { PlayerStateClient } from "../gameStateClient/PlayerStateClient";
 import { Main } from "../Main"
@@ -7,7 +7,7 @@ import { WaitJoinMenu } from "../menu/WaitJoinMenu";
 import { MainMenu } from "../menu/MainMenu";
 import { ChatMessageStateClient } from "../gameStateClient/ChatMessageStateClient";
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
-import { getRandomRole, TEAMS } from "./ROLES";
+import { getRandomRole, TEAMS, Role } from "./ROLES";
 import { PhaseStateMachine } from "./PHASE";
 /**
  * A type of message, with specified behaviors for how it should be sent and recieved
@@ -155,8 +155,8 @@ let GameManager = {
 
             let roleList = [
             //  [faction, alignment, exact]
-                [null, null, "Mafioso"],
-                [null, null, "Sheriff"],
+                ["Mafia", "Killing", null],
+                ["Town", null, null],
             ];
             shuffleList(roleList);
 
@@ -211,6 +211,17 @@ let GameManager = {
                 GameManager.host.chatGroups["All"].push(player);
             }
 
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+                player.addSuffix(player.name, player.role.persist.roleName);
+
+                for(let otherPlayerName in GameManager.host.players){
+                    let otherPlayer = GameManager.host.players[otherPlayerName];
+    
+                    if(Role.onSameTeam(player, otherPlayer) && TEAMS[player.role.getRoleObject().team].showFactionMembers)
+                        player.addSuffix(otherPlayer.name, otherPlayer.role.persist.roleName);
+                }
+            }
             //GameManager.host.players["Sam"].addSuffix("Joe", "Mayor");
             //MAKE IT SO MAFIA CAN SEE EACHOTHERS ROLES
 
@@ -221,8 +232,50 @@ let GameManager = {
                         out.push(playerName);
                     }
                     return out;
-                })()),
-                playerIndividual,
+                })()),  //all player names
+                playerIndividual,   //peoples own rolenames
+                mergeSort(roleList, (a,b)=>{
+
+                    if(a[0] !== b[0]){
+                        if(a[0] === null)  return -1000;
+                        if(b[0] === null)  return 1000;
+
+                        if(a[0] === "Mafia")  return 1000;
+                        if(b[0] === "Mafia")  return -1000;
+
+                        if(a[0] === "Coven")  return 1000;
+                        if(b[0] === "Coven")  return -1000;
+
+                        if(a[0] === "Town")  return 1000;
+                        if(b[0] === "Town")  return -1000;
+
+                        if(a[0] === "Neutral")  return -1000;
+                        if(b[0] === "Neutral")  return 1000;
+                    }
+
+                    if(a[1]!== b[1]){
+                        if(a[1] === null)  return -500;
+                        if(b[1] === null)  return 500;
+
+                        if(a[1] === "Chaos")  return 500;
+                        if(b[1] === "Chaos")  return -500;
+
+                        if(a[1] === "Investigative")  return 500;
+                        if(b[1] === "Investigative")  return -500;
+
+                        if(a[1] === "Killing")  return 500;
+                        if(b[1] === "Killing")  return -500;
+
+                        if(a[1] === "Protective")  return 500;
+                        if(b[1] === "Protective")  return -500;
+
+                        if(a[1] === "Support")  return 500;
+                        if(b[1] === "Support")  return -500;
+
+                        if(a[1] === "Deception")  return 500;
+                        if(b[1] === "Deception")  return -500;
+                    }
+                }), //give sorted rolelist as to give no clue to how it was randomly organized
             );
             GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
             GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
@@ -260,6 +313,7 @@ let GameManager = {
         phaseName: "",
         cycleNumber : 1,
 
+        roleList : [],
         players : {},
         information : [],
         chatMessageList : [],
@@ -609,11 +663,13 @@ let GameManager = {
              * }
              * @param {array[ChatMessageStateClient]} informationList
              */
-            (allPlayerNames, playerIndividual)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["START_GAME"], {
+            (allPlayerNames, playerIndividual, roleList)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["START_GAME"], {
                 playerIndividual  : playerIndividual,
                 allPlayerNames: allPlayerNames,
+                roleList: roleList,
             })},
             (contents)=>{
+                GameManager.client.roleList = contents.roleList;
                 for(let i = 0; i < contents.allPlayerNames.length; i++){
                     GameManager.client.players[contents.allPlayerNames[i]] = new PlayerStateClient(contents.allPlayerNames[i]);
                 }

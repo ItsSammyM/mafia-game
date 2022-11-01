@@ -3,6 +3,8 @@ import { Button } from "../menuComponents/Button";
 import GameManager from "../game/GameManager";
 import "../styles/Main.css"
 import { mergeSort } from "../game/functions";
+import { RoleListMenu } from "./RoleListMenu"
+import { MainMenu } from "./MainMenu";
 
 export class PlayerListMenu extends React.Component {
     constructor(props){
@@ -208,9 +210,10 @@ export class PlayerListMenu extends React.Component {
     }
     render(){return(<div>
             <div className="Main-body">
-                Room Code: {this.state.roomCode}
+                Room Code: {this.state.roomCode}<br/>
+                <Button text="Role List" onClick={()=>{MainMenu.instance.setRightPanel(<RoleListMenu/>)}}/><br/>
             </div>
-            
+            <br/>
             <div className="Main-header">
                 {this.state.header}<br/>
             </div><br/>
@@ -224,6 +227,7 @@ export class PlayerListMenu extends React.Component {
                 <br/>
                 
                 {this.renderPlayers()}<br/>
+                
             </div>
             <br/>
             <br/>
