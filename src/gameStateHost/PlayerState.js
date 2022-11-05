@@ -8,6 +8,8 @@ export class PlayerState{
         this.chatMessageList = [];
         this.unsentMessageList = [];
 
+        this.chatGroupSendList = [];
+
         this.role = null;
 
         this.availableButtons = {};
@@ -21,7 +23,6 @@ export class PlayerState{
         {
             "otherPlayerName":["Dead", "Mayor"]
         }
-
         */
     }
     
@@ -97,6 +98,19 @@ export class PlayerState{
         else this.role.cycle.nightInformation.push(new ChatMessageState(null, "You were roleblocked.", GameManager.COLOR.GAME_TO_YOU));
     }
     tryNightKill(attacker, attackPower){
+        /*
+        no attack = 0;
+        no defense = 0;
+        basic attack = 1;
+        basic defense = 1;
+        powerfull attack = 2;
+        powerfull defense = 2;
+        unstoppable attack = 3;
+        unstoppable defense = 3;
+
+        defense always wins over attack.. If == then no kill
+        */
+
         if(this.role.cycle.defense >= attackPower){
             //safe
             attacker.role.cycle.nightInformation.push(new ChatMessageState(null, "Your target had defense and survived.", GameManager.COLOR.GAME_TO_YOU));
@@ -108,12 +122,23 @@ export class PlayerState{
         }
         
     }
-    die(){
-        for(let playerName in GameManager.host.players){
-            //all other players ... should see on me,,,, that i died
-            GameManager.host.players[playerName].addSuffix(this.name, "Died");
-        }
+    die(showDied=true){
+
+        //ADD TO DEAD CHAT
+        if(this.role.getRoleObject().team)
+            GameManager.host.chatGroups[this.role.getRoleObject().team].push(this);
+
         
+        if(showDied){
+            let publicInformation = new ChatMessageState(this.name+" died", this.name+" died.", GameManager.COLOR.GAME_TO_ALL);
+
+            for(let playerName in GameManager.host.players){
+                //all other players ... should see on me,,,, that i died
+                let player = GameManager.host.players[playerName];
+                player.addSuffix(this.name, "Died");
+                player.addMessage(publicInformation);
+            }
+        }
         this.role.persist.alive = false;
     }
 }

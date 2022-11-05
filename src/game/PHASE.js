@@ -28,7 +28,7 @@ export let PhaseStateMachine = {
     }
 }
 const PHASES = {
-    "Night":new Phase(5, 
+    "Night":new Phase(8, 
         ()=>{
             let playerIndividualMessage = {};
             let informationListMessage = [];
@@ -54,9 +54,17 @@ const PHASES = {
 
                     //console.log(!player.role.getRoleObject().canTargetFunction.(player, otherPlayer))
                 }
+
                 playerIndividualMessage[playerName].availableButtons = player.availableButtons;
                 //player.addMessages(playerIndividualMessage[playerName].informationList);
                 player.addMessages(informationListMessage);
+
+                //WHAT CHAT SHOULDS PEOPLE SEND IN?
+                player.chatGroupSendList = [];
+                if(player.role.getRoleObject().team && player.role.cycle.aliveNow)
+                    player.chatGroupSendList.push(player.role.getRoleObject().team);
+                if(!player.role.cycle.aliveNow)
+                    player.chatGroupSendList.push("Dead");
             }
             
             
@@ -64,6 +72,7 @@ const PHASES = {
                 "Night", GameManager.host.cycleNumber, playerIndividualMessage
             );
             GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
+            GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
         }, 
         ()=>{
             //set loop first
@@ -129,6 +138,11 @@ const PHASES = {
                 
                 player.addMessages(informationListMessage);
                 player.addMessages(player.role.cycle.nightInformation);
+
+                //WHAT CHAT SHOULDS PEOPLE SEND IN?
+                player.chatGroupSendList = [];
+                if(!player.role.cycle.aliveNow)
+                    player.chatGroupSendList.push("Dead");
             }
 
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
@@ -136,6 +150,7 @@ const PHASES = {
             );
             GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
             GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
+            GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
         },
         ()=>{
             for(let playerName in GameManager.host.players){
@@ -175,6 +190,13 @@ const PHASES = {
                 
                 player.addMessages(informationListMessage);
                 //player.addMessages(playerIndividualMessage[playerName].informationList);
+                
+                //WHAT CHAT SHOULDS PEOPLE SEND IN?
+                player.chatGroupSendList = [];
+                if(player.role.cycle.aliveNow)
+                    player.chatGroupSendList.push("All");
+                if(!player.role.cycle.aliveNow)
+                    player.chatGroupSendList.push("Dead");
             }
 
             
@@ -182,6 +204,7 @@ const PHASES = {
                 "Discussion", GameManager.host.cycleNumber, playerIndividualMessage
             );
             GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
+            GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
         },
         ()=>{
             if(GameManager.host.cycle.trialsLeftToday > 0){
@@ -216,6 +239,7 @@ const PHASES = {
                     let otherPlayer = GameManager.host.players[otherPlayerName];
 
                     player.availableButtons[otherPlayerName].target = false;
+                    player.role.cycle.voting = null;
                     player.canVote(otherPlayer);
                     //player.availableButtons[otherPlayerName].vote = true;
                     //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
@@ -225,12 +249,20 @@ const PHASES = {
 
                 player.addMessages(informationListMessage);
                 //player.addMessages(playerIndividualMessage[playerName].informationList);
+
+                //WHAT CHAT SHOULDS PEOPLE SEND IN?
+                player.chatGroupSendList = [];
+                if(player.role.cycle.aliveNow)
+                    player.chatGroupSendList.push("All");
+                if(!player.role.cycle.aliveNow)
+                    player.chatGroupSendList.push("Dead");
             }
 
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
                 "Voting", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
             );
             GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
+            GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
         },
         ()=>{
             //if somebody is voted then voting wouldnt have timed out
@@ -268,18 +300,30 @@ const PHASES = {
 
                 player.addMessages(informationListMessage);
                 //player.addMessages(playerIndividualMessage[playerName].informationList);
+
+                //WHAT CHAT SHOULDS PEOPLE SEND IN?
+                player.chatGroupSendList = [];
+
+                
+                // if(player.role.cycle.aliveNow)
+                //     player.chatGroupSendList.push("All");
+                if(!player.role.cycle.aliveNow)
+                    player.chatGroupSendList.push("Dead");
             }
+            //player on trial needs to be able to talk
+            GameManager.host.cycle.playerOnTrial.chatGroupSendList.push("All");
 
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
                 "Testimony", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
             );
             GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
+            GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
         },
         ()=>{
             PhaseStateMachine.startPhase("Judgement");
         }
     ),
-    "Judgement":new Phase(10, 
+    "Judgement":new Phase(8, 
         ()=>{
             let playerIndividualMessage = {};
             let informationListMessage = [];
@@ -309,12 +353,21 @@ const PHASES = {
 
                 player.addMessages(informationListMessage);
                 //player.addMessages(playerIndividualMessage[playerName].informationList);
+
+
+                //WHAT CHAT SHOULDS PEOPLE SEND IN?
+                player.chatGroupSendList = [];
+                if(player.role.cycle.aliveNow)
+                    player.chatGroupSendList.push("All");
+                if(!player.role.cycle.aliveNow)
+                    player.chatGroupSendList.push("Dead");
             }
 
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
                 "Judgement", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
             );
             GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
+            GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
         },
         ()=>{
             let totalJudgement = 0;
@@ -327,6 +380,7 @@ const PHASES = {
             if(totalJudgement < 0){
                 //guilty
                 GameManager.host.cycle.playerOnTrial.die();
+
                 PhaseStateMachine.startPhase("Night");
             }else{
                 //innocent

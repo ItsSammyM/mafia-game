@@ -153,9 +153,12 @@ let GameManager = {
 
             //informationList.push(new ChatMessageState("NoTitle", "All Player", GameManager.COLOR.GAME_TO_ALL));
 
+            //GIVE ROLES
             let roleList = [
             //  [faction, alignment, exact]
                 ["Mafia", "Killing", null],
+                ["Mafia", null, null],
+                ["Town", null, null],
                 ["Town", null, null],
             ];
             shuffleList(roleList);
@@ -180,7 +183,7 @@ let GameManager = {
                         alreadyPickedRolesList
                     );
                 }
-                //add to role list
+                //add to already picked role list
                 alreadyPickedRolesList.push(roleName);
                 player.createPlayerRole(roleName); //actually create role
 
@@ -188,42 +191,53 @@ let GameManager = {
                 playerIndividual[playerName] = {
                     roleName : player.role.persist.roleName,
                 };
-                player.addMessages(
-                    [new ChatMessageState(
+                player.addMessage(
+                    new ChatMessageState(
                         player.role.getRoleObject().faction+" "+player.role.getRoleObject().alignment+", "+player.role.persist.roleName, 
                         player.role.getRoleObject().basicDescription, 
                         GameManager.COLOR.GAME_TO_YOU
-                    )]
+                    )
                 );
                 player.addMessages(informationList);
                 index++;
             }
 
-            //after roleList is picked, create extra chat groups
+
+            //CHAT GROUPS
             for(let teamName in TEAMS){
-                GameManager.host.chatGroups[teamName] = []; //add all people who are of roles that are in the team
-                //INCOMPLETE
+                GameManager.host.chatGroups[teamName] = [];
             }
+
+            //after roleList is picked, create extra chat groups
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
+                //WHISPER
                 GameManager.host.chatGroups[playerName] = [player]; //also add blackmailer
+                //ALL
                 GameManager.host.chatGroups["All"].push(player);
+                //TEAMS
+                if(player.role.getRoleObject().team)
+                    GameManager.host.chatGroups[player.role.getRoleObject().team].push(player);
             }
 
+
+
+            //SUFFIXES
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
-                player.addSuffix(player.name, player.role.persist.roleName);
+                player.addSuffix(player.name, player.role.persist.roleName);    //suffix yourself
 
                 for(let otherPlayerName in GameManager.host.players){
                     let otherPlayer = GameManager.host.players[otherPlayerName];
     
                     if(Role.onSameTeam(player, otherPlayer) && TEAMS[player.role.getRoleObject().team].showFactionMembers)
-                        player.addSuffix(otherPlayer.name, otherPlayer.role.persist.roleName);
+                        player.addSuffix(otherPlayer.name, otherPlayer.role.persist.roleName);  //suffix for same team members
                 }
             }
-            //GameManager.host.players["Sam"].addSuffix("Joe", "Mayor");
-            //MAKE IT SO MAFIA CAN SEE EACHOTHERS ROLES
+
+
+
 
             GameManager.HOST_TO_CLIENT["START_GAME"].send(
                 ((()=>{
@@ -309,6 +323,7 @@ let GameManager = {
         playerName : "",
 
         chatGroupSendList : ["All"],
+        seeSelfAlive : true,
 
         phaseName: "",
         cycleNumber : 1,
@@ -401,7 +416,7 @@ let GameManager = {
             if(this.spamPreventer()) return;
 
             GameManager.CLIENT_TO_HOST["SEND_MESSAGE"].send(
-                GameManager.client.playerName, ["All"], 
+                GameManager.client.playerName, GameManager.client.chatGroupSendList, 
                 new ChatMessageStateClient(
                     GameManager.client.playerName,
                     message,
@@ -861,7 +876,7 @@ let GameManager = {
                 GameManager.client.cycle.targetedPlayerNames = [];
             }
         ),
-        "BUTTON_VOTE_RESPONSE":new MessageType(false,
+        "BUTTON_VOTE_RESPONSE":new MessageType(true,
             (playerName, playerVotedName, canVoteList)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["BUTTON_VOTE_RESPONSE"], {
                 playerName : playerName,
                 playerVotedName : playerVotedName,
@@ -883,7 +898,7 @@ let GameManager = {
                 GameManager.client.cycle.votedForName = contents.playerVotedName;
             }
         ),
-        "BUTTON_CLEAR_VOTE_RESPONSE":new MessageType(false,
+        "BUTTON_CLEAR_VOTE_RESPONSE":new MessageType(true,
             (playerName, canVoteList)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"], {
                 playerName : playerName,
                 canVoteList : canVoteList,
@@ -904,7 +919,7 @@ let GameManager = {
                 GameManager.client.cycle.votedForName = null;
             }
         ),
-        "BUTTON_JUDGEMENT_RESPONSE":new MessageType(false,
+        "BUTTON_JUDGEMENT_RESPONSE":new MessageType(true,
             (playerName, judgement)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["BUTTON_JUDGEMENT_RESPONSE"], {
                 playerName : playerName,
                 judgement : judgement,
@@ -915,7 +930,7 @@ let GameManager = {
                 GameManager.client.cycle.judgementStatus = contents.judgement;
             }
         ),
-        "SEND_UNSENT_MESSAGES":new MessageType(false,
+        "SEND_UNSENT_MESSAGES":new MessageType(true,
             ()=>{
                 
                 let playerIndividual = {};
@@ -940,6 +955,37 @@ let GameManager = {
                     // }catch{}
                     return new ChatMessageStateClient(p.title, p.text, p.color)
                 }));
+            }
+        ),
+        "UPDATE_CLIENT":new MessageType(true,
+            /**
+             * playerIndividual : {
+             *      Sammy : {
+             *          seeSelfDead : true
+             *          chatGroupSendList : ["All", "Mafia", "Dead", "Medium"]
+             *      }
+             * }
+             */
+            ()=>{
+            
+                let playerIndividual = {};
+
+                for(let playerName in GameManager.host.players){
+                    let player = GameManager.host.players[playerName];
+
+                    playerIndividual[playerName] = {
+                        seeSelfAlive : player.role.persist.alive,
+                        chatGroupSendList : player.chatGroupSendList,
+                    };
+                }
+
+                GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"], {
+                    playerIndividual : playerIndividual,
+                });
+            },
+            (contents)=>{
+                GameManager.client.chatGroupSendList = contents.playerIndividual[GameManager.client.playerName].chatGroupSendList;
+                GameManager.client.seeSelfAlive = contents.playerIndividual[GameManager.client.playerName].seeSelfAlive;
             }
         ),
     },

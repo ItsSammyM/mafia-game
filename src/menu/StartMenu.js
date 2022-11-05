@@ -30,7 +30,7 @@ export class StartMenu extends React.Component {
         GameManager.host.create();
         setTimeout(()=>{
             GameManager.client.create(GameManager.host.roomCode, this.state.nameInput)
-        },100);
+        },500);
         Main.instance.changeMenu(<StartHostMenu roomCode={GameManager.host.roomCode}/>);
     }
     render() {return (<div>

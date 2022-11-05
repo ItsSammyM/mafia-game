@@ -15,11 +15,27 @@ export class ChatMenu extends React.Component {
             onChangeMessageListener : props.onChangeMessageListener,
 
             sendBarHeader : "All",
-
             UPDATE_LISTENER : {
                 listener : () => {
                     this.setState({
                         chatMessageList : GameManager.client.chatMessageList,
+                    });
+                }
+            },
+            UPDATE_CLIENT_LISTENER : {
+                listener : (c)=>{
+                    let out = "";
+                    for(let i = 0; i < GameManager.client.chatGroupSendList.length; i++){
+                        out+=GameManager.client.chatGroupSendList[i]+", ";
+                    }
+
+                    if(out.length>=2)
+                        out = out.substring(0,out.length-2);
+                    if(out.length===0)
+                        out = "NO CHATS AVAILABLE"
+                    
+                    this.setState({
+                        sendBarHeader : out
                     });
                 }
             }
@@ -30,10 +46,12 @@ export class ChatMenu extends React.Component {
             chatMessageList : GameManager.client.chatMessageList,
         });
         GameManager.client.addMessageListener(this.state.UPDATE_LISTENER);
+        GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].addReceiveListener(this.state.UPDATE_CLIENT_LISTENER);
         this.scrollToBottom();
     }
     componentWillUnmount() {
         GameManager.client.removeMessageListener(this.state.UPDATE_LISTENER);
+        GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].removeReceiveListener(this.state.UPDATE_CLIENT_LISTENER);
     }
     componentDidUpdate() {
         if(this.bottomIsInViewport(500))   //used to be 500

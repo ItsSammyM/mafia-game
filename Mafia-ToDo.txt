@@ -2,6 +2,15 @@ stop players from spamming buttons
 drop down for what role you think someone is on player list - The tyler thing
 
 fix overflow y on pages besides main
+
+make so cant inno/guilty while dead ---- SEE SELF DEAD.  NOT ACTUALLY IMPLEMENTED YET
+make so can vote the same person up 2x cuz buttons missong -FIXED?
+
+
+ALIBI
+NOTES
+
+
 --------
 i want this role
 i dont want this faction/alignment

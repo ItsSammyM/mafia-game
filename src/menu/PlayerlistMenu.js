@@ -23,6 +23,8 @@ export class PlayerListMenu extends React.Component {
             judgementStatus : 0,
             playerOnTrialName : null,
 
+            seeSelfAlive : true,
+
             START_PHASE_LISTENER : {
                 listener : (c)=>{
                     this.setState({
@@ -32,6 +34,7 @@ export class PlayerListMenu extends React.Component {
 
                         targetedPlayerNames : [],
                         votedForName : null,
+                        judgementStatus : GameManager.client.judgementStatus,
                     });
                 }
             },
@@ -63,13 +66,20 @@ export class PlayerListMenu extends React.Component {
                     });
                 }
             },
-            UPDATE_PLAYERS_LISTENERS : {
+            UPDATE_PLAYERS_LISTENER : {
                 listener : (c)=>{
                     this.setState({
                         players : GameManager.client.players,
                     });
                 }
-            }
+            },
+            UPDATE_CLIENT_LISTENER : {
+                listener : (c)=>{
+                    this.setState({
+                        seeSelfAlive : GameManager.client.seeSelfAlive,
+                    });
+                }
+            },
         };
     }
     componentDidMount() {
@@ -87,6 +97,8 @@ export class PlayerListMenu extends React.Component {
             judgementStatus : GameManager.client.cycle.judgementStatus,
 
             playerOnTrialName : GameManager.client.cycle.playerOnTrialName,
+
+            seeSelfAlive : GameManager.client.seeSelfAlive,
         });
         this.state.START_PHASE_LISTENER.listener(null);
 
@@ -101,7 +113,9 @@ export class PlayerListMenu extends React.Component {
         GameManager.HOST_TO_CLIENT["BUTTON_JUDGEMENT_RESPONSE"].addReceiveListener(this.state.BUTTON_JUDEMENT_RESPONSE_LISTENER);
 
         GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].addReceiveListener(this.state.PLAYER_ON_TRIAL_LISTENER);
-        GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].addReceiveListener(this.state.UPDATE_PLAYERS_LISTENERS);
+        GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].addReceiveListener(this.state.UPDATE_PLAYERS_LISTENER);
+        
+        //GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].addReceiveListener(this.state.UPDATE_CLIENT_LISTENER);
     }
     componentWillUnmount() {
         GameManager.HOST_TO_CLIENT["START_PHASE"].removeReceiveListener(this.state.START_PHASE_LISTENER);
@@ -115,7 +129,9 @@ export class PlayerListMenu extends React.Component {
         GameManager.HOST_TO_CLIENT["BUTTON_JUDGEMENT_RESPONSE"].removeReceiveListener(this.state.BUTTON_JUDEMENT_RESPONSE_LISTENER);
 
         GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].removeReceiveListener(this.state.PLAYER_ON_TRIAL_LISTENER);
-        GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].removeReceiveListener(this.state.UPDATE_PLAYERS_LISTENERS);
+        GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].removeReceiveListener(this.state.UPDATE_PLAYERS_LISTENER);
+
+        //GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].removeReceiveListener(this.state.UPDATE_CLIENT_LISTENER);
     }
     renderPlayers() {
         let out = [];
@@ -189,7 +205,9 @@ export class PlayerListMenu extends React.Component {
                 return(<div>
                     Trial<br/>
                     {"<<"+this.state.playerOnTrialName+">>"}<br/>
-                    {(()=>{if(this.state.playerOnTrialName !== GameManager.client.playerName) return <div>
+                    {(()=>{if(
+                            this.state.playerOnTrialName !== GameManager.client.playerName && this.state.seeSelfAlive
+                        ) return <div>
                         My Vote: {(()=>{
                             if(this.state.judgementStatus === -1){
                                 return "Guilty";
