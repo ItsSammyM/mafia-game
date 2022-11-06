@@ -1,0 +1,156 @@
+{
+    "defaultRoleLists":[
+        [   //5
+            [null, null, "Godfather"],
+            ["Mafia", null, null],
+
+            ["Town", "Investigative", null],
+            ["Town", null, null],
+            ["Town", null, null]
+        ],
+        [   //6
+            [null, null, "Godfather"],
+            ["Mafia", null, null],
+
+            ["Town", "Investigative", null],
+            ["Town", "Protective", null],
+            ["Town", null, null],
+            ["Town", null, null]
+        ],
+        [   //7
+            [null, null, "Godfather"],
+            ["Mafia", null, null],
+
+            ["Town", "Investigative", null],
+            ["Town", "Protective", null],
+            ["Town", null, null],
+            ["Town", null, null],
+            
+            ["Neutral", "Evil", null]
+        ],
+        [   //8
+            [null, null, "Godfather"],
+            ["Mafia", null, null],
+
+            ["Town", "Investigative", null],
+            ["Town", "Protective", null],
+            ["Town", null, null],
+            ["Town", null, null],
+            ["Town", null, null],
+            
+            [null, null, "Witch"]
+        ],
+        [   //9
+            [null, null, "Godfather"],
+            ["Mafia", null, null],
+
+            ["Town", "Investigative", null],
+            ["Town", "Protective", null],
+            ["Town", "Support", null],
+            ["Town", null, null],
+            ["Town", null, null],
+            ["Town", null, null],
+            
+            ["Neutral", "Evil", null]
+        ],
+        [   //10
+            ["Mafia", "Killing", null],
+            ["Mafia", null, null],
+            ["Mafia", null, null],
+
+            ["Town", "Investigative", null],
+            ["Town", "Protective", null],
+            ["Town", "Support", null],
+            ["Town", null, null],
+            ["Town", null, null],
+            ["Town", null, null],
+            
+            ["Neutral", "Evil", null]
+        ],
+        [   //11
+            ["Mafia", "Killing", null],
+            ["Mafia", null, null],
+            ["Mafia", null, null],
+
+            ["Town", "Investigative", null],
+            ["Town", "Investigative", null],
+            ["Town", "Protective", null],
+            ["Town", "Support", null],
+            ["Town", null, null],
+            ["Town", null, null],
+            ["Town", null, null],
+
+            ["Neutral", "Evil", null]
+        ],
+        [   //12
+            [null, null, "Godfather"],
+            [null, null, "Mafioso"],
+            ["Mafia", null, null],
+            ["Mafia", null, null],
+
+            ["Town", "Investigative", null],
+            ["Town", "Investigative", null],
+            ["Town", "Protective", null],
+            ["Town", "Support", null],
+            ["Town", null, null],
+            ["Town", null, null],
+            ["Town", null, null],
+            
+            ["Neutral", "Evil", null]
+        ],
+        [   //13
+            [null, null, "Godfather"],
+            [null, null, "Mafioso"],
+            ["Mafia", null, null],
+            ["Mafia", null, null],
+            
+            ["Town", "Investigative", null],
+            ["Town", "Investigative", null],
+            ["Town", "Protective", null],
+            ["Town", "Support", null],
+            ["Town", "Killing", null],
+            ["Town", null, null],
+            ["Town", null, null],
+            ["Town", null, null],
+
+            ["Neutral", "Evil", null]
+        ],
+        [   //14
+            [null, null, "Godfather"],
+            [null, null, "Mafioso"],
+            ["Mafia", null, null],
+            ["Mafia", null, null],
+            
+            ["Town", "Investigative", null],
+            ["Town", "Investigative", null],
+            ["Town", "Protective", null],
+            ["Town", "Support", null],
+            ["Town", "Killing", null],
+            ["Town", null, null],
+            ["Town", null, null],
+            ["Town", null, null],
+
+            ["Neutral", "Evil", null],
+            ["Neutral", "Killing", null]
+        ],
+        [   //15
+            [null, null, "Godfather"],
+            [null, null, "Mafioso"],
+            ["Mafia", null, null],
+            ["Mafia", null, null],
+            
+            ["Town", "Investigative", null],
+            ["Town", "Investigative", null],
+            ["Town", "Protective", null],
+            ["Town", "Support", null],
+            ["Town", "Killing", null],
+            ["Town", null, null],
+            ["Town", null, null],
+            ["Town", null, null],
+            ["Town", null, null],
+
+            ["Neutral", "Evil", null],
+            ["Neutral", "Killing", null]
+        ]
+    ]
+}

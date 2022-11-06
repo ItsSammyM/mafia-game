@@ -9,6 +9,7 @@ import { ChatMessageStateClient } from "../gameStateClient/ChatMessageStateClien
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
 import { getRandomRole, TEAMS, Role } from "./ROLES";
 import { PhaseStateMachine } from "./PHASE";
+//import settings from '../settings';
 /**
  * A type of message, with specified behaviors for how it should be sent and recieved
  */
@@ -313,6 +314,10 @@ let GameManager = {
         },
         tick : function(){
             PhaseStateMachine.tick();
+        },
+
+        importDefaultRoleList : function(){
+            var settings = require('../settings.json');
         }
     },
     client : {

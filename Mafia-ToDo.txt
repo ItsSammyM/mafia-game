@@ -3,6 +3,9 @@ drop down for what role you think someone is on player list - The tyler thing
 ALIBI
 NOTES
 
+WIN CONDITIONS
+
+
 //IMPOSTER -- You blackmail someone for a day and you can talk under their name, 3 uses
 //GRAVESTEALER -- Like Janitor, but instead of cleaning, it doesnt show that their dead... all day, every day, until they are voted up.... 
         AKA, theyre blackmailed and roleblocked every day until voted up. And they can talk in dead chat
