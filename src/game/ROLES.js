@@ -84,23 +84,77 @@ export const ROLES = {
         {},
         (priority, player)=>{
             if(priority !== 4) return;
+
             if(player.role.cycle.targeting.length < 1) return;
             if(!player.role.cycle.aliveNow) return;
 
-            player.role.cycle.nightInformation.push(new ChatMessageState(
+            let myTarget = player.role.cycle.targeting[0];
+            if(!myTarget.role.cycle.aliveNow) return;
+
+            player.role.addNightInformation(new ChatMessageState(
                 null,
-                "Your target seems to be " + (player.role.cycle.targeting[0].role.cycle.isSuspicious ? "suspicious." : "innocent."),
+                "Your target seems to be " + (myTarget.role.cycle.isSuspicious ? "suspicious." : "innocent."),
                 GameManager.COLOR.GAME_TO_YOU
-            ));
+            ), true);
         }
+    ),
+    "Lookout":new Role(
+        "Lookout", "Target a player to find out who else visited them, (find out who else targeted them)", "🔭",
+        "Town", "Investigative", null, Infinity,
+        0, true, true, false,
+        {},
+        (priority, player)=>{
+            if(priority !== 4) return;
+
+            if(player.role.cycle.targeting.length < 1) return;
+            if(!player.role.cycle.aliveNow) return;
+
+            let myTarget = player.role.cycle.targeting[0];
+            if(!myTarget.role.cycle.aliveNow) return;
+            
+            for(let visitorIndex in myTarget.role.cycle.targetedBy){
+                let visitor = myTarget.role.cycle.targetedBy[visitorIndex];
+
+                player.role.addNightInformation(new ChatMessageState(
+                    null,
+                    "Your target was visited by " + visitor.name,
+                    GameManager.COLOR.GAME_TO_YOU
+                ), true);
+            }
+        }
+
     ),
     "Doctor":new Role(
         "Doctor", "Target a player to save them from an attack, you can save yourself once", "💉",
-        "Town", "Protective", null, 0,
+        "Town", "Protective", null, Infinity,
         0, true, true, false,
         {selfHealed : false},
-        ()=>{
+        (priority, player)=>{
+            if(player.role.cycle.targeting.length < 1) return;
+            if(!player.role.cycle.aliveNow) return;
 
+            let myTarget = player.role.cycle.targeting[0];
+            if(!myTarget.role.cycle.aliveNow) return;
+
+            if(player.role.persist.extra.selfHealed && player === myTarget) return; //if already self healed and trying it again
+
+            if(priority === 2){
+                if(player === myTarget) player.role.persist.extra.selfHealed=true;
+
+                if(myTarget.role.cycle.defense < 2){
+                    myTarget.role.cycle.defense=2;
+                }
+                myTarget.role.cycle.extra.healedByDoc = true;
+            }
+            if(priority === 8){
+                if(myTarget.role.cycle.extra.healedByDoc && myTarget.role.cycle.extra.attackedTonight)
+                    player.role.addNightInformation(new ChatMessageState(
+                        null,
+                        "You healed your target",
+                        GameManager.COLOR.GAME_TO_YOU
+                    ), true);
+            }
+            
         },
         (myPlayer, otherPlayer)=>{
             
@@ -125,7 +179,10 @@ export const ROLES = {
             if(player.role.cycle.targeting.length < 1) return;
             if(!player.role.cycle.aliveNow) return;
 
-            player.role.cycle.targeting[0].roleblock();
+            let myTarget = player.role.cycle.targeting[0];
+            if(!myTarget.role.cycle.aliveNow) return;
+
+            myTarget.roleblock();
         }
     ),
     //#endregion
@@ -140,7 +197,10 @@ export const ROLES = {
             if(player.role.cycle.targeting.length < 1) return;
             if(!player.role.cycle.aliveNow) return;
 
-            player.role.cycle.targeting[0].tryNightKill(player, 1);
+            let myTarget = player.role.cycle.targeting[0];
+            if(!myTarget.role.cycle.aliveNow) return;
+
+            myTarget.tryNightKill(player, 1);
         }
     ),
     "Consort":new Role(
@@ -153,7 +213,10 @@ export const ROLES = {
             if(player.role.cycle.targeting.length < 1) return;
             if(!player.role.cycle.aliveNow) return;
 
-            player.role.cycle.targeting[0].roleblock();
+            let myTarget = player.role.cycle.targeting[0];
+            if(!myTarget.role.cycle.aliveNow) return;
+
+            myTarget.roleblock();
         }
     ),
     //#endregion
@@ -173,8 +236,9 @@ Everyones target is set first
 +2: Doctor(Heal), Blackmailer(Decide), Crusader(Heal), Arsonist(Douse), Framer, Disguiser
 +4: Sheriff, Invest, Consig, Lookout, Tracker,
 +6: Mafioso/Godfather, SerialKiller, Werewolf, Veteran, Vampire, Arsonist, Crusader, Bodyguard, Vigilante (All kill)
-+8: Spy(Collect info) Amnesiac(Convert) Vampire(Convert) Forger(Change info), Janitor(Clean)
-+10 Witch(Steal info)
++8: Amnesiac(Convert) Vampire(Convert) Forger(Change info), Janitor(Clean), Doctor(Notify)
++10 Spy(Collect info)
++12 Witch(Steal info)
 
 --------
 investigator idea

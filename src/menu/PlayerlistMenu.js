@@ -115,7 +115,7 @@ export class PlayerListMenu extends React.Component {
         GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].addReceiveListener(this.state.PLAYER_ON_TRIAL_LISTENER);
         GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].addReceiveListener(this.state.UPDATE_PLAYERS_LISTENER);
         
-        //GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].addReceiveListener(this.state.UPDATE_CLIENT_LISTENER);
+        GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].addReceiveListener(this.state.UPDATE_CLIENT_LISTENER);
     }
     componentWillUnmount() {
         GameManager.HOST_TO_CLIENT["START_PHASE"].removeReceiveListener(this.state.START_PHASE_LISTENER);
@@ -131,7 +131,7 @@ export class PlayerListMenu extends React.Component {
         GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].removeReceiveListener(this.state.PLAYER_ON_TRIAL_LISTENER);
         GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].removeReceiveListener(this.state.UPDATE_PLAYERS_LISTENER);
 
-        //GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].removeReceiveListener(this.state.UPDATE_CLIENT_LISTENER);
+        GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].removeReceiveListener(this.state.UPDATE_CLIENT_LISTENER);
     }
     renderPlayers() {
         let out = [];
@@ -220,6 +220,7 @@ export class PlayerListMenu extends React.Component {
                         })()}<br/>
                         <Button text="Innocent" onClick={()=>{GameManager.client.clickJudgement(1)}}/><br/>
                         <Button text="Guilty" onClick={()=>{GameManager.client.clickJudgement(-1)}}/><br/>
+                        <Button text="Abstain" onClick={()=>{GameManager.client.clickJudgement(0)}}/><br/>
                     </div>})()}
                 </div>);
             default:

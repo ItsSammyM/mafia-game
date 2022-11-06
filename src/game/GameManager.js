@@ -85,7 +85,7 @@ let GameManager = {
             numVotesNeeded : 9999,
             playerOnTrial : null,
         },
-        setCycle(){
+        setCycle(){ //called on start of morning
             GameManager.host.cycle = {
                 trialsLeftToday : 3,
                 numVotesNeeded : Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.role.persist.alive}).length / 2) + 1,
@@ -157,9 +157,8 @@ let GameManager = {
             let roleList = [
             //  [faction, alignment, exact]
                 ["Mafia", "Killing", null],
-                ["Mafia", null, null],
-                ["Town", null, null],
-                ["Town", null, null],
+                ["Town", "Protective", null],
+                ["Town", "Investigative", null],
             ];
             shuffleList(roleList);
 
@@ -628,27 +627,27 @@ let GameManager = {
             (contents)=>{
                 contents.chatMessage.text = contents.chatMessage.text.substring(0,GameManager.MAX_MESSAGE_LENGTH).trim();
                 if(contents.chatMessage.text===""||!contents.chatMessage.text) return;
+
                 let playersWhoGotMessageAlready = [];
 
                 for(let chatGroup in GameManager.host.chatGroups){
                     let playerList = GameManager.host.chatGroups[chatGroup];
 
                     if(!contents.chatGroups.includes(chatGroup)) continue;
+                    if(!GameManager.host.players[contents.playerName].chatGroupSendList.includes(chatGroup)) continue;
 
                     for(let playerName in GameManager.host.players){
                         let player = GameManager.host.players[playerName];
 
                         if(playersWhoGotMessageAlready.includes(player)) continue;
-                        if(!playerList.includes(player)) continue;
+                        if( !playerList.includes(player) && player!==GameManager.host.players[contents.playerName]   ) continue;
 
                         player.addMessage(new ChatMessageState(contents.chatMessage.title, contents.chatMessage.text, contents.chatMessage.color));
                         playersWhoGotMessageAlready.push(player);
                     }
                 }
-
                 GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
             }
-
         ),
     },
     HOST_TO_CLIENT:{
@@ -748,7 +747,6 @@ let GameManager = {
                         // }
                         for(let otherPlayerName in player.availableButtons){
                             GameManager.client.players[otherPlayerName].availableButtons = player.availableButtons[otherPlayerName];
-                            
                         }
                     }
                 }
@@ -925,7 +923,6 @@ let GameManager = {
                 judgement : judgement,
             })},
             (contents)=>{
-
                 if(contents.playerName !== GameManager.client.playerName) return;
                 GameManager.client.cycle.judgementStatus = contents.judgement;
             }

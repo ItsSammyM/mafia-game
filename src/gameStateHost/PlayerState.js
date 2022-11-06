@@ -25,7 +25,6 @@ export class PlayerState{
         }
         */
     }
-    
     addMessage(m){
         this.chatMessageList.push(m);
         this.unsentMessageList.push(m)
@@ -94,8 +93,12 @@ export class PlayerState{
 
     roleblock(){
         this.role.cycle.roleblocked = true;
-        if(!this.role.getRoleObject().roleblockable) this.role.cycle.nightInformation.push(new ChatMessageState(null, "Someone attempted to roleblock you but you were immune.", GameManager.COLOR.GAME_TO_YOU));
-        else this.role.cycle.nightInformation.push(new ChatMessageState(null, "You were roleblocked.", GameManager.COLOR.GAME_TO_YOU));
+        if(!this.role.getRoleObject().roleblockable)
+            this.role.addNightInformation(
+                new ChatMessageState(null, "Someone attempted to roleblock you but you were immune", GameManager.COLOR.GAME_TO_YOU), false
+            );
+        else 
+            this.role.addNightInformation(new ChatMessageState(null, "You were roleblocked", GameManager.COLOR.GAME_TO_YOU), false);
     }
     tryNightKill(attacker, attackPower){
         /*
@@ -111,35 +114,39 @@ export class PlayerState{
         defense always wins over attack.. If == then no kill
         */
 
+        this.role.cycle.extra.attackedTonight = true;
         if(this.role.cycle.defense >= attackPower){
             //safe
-            attacker.role.cycle.nightInformation.push(new ChatMessageState(null, "Your target had defense and survived.", GameManager.COLOR.GAME_TO_YOU));
-            this.role.cycle.nightInformation.push(new ChatMessageState(null, "You were attacked but had defense and survived.", GameManager.COLOR.GAME_TO_YOU));
+            attacker.role.addNightInformation(new ChatMessageState(null, "Your target had defense and survived", GameManager.COLOR.GAME_TO_YOU), false);
+            this.role.addNightInformation(new ChatMessageState(null, "You were attacked but had defense and survived", GameManager.COLOR.GAME_TO_YOU), false);
+            if(this.role.cycle.extra.healedByDoc)
+                this.role.addNightInformation(new ChatMessageState(null, "You were healed by a Doctor", GameManager.COLOR.GAME_TO_YOU), false);
         }else{
             //die
-            this.role.cycle.nightInformation.push(new ChatMessageState(null, "You were attacked and died.", GameManager.COLOR.GAME_TO_YOU));
+            this.role.addNightInformation(new ChatMessageState(null, "You were attacked and died", GameManager.COLOR.GAME_TO_YOU), false);
             this.die();
         }
         
     }
-    die(showDied=true){
-
+    die(){
         //ADD TO DEAD CHAT
-        if(this.role.getRoleObject().team)
-            GameManager.host.chatGroups[this.role.getRoleObject().team].push(this);
+        GameManager.host.chatGroups["Dead"].push(this);
+        // if(this.role.getRoleObject().team)
+        //     GameManager.host.chatGroups[this.role.getRoleObject().team].push(this);
 
-        
-        if(showDied){
-            let publicInformation = new ChatMessageState(this.name+" died", this.name+" died.", GameManager.COLOR.GAME_TO_ALL);
-
-            for(let playerName in GameManager.host.players){
-                //all other players ... should see on me,,,, that i died
-                let player = GameManager.host.players[playerName];
-                player.addSuffix(this.name, "Died");
-                player.addMessage(publicInformation);
-            }
-        }
         this.role.persist.alive = false;
+    }
+    showDied(){
+        let publicInformation = new ChatMessageState(this.name+" died", this.name+" died. They were the "+this.role.persist.roleName, GameManager.COLOR.GAME_TO_ALL);
+
+        for(let playerName in GameManager.host.players){
+            let player = GameManager.host.players[playerName];
+
+            //all other players ... should see on me,,,, that i died
+            player.addSuffix(this.name, "Died");
+            player.addSuffix(this.name, this.role.persist.roleName);
+            player.addMessage(publicInformation);
+        }
     }
 }
 export class PlayerRole{
@@ -197,12 +204,16 @@ export class PlayerRole{
 
             extra : {
                 //idk this is for weird stuff exclusively
-                //healedByDoc : false,
+                healedByDoc : false,
+                attackedTonight : false,
                 //savedByBodyguard : false,
                 //killedTonight : false
             },
             
         }
+    }
+    addNightInformation(chatMessageState, roleSpecific){
+        this.cycle.nightInformation.push(   [chatMessageState, roleSpecific]    );
     }
 }
 /*

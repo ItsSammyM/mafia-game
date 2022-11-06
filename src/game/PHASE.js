@@ -83,7 +83,7 @@ const PHASES = {
             }
 
             //main loop 
-            for(let priority = -12; priority < 12; priority++){
+            for(let priority = -12; priority <= 12; priority++){
                 //this loops through priorities
 
                 for(let playerName in GameManager.host.players){
@@ -118,12 +118,13 @@ const PHASES = {
 
             informationListMessage.push(new ChatMessageState("Morning "+GameManager.host.cycleNumber, "Do not speak, collect information.", GameManager.COLOR.GAME_TO_ALL));
             
+            //main loop
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
                 playerIndividualMessage[playerName] = {
                     availableButtons : {}
-                }                
+                }
 
                 for(let otherPlayerName in GameManager.host.players){
                     //let otherPlayer = GameManager.host.players[otherPlayerName];
@@ -137,13 +138,29 @@ const PHASES = {
 
                 
                 player.addMessages(informationListMessage);
-                player.addMessages(player.role.cycle.nightInformation);
+                
+                player.addMessages(player.role.cycle.nightInformation.map((l)=>{return l[0]}));
+                
+                
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
                 if(!player.role.cycle.aliveNow)
                     player.chatGroupSendList.push("Dead");
             }
+
+
+            //ADD dead messages
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+
+                if(!player.role.cycle.aliveNow || player.role.persist.alive)
+                    continue;
+
+                player.showDied();
+            }
+
+
 
             GameManager.HOST_TO_CLIENT["START_PHASE"].send(
                 "Morning", GameManager.host.cycleNumber, playerIndividualMessage
@@ -271,7 +288,8 @@ const PHASES = {
     ),
     "Testimony":new Phase(1,
         ()=>{
-            //GameManager.host.cycle.playerOnTrial
+            GameManager.host.cycle.trialsLeftToday--;
+
             let playerIndividualMessage = {};
             let informationListMessage = [];
 
@@ -370,21 +388,54 @@ const PHASES = {
             GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
         },
         ()=>{
+            let whoVotedMessages = [];
             let totalJudgement = 0;
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
                 totalJudgement += player.role.cycle.judgement;
+
+                if(!player.role.persist.alive) continue;
+                if(player === GameManager.host.cycle.playerOnTrial) continue;
+
+                let out = "";
+                if(player.role.cycle.judgement<0){
+                    out+=" voted guilty";
+                }else if(player.role.cycle.judgement>0){
+                    out+=" voted innocent";
+                }else{
+                    out+=" abstained";
+                }
+
+                whoVotedMessages.push(
+                new ChatMessageState(
+                    null,
+                    player.name+out, 
+                    GameManager.COLOR.GAME_TO_ALL
+                ));
+            }
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+
+                player.addMessages(whoVotedMessages);
             }
 
             if(totalJudgement < 0){
                 //guilty
                 GameManager.host.cycle.playerOnTrial.die();
+                GameManager.host.cycle.playerOnTrial.showDied();
 
                 PhaseStateMachine.startPhase("Night");
-            }else{
-                //innocent
+            }else if(GameManager.host.cycle.trialsLeftToday > 0){
+                //innocent && more trials
                 PhaseStateMachine.startPhase("Voting");
+            }else{
+                //innocent and no more trials
+                for(let playerName in GameManager.host.players){
+                    let player = GameManager.host.players[playerName];
+                    player.addMessage(new ChatMessageState(null, "No trials left today", GameManager.COLOR.GAME_TO_ALL));
+                }
+                PhaseStateMachine.startPhase("Night");
             }
             GameManager.host.cycle.playerOnTrial = null;
             GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
