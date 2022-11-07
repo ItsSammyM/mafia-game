@@ -28,7 +28,7 @@ export let PhaseStateMachine = {
     }
 }
 const PHASES = {
-    "Night":new Phase(8, 
+    "Night":new Phase(10, 
         ()=>{
             let playerIndividualMessage = {};
             let informationListMessage = [];
@@ -180,7 +180,7 @@ const PHASES = {
             PhaseStateMachine.startPhase("Discussion");
         }
     ),
-    "Discussion":new Phase(1,
+    "Discussion":new Phase(45,
         ()=>{
             let playerIndividualMessage = {};
             let informationListMessage = [];
@@ -286,7 +286,7 @@ const PHASES = {
             PhaseStateMachine.startPhase("Night");
         } 
     ),
-    "Testimony":new Phase(1,
+    "Testimony":new Phase(10,
         ()=>{
             GameManager.host.cycle.trialsLeftToday--;
 

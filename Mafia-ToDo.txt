@@ -1,27 +1,33 @@
-drop down for what role you think someone is on player list - The tyler thing
+fix mayor -- set non 0 amount of mayors
 
 ALIBI
+Graveyard
 NOTES
 
 WIN CONDITIONS
 
-
-//IMPOSTER -- You blackmail someone for a day and you can talk under their name, 3 uses
-//GRAVESTEALER -- Like Janitor, but instead of cleaning, it doesnt show that their dead... all day, every day, until they are voted up.... 
-        AKA, theyre blackmailed and roleblocked every day until voted up. And they can talk in dead chat
-//DEATHFAKER -- You pick someone, and it shows that they died,, even though they didnt, they are blackmailed for the day to make it convincing.
-        This has the side effect of confirming their role, so its a big risk. However if you have a Janitor/Forger then it could be really cool
-//KIDNAPPER -- evil jailor
-//JOURNALIST -- can write in a journal and anonymously post to town every morning
+Entire wikipedia for game including priorities
+drop down for what role you think someone is on player list - The tyler thing
 
 --------
 i want this role
 i dont want this faction/alignment
 Thomas thing
 ---------
-Entire wikipedia for game including priorities
-Graveyard
-RoleList
+
+
+
+
+
+//IMPOSTER -- You blackmail someone for a day and you can talk under their name, 3 uses
+//GRAVESTEALER -- Like Janitor, but instead of cleaning, it doesnt show that their dead... all day, every day, until they are voted up.... 
+        AKA, theyre blackmailed and roleblocked every day until voted up. And they can talk in dead chat
+//PARALYZER -- You pick someone, and it shows that they died,, even though they didnt, they are blackmailed for the day to make it convincing.
+        This has the side effect of confirming their role, so its a big risk. However if you have a Janitor/Forger then it could be really cool
+//KIDNAPPER -- evil jailor
+//JOURNALIST -- can write in a journal and anonymously post to town every morning
+
+
 
 
 Vigilante, Veteran, Mafioso, Pirate, or Ambusher.
@@ -40,6 +46,7 @@ https://town-of-salem.fandom.com/wiki/Victory#:~:text=the%20same%20faction.-,Tow
 https://emojipedia.org/search/?q=lips
 give all roles emojis
 
+Godfather 
 Mafioso 🌹
 
 Blackmailer 🪡 ✉️ 🤐

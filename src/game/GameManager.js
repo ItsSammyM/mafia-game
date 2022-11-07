@@ -7,12 +7,18 @@ import { WaitJoinMenu } from "../menu/WaitJoinMenu";
 import { MainMenu } from "../menu/MainMenu";
 import { ChatMessageStateClient } from "../gameStateClient/ChatMessageStateClient";
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
-import { getRandomRole, TEAMS, Role } from "./ROLES";
+import { getRandomRole, TEAMS, Role, ROLES } from "./ROLES";
 import { PhaseStateMachine } from "./PHASE";
-//import settings from '../settings';
+import settings from '../settings.json'
+/*
+weird stuff
+
+"create-react-app": "^5.0.1",
+*/
 /**
  * A type of message, with specified behaviors for how it should be sent and recieved
  */
+
  class MessageType{
     /**
      * @param {boolean} toClient
@@ -155,12 +161,16 @@ let GameManager = {
             //informationList.push(new ChatMessageState("NoTitle", "All Player", GameManager.COLOR.GAME_TO_ALL));
 
             //GIVE ROLES
-            let roleList = [
-            //  [faction, alignment, exact]
-                ["Mafia", "Killing", null],
-                ["Town", "Protective", null],
-                ["Town", "Investigative", null],
-            ];
+            let roleList = //[[null, null, "Godfather"]];
+            GameManager.host.importDefaultRoleList(
+                Object.keys(GameManager.host.players).length
+            )
+            //[
+            //   //[faction, alignment, exact]
+            //     ["Mafia", "Killing", null],
+            //     ["Town", "Protective", null],
+            //     ["Town", "Investigative", null],
+            // ];
             shuffleList(roleList);
 
             let alreadyPickedRolesList = [];
@@ -222,7 +232,6 @@ let GameManager = {
             }
 
 
-
             //SUFFIXES
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
@@ -235,8 +244,6 @@ let GameManager = {
                         player.addSuffix(otherPlayer.name, otherPlayer.role.persist.roleName);  //suffix for same team members
                 }
             }
-
-
 
 
             GameManager.HOST_TO_CLIENT["START_GAME"].send(
@@ -315,9 +322,41 @@ let GameManager = {
         tick : function(){
             PhaseStateMachine.tick();
         },
+        importDefaultRoleList : function(numbPlayers){
+            return settings.defaultRoleLists[numbPlayers];
+        },
+        checkEndGame : function(){
+            let livingRoleNamesList = [];
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+                if(!player.role.persist.alive) continue;
 
-        importDefaultRoleList : function(){
-            var settings = require('../settings.json');
+                livingRoleNamesList.push(player.role.persist.roleName);
+            }
+
+            //If only 1 victoryGroup Remains
+            let victoryGroupsRemaining = [];
+            for(let i in livingRoleNamesList){
+                let roleName = livingRoleNamesList[i];
+                if(
+                    ROLES[roleName].victoryGroup!==null && 
+                    !victoryGroupsRemaining.includes(ROLES[roleName].victoryGroup)
+                )
+                    victoryGroupsRemaining.push(ROLES[roleName].victoryGroup);
+            }
+            
+            if(victoryGroupsRemaining.length <= 1){
+                GameManager.host.endGame();
+                return true;
+            }
+            return false;
+        },
+        endGame(){
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+                player.addMessage(new ChatMessageState("Game Over", "Win conditions not implemented yet", GameManager.COLOR.GAME_TO_YOU));
+            }
+            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
         }
     },
     client : {

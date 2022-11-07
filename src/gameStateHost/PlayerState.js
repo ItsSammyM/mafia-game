@@ -135,6 +135,8 @@ export class PlayerState{
         //     GameManager.host.chatGroups[this.role.getRoleObject().team].push(this);
 
         this.role.persist.alive = false;
+
+        GameManager.host.checkEndGame();
     }
     showDied(){
         let publicInformation = new ChatMessageState(this.name+" died", this.name+" died. They were the "+this.role.persist.roleName, GameManager.COLOR.GAME_TO_ALL);
@@ -177,7 +179,8 @@ export class PlayerRole{
             }
         };
         //copy extra persist over from role
-        for(let key in ROLES[roleName].persist){
+        
+        for(let key in ROLES[roleName].extraPersist){
             this.persist.extra[key] = ROLES[roleName].extraPersist[key];
         }
     }
@@ -198,6 +201,7 @@ export class PlayerRole{
             aliveNow : this.persist.alive,
 
             defense : ROLES[this.persist.roleName].defense,
+            attack : ROLES[this.persist.roleName].attack,
             isSuspicious : ROLES[this.persist.roleName].isSuspicious,
 
             nightInformation : [],
@@ -206,6 +210,7 @@ export class PlayerRole{
                 //idk this is for weird stuff exclusively
                 healedByDoc : false,
                 attackedTonight : false,
+                isVeteranOnAlert : false,
                 //savedByBodyguard : false,
                 //killedTonight : false
             },
