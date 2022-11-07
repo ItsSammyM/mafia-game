@@ -1,4 +1,12 @@
+Timer
+
 fix mayor -- set non 0 amount of mayors
+
+jamin was able to vote himself innocent/guilty
+
+waiting looks like game broken
+make it so when entered wrong room code, it tells you
+
 
 ALIBI
 Graveyard
@@ -26,6 +34,8 @@ Thomas thing
         This has the side effect of confirming their role, so its a big risk. However if you have a Janitor/Forger then it could be really cool
 //KIDNAPPER -- evil jailor
 //JOURNALIST -- can write in a journal and anonymously post to town every morning
+//LEEROY JENKINS -- You pick someone during the day and they die instantly revealing your name to everyone
+        i reveal as mayor /// NO YOU DONT!
 
 
 

@@ -393,10 +393,10 @@ const PHASES = {
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
-                totalJudgement += player.role.cycle.judgement;
-
                 if(!player.role.persist.alive) continue;
                 if(player === GameManager.host.cycle.playerOnTrial) continue;
+
+                totalJudgement += player.role.cycle.judgement;
 
                 let out = "";
                 if(player.role.cycle.judgement<0){

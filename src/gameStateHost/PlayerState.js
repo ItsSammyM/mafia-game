@@ -139,15 +139,17 @@ export class PlayerState{
         GameManager.host.checkEndGame();
     }
     showDied(){
-        let publicInformation = new ChatMessageState(this.name+" died", this.name+" died. They were the "+this.role.persist.roleName, GameManager.COLOR.GAME_TO_ALL);
+        let publicInformation = [];
+        publicInformation.push(new ChatMessageState(this.name+" died", "They were the "+this.role.cycle.shownRoleName, GameManager.COLOR.GAME_TO_ALL));
+        publicInformation.push(new ChatMessageState(this.name+" died", "Their final will: "+this.role.cycle.shownWill, GameManager.COLOR.GAME_TO_ALL));
 
         for(let playerName in GameManager.host.players){
             let player = GameManager.host.players[playerName];
 
             //all other players ... should see on me,,,, that i died
             player.addSuffix(this.name, "Died");
-            player.addSuffix(this.name, this.role.persist.roleName);
-            player.addMessage(publicInformation);
+            player.addSuffix(this.name, this.role.cycle.shownRoleName);
+            player.addMessages(publicInformation);
         }
     }
 }
@@ -170,6 +172,7 @@ export class PlayerRole{
         this.persist = {
             alive : true,
             roleName : roleName,
+            will : "",
             extra: {
                 // doused : false,
                 // framed : false,
@@ -204,6 +207,9 @@ export class PlayerRole{
             attack : ROLES[this.persist.roleName].attack,
             isSuspicious : ROLES[this.persist.roleName].isSuspicious,
 
+            shownRoleName : this.persist.roleName,
+            shownWill : this.persist.will,
+
             nightInformation : [],
 
             extra : {
@@ -219,6 +225,12 @@ export class PlayerRole{
     }
     addNightInformation(chatMessageState, roleSpecific){
         this.cycle.nightInformation.push(   [chatMessageState, roleSpecific]    );
+    }
+    addNightInformationList(nightInformationList){
+        for(let i in nightInformationList){
+            this.cycle.nightInformation.push(  nightInformationList[i]    );
+        }
+        
     }
 }
 /*

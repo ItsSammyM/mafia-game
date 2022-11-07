@@ -344,7 +344,7 @@ let GameManager = {
                 )
                     victoryGroupsRemaining.push(ROLES[roleName].victoryGroup);
             }
-            
+
             if(victoryGroupsRemaining.length <= 1){
                 GameManager.host.endGame();
                 return true;
@@ -614,11 +614,12 @@ let GameManager = {
                 
                 let playerOnTrial = GameManager.host.someoneVoted();
 
+                
                 if(playerOnTrial !== null){
                     GameManager.host.cycle.playerOnTrial = playerOnTrial;
-                    GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycle.playerOnTrial.name);
                     PhaseStateMachine.startPhase("Testimony");
                 }
+                GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycle.playerOnTrial.name);
             },
         ),
         "BUTTON_CLEAR_VOTE":new MessageType(false,

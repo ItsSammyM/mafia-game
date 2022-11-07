@@ -387,7 +387,84 @@ export const ROLES = {
             myTarget.roleblock();
         }
     ),
+    "Janitor":new Role(
+        "Janitor", "Target a player who might die tonight, if they do, their role and will", "🧹",
+        "Mafia", "Deception", "Mafia",
+        "Mafia", Infinity,
+        0, 0,
+        true, true, true,
+        {cleansLeft : 3},
+        (priority, player)=>{
+            if(priority !== 8) return;
+            if(player.role.cycle.targeting.length < 1) return;
+            if(!player.role.cycle.aliveNow) return;
+
+            let myTarget = player.role.cycle.targeting[0];
+            if(!myTarget.role.cycle.aliveNow) return;
+
+            player.role.cycle.shownRoleName = "Cleaned";
+            player.role.cycle.shownWill = "Cleaned";
+        }
+    ),
     //#endregion
+    //#region Neutral
+    "Witch":new Role(
+        "Witch", "Target 2 players, the first one will be forced to target the second one", "🧙‍♀️",
+        "Neutral", "Evil", null,
+        null, Infinity,
+        0, 0,
+        false, false, false,
+        {hasSheild : true},
+        (priority, player)=>{
+            if(priority !== -8) return;
+
+            if(player.role.cycle.targeting.length < 2) return;
+            if(!player.role.cycle.aliveNow) return;
+
+            let myTarget1 = player.role.cycle.targeting[0];
+            let myTarget2 = player.role.cycle.targeting[1];
+
+            if(!myTarget1.role.cycle.aliveNow) return;
+            if(!myTarget2.role.cycle.aliveNow) return;
+
+
+            if(!myTarget1.role.getRoleObject().witchable){
+                player.role.addNightInformation(new ChatMessageState(
+                    null,
+                    "Your target was immune to being controlled",
+                    GameManager.COLOR.GAME_TO_YOU
+                ), true);
+
+                myTarget1.role.addNightInformation(new ChatMessageState(
+                    null,
+                    "A witch tried to controll you but you are immune",
+                    GameManager.COLOR.GAME_TO_YOU
+                ), false);
+                return;
+            }
+
+            myTarget1.role.addNightInformation(new ChatMessageState(
+                null,
+                "You were controlled by a witch",
+                GameManager.COLOR.GAME_TO_YOU
+            ), false);
+            myTarget1.role.cycle.targeting = [myTarget2];
+            player.role.addNightInformationList(myTarget1.role.cycle.nightInformation);
+        },
+        (myPlayer, otherPlayer)=>{
+            return (
+                otherPlayer.role.persist.alive && //theyre alive
+                myPlayer.role.persist.alive && //im alive
+                myPlayer.role.cycle.targeting.length < 2 &&   //havent already targeted at least 2 person
+                (
+                    (myPlayer.role.cycle.targeting.length === 0 && myPlayer !== otherPlayer) ||
+                    (myPlayer.role.cycle.targeting.length === 1)
+                )
+            );
+        }
+    ),
+    //#endregion
+
 }
 
 /*

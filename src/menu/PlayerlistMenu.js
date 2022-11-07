@@ -238,7 +238,7 @@ export class PlayerListMenu extends React.Component {
             </div><br/>
     
             <div className="Main-body">
-                {GameManager.client.playerName} the {this.state.roleName}<br/>
+                {GameManager.client.playerName} : {this.state.roleName}<br/>
                 
                 <div className="Main-box">
                     {this.renderPhase(this.state.phaseName)}
