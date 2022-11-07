@@ -136,7 +136,7 @@ export class PlayerState{
 
         this.role.persist.alive = false;
 
-        GameManager.host.checkEndGame();
+        //GameManager.host.checkEndGame();
     }
     showDied(){
         let publicInformation = [];

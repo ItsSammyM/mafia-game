@@ -23,6 +23,8 @@ export class PlayerListMenu extends React.Component {
             judgementStatus : 0,
             playerOnTrialName : null,
 
+            timeLeft : GameManager.client.timeLeft,
+
             seeSelfAlive : true,
 
             START_PHASE_LISTENER : {
@@ -80,6 +82,14 @@ export class PlayerListMenu extends React.Component {
                     });
                 }
             },
+            TIME_LEFT_LISTENER : {
+                listener : (c)=>{
+                    if(c.timeLeft!==0)
+                    this.setState({
+                        timeLeft : c.timeLeft,
+                    });
+                }
+            }
         };
     }
     componentDidMount() {
@@ -99,6 +109,7 @@ export class PlayerListMenu extends React.Component {
             playerOnTrialName : GameManager.client.cycle.playerOnTrialName,
 
             seeSelfAlive : GameManager.client.seeSelfAlive,
+            timeLeft : GameManager.client.timeLeft,
         });
         this.state.START_PHASE_LISTENER.listener(null);
 
@@ -116,6 +127,7 @@ export class PlayerListMenu extends React.Component {
         GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].addReceiveListener(this.state.UPDATE_PLAYERS_LISTENER);
         
         GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].addReceiveListener(this.state.UPDATE_CLIENT_LISTENER);
+        GameManager.HOST_TO_CLIENT["TIME_LEFT"].addReceiveListener(this.state.TIME_LEFT_LISTENER);
     }
     componentWillUnmount() {
         GameManager.HOST_TO_CLIENT["START_PHASE"].removeReceiveListener(this.state.START_PHASE_LISTENER);
@@ -132,6 +144,7 @@ export class PlayerListMenu extends React.Component {
         GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].removeReceiveListener(this.state.UPDATE_PLAYERS_LISTENER);
 
         GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].removeReceiveListener(this.state.UPDATE_CLIENT_LISTENER);
+        GameManager.HOST_TO_CLIENT["TIME_LEFT"].removeReceiveListener(this.state.TIME_LEFT_LISTENER);
     }
     renderPlayers() {
         let out = [];
@@ -227,7 +240,7 @@ export class PlayerListMenu extends React.Component {
                 return;
         }
     }
-    render(){return(<div>
+    render(){return(<div className="Main">
             <div className="Main-body">
                 Room Code: {this.state.roomCode}<br/>
                 <Button text="Role List" onClick={()=>{MainMenu.instance.setRightPanel(<RoleListMenu/>)}}/><br/>
@@ -240,6 +253,7 @@ export class PlayerListMenu extends React.Component {
             <div className="Main-body">
                 {GameManager.client.playerName} : {this.state.roleName}<br/>
                 
+                Time Left: {this.state.timeLeft}
                 <div className="Main-box">
                     {this.renderPhase(this.state.phaseName)}
                 </div><br/>

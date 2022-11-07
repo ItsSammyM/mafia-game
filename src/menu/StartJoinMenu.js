@@ -14,7 +14,8 @@ export class StartJoinMenu extends React.Component {
 
         this.state = {
             roomCodeInput:"",
-            playerName : props.playerName
+            playerName : props.playerName,
+            connectionStatus : "",
         };
     }
     componentDidMount() {
@@ -24,6 +25,7 @@ export class StartJoinMenu extends React.Component {
     joinButton(){
         if(!this.state.roomCodeInput)
             return;
+        this.setState({connectionStatus : "Attempting to connect to a host with this roomcode"});
         GameManager.client.create(this.state.roomCodeInput, this.state.playerName);    
     }
     render() {return (<div>
@@ -32,13 +34,15 @@ export class StartJoinMenu extends React.Component {
         </div><br/>
         <div className="Main-body">
             {this.state.playerName}<br/>
-            {this.state.roomCodeInput}{(()=>{if(this.state.roomCodeInput) return(<br/>);})()}
+            {this.state.roomCodeInput?(<div>{this.state.roomCodeInput}<br/></div>):""}
+            {this.state.connectionStatus?(<div>{this.state.connectionStatus}<br/></div>):""}
             Room Code<br/>
             <TextInput onEnter={()=>{this.joinButton()}} onChange={(e)=>{this.setState({roomCodeInput:e.target.value.toLowerCase()})}}/><br/>
             <br/>
             <Button text="Join" onClick={()=>{
                 this.joinButton();
             }}/><br/>
+
         </div>
     </div>);}
 }

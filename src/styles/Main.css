@@ -8,13 +8,20 @@
     /* justify-content: center; */
     /* display: inline-block; */
 }
+.body{
+    background-color: #2d3646;
+    height: 100vh;
+    /*align-items: center;*/
+    text-align: center;
+    overflow-y: hidden;
+}
 .Main {
     /* text-align: center; */
     background-color: #2d3646;
     height: 100vh;
     /*align-items: center;*/
     text-align: center;
-    overflow: hidden;
+    overflow-y: scroll;
     /*justify-content: center; */
 }
 .Main-header {

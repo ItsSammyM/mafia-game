@@ -1,10 +1,7 @@
-Timer
-
-fix mayor -- set non 0 amount of mayors
+fix mayor -- set non 0 amount of mayors, make mayor work
 
 jamin was able to vote himself innocent/guilty
 
-waiting looks like game broken
 make it so when entered wrong room code, it tells you
 
 

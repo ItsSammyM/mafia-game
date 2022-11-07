@@ -16,7 +16,7 @@ export class Main extends React.Component {
     }
     componentWillUnmount() {
     }
-    render() {return (<div className="Main">
+    render() {return (<div className="body">
         <br/>
         {this.state.currentMenu}
     </div>);}

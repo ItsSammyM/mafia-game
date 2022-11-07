@@ -10,10 +10,19 @@ export class StartHostMenu extends React.Component {
         this.state = {
             roomCode : props.roomCode,
             players : {},
+
+            roleList : [],
         };
         this.updatePlayers = {
             listener : (contents)=>{
                 this.setState({players: GameManager.host.players});
+
+                for(let i = 0; i < Object.keys(GameManager.host.players).length; i++){
+                    if(i < this.state.roleList.length) continue;
+                    this.state.roleList.push([null, null, null]);
+                }
+
+                this.setState({roleList : this.state.roleList});
             }
         };
     }
@@ -24,18 +33,25 @@ export class StartHostMenu extends React.Component {
     componentWillUnmount() {
         GameManager.CLIENT_TO_HOST["ASK_JOIN"].removeReceiveListener(this.updatePlayers);
     }
-    renderPlayers(){
-        return(<div>
-            {((players)=>{
-                let out = [];
-                for(let playerName in players){
-                    out.push(<div key={playerName}>{playerName}</div>);
-                }
-                return out;
-            })(this.state.players)}
-        </div>);
+    renderPlayers(players){
+        let out = [];
+        for(let playerName in players){
+            out.push(<div key={playerName}>{playerName}</div>);
+        }
+        return out;
     }
-    render() {return (<div>
+    renderRoleListPickers(roleList){
+        let roleListPickers = [];
+
+        for(let i in roleList){
+            roleListPickers.push(<div key={i}>
+                <Button width="30%" text="Faction"/><Button width="30%" text="Alignment"/><Button width="30%" text="Exact"/>
+            </div>);
+        }
+        
+        return(roleListPickers);
+    }
+    render() {return (<div className="Main">
         <div className="Main-header">
             Mafia
         </div><br/>
@@ -43,10 +59,13 @@ export class StartHostMenu extends React.Component {
             Room Code:<br/>
             {this.state.roomCode}<br/>
             <br/>
-            {this.renderPlayers()}<br/>
+            {this.renderPlayers(this.state.players)}<br/>
             {(()=>{
                 if(Object.keys(this.state.players).length>0) 
-                    return <div><Button text="Start" onClick={()=>{GameManager.host.startGame()}}/><br/></div>})()}
+                    return <div><Button text="Start" onClick={()=>{GameManager.host.startGame()}}/><br/></div>
+            })()}
+            <br/>
+            {this.renderRoleListPickers(this.state.roleList)}<br/>
         </div>
     </div>);}
 }

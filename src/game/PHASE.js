@@ -1,5 +1,7 @@
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
 import GameManager from "./GameManager";
+import settings from "../settings.json"
+import { shuffleList } from "./functions";
 
 class Phase{
     constructor(_maxTimeSeconds, _onStart, _onTimeOut){
@@ -17,6 +19,11 @@ export let PhaseStateMachine = {
         PhaseStateMachine.currentPhase = phaseName;
         PHASES[PhaseStateMachine.currentPhase].onStart();
     },
+    getTimeLeft(){
+        if(!PHASES[PhaseStateMachine.currentPhase]) return null;
+        if(!PhaseStateMachine.phaseStartTime) return null;
+        return PHASES[PhaseStateMachine.currentPhase].maxTimeSeconds*1000 - (Date.now() - PhaseStateMachine.phaseStartTime);
+    },
     tick : ()=>{
         if(!PhaseStateMachine.currentPhase) return;
         
@@ -27,8 +34,8 @@ export let PhaseStateMachine = {
         }
     }
 }
-const PHASES = {
-    "Night":new Phase(10, 
+export const PHASES = {
+    "Night":new Phase(settings.defaultPhaseTimes.RealGame.Night, 
         ()=>{
             let playerIndividualMessage = {};
             let informationListMessage = [];
@@ -111,7 +118,7 @@ const PHASES = {
             PhaseStateMachine.startPhase("Morning");
         }
     ),
-    "Morning":new Phase(1,
+    "Morning":new Phase(settings.defaultPhaseTimes.RealGame.Morning,
         ()=>{
             let playerIndividualMessage = {};
             let informationListMessage = [];
@@ -138,7 +145,7 @@ const PHASES = {
 
                 
                 player.addMessages(informationListMessage);
-                
+                shuffleList(player.role.cycle.nightInformation);
                 player.addMessages(player.role.cycle.nightInformation.map((l)=>{return l[0]}));
                 
                 
@@ -180,7 +187,7 @@ const PHASES = {
             PhaseStateMachine.startPhase("Discussion");
         }
     ),
-    "Discussion":new Phase(45,
+    "Discussion":new Phase(settings.defaultPhaseTimes.RealGame.Discussion,
         ()=>{
             let playerIndividualMessage = {};
             let informationListMessage = [];
@@ -231,7 +238,7 @@ const PHASES = {
             }            
         }
     ),
-    "Voting":new Phase(10,
+    "Voting":new Phase(settings.defaultPhaseTimes.RealGame.Voting,
         ()=>{
             GameManager.host.cycle.numVotesNeeded = Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.role.persist.alive}).length / 2) + 1;
             GameManager.host.cycle.playerOnTrial = null;
@@ -286,7 +293,7 @@ const PHASES = {
             PhaseStateMachine.startPhase("Night");
         } 
     ),
-    "Testimony":new Phase(10,
+    "Testimony":new Phase(settings.defaultPhaseTimes.RealGame.Testimony,
         ()=>{
             GameManager.host.cycle.trialsLeftToday--;
 
@@ -341,7 +348,7 @@ const PHASES = {
             PhaseStateMachine.startPhase("Judgement");
         }
     ),
-    "Judgement":new Phase(8, 
+    "Judgement":new Phase(settings.defaultPhaseTimes.RealGame.Judgement, 
         ()=>{
             let playerIndividualMessage = {};
             let informationListMessage = [];
@@ -425,7 +432,7 @@ const PHASES = {
                 GameManager.host.cycle.playerOnTrial.die();
                 GameManager.host.cycle.playerOnTrial.showDied();
 
-                PhaseStateMachine.startPhase("Night");
+                PhaseStateMachine.startPhase("FinalWords");
             }else if(GameManager.host.cycle.trialsLeftToday > 0){
                 //innocent && more trials
                 PhaseStateMachine.startPhase("Voting");
@@ -441,4 +448,54 @@ const PHASES = {
             GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
         }
     ),
+    "FinalWords":new Phase(settings.defaultPhaseTimes.RealGame.FinalWords,
+        ()=>{
+            let playerIndividualMessage = {};
+            let informationListMessage = [];
+
+            informationListMessage.push(new ChatMessageState(
+                "FinalWords",
+                "Say the final thing you need to say before the night", 
+                GameManager.COLOR.GAME_TO_ALL
+            ));
+
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+
+                playerIndividualMessage[playerName] = {
+                    availableButtons : {}
+                }
+
+                for(let otherPlayerName in GameManager.host.players){
+                    //let otherPlayer = GameManager.host.players[otherPlayerName];
+
+                    player.availableButtons[otherPlayerName].target = false;
+                    player.availableButtons[otherPlayerName].vote = false;
+                    //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
+                }
+
+                playerIndividualMessage[playerName].availableButtons = player.availableButtons;
+
+                player.addMessages(informationListMessage);
+                //player.addMessages(playerIndividualMessage[playerName].informationList);
+
+
+                //WHAT CHAT SHOULDS PEOPLE SEND IN?
+                player.chatGroupSendList = [];
+                if(player.role.cycle.aliveNow)
+                    player.chatGroupSendList.push("All");
+                if(!player.role.cycle.aliveNow)
+                    player.chatGroupSendList.push("Dead");
+            }
+
+            GameManager.HOST_TO_CLIENT["START_PHASE"].send(
+                "FinalWords", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
+            );
+            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
+            GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
+        },
+        ()=>{
+            PhaseStateMachine.startPhase("Night");
+        }
+    )
 }

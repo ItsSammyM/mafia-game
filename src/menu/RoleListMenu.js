@@ -37,7 +37,7 @@ export class RoleListMenu extends React.Component {
             }
         );
     }
-    render() {return (<div>
+    render() {return (<div className="Main">
         <div className="Main-header">
             Role List<br/>
         </div>

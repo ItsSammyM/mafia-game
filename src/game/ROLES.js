@@ -398,17 +398,25 @@ export const ROLES = {
             if(priority !== 8) return;
             if(player.role.cycle.targeting.length < 1) return;
             if(!player.role.cycle.aliveNow) return;
+            if(player.role.persist.extra.cleansLeft <= 0) return;
 
             let myTarget = player.role.cycle.targeting[0];
             if(!myTarget.role.cycle.aliveNow) return;
 
+            player.role.persist.extra.cleansLeft--;
             player.role.cycle.shownRoleName = "Cleaned";
             player.role.cycle.shownWill = "Cleaned";
+            if(!myTarget.role.persist.alive)
+                player.role.addNightInformation(new ChatMessageState(
+                    null,
+                    "Your targets role was "+myTarget.role.persist.roleName,
+                    GameManager.COLOR.GAME_TO_YOU
+                ), true);
         }
     ),
     //#endregion
     //#region Neutral
-    "Witch":new Role(
+    "Witch":new Role(       //WITCH IS COMPLETLY BROKEN
         "Witch", "Target 2 players, the first one will be forced to target the second one", "🧙‍♀️",
         "Neutral", "Evil", null,
         null, Infinity,
@@ -429,6 +437,7 @@ export const ROLES = {
 
 
             if(!myTarget1.role.getRoleObject().witchable){
+
                 player.role.addNightInformation(new ChatMessageState(
                     null,
                     "Your target was immune to being controlled",
@@ -449,6 +458,7 @@ export const ROLES = {
                 GameManager.COLOR.GAME_TO_YOU
             ), false);
             myTarget1.role.cycle.targeting = [myTarget2];
+            player.role.addNightInformation(new ChatMessageState(null, "Your first targets role was "+myTarget1.role.persist.roleName));
             player.role.addNightInformationList(myTarget1.role.cycle.nightInformation);
         },
         (myPlayer, otherPlayer)=>{
@@ -481,7 +491,7 @@ Everyones target is set first
 +2: Doctor(Heal), Blackmailer(Decide), Crusader(Heal), Arsonist(Douse), Framer, Disguiser
 +4: Sheriff, Invest, Consig, Lookout, Tracker,
 +6: Mafioso/Godfather, SerialKiller, Werewolf, Veteran, Vampire, Arsonist, Crusader, Bodyguard, Vigilante (All kill)
-+8: Amnesiac(Convert) Vampire(Convert) Forger(Change info), Janitor(Clean), Doctor(Notify)
++8: Amnesiac(Convert) Vampire(Convert) Forger(Change info), Janitor(Clean & info), Doctor(Notify)
 +10 Spy(Collect info)
 +12 Witch(Steal info)
 

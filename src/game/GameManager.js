@@ -8,7 +8,7 @@ import { MainMenu } from "../menu/MainMenu";
 import { ChatMessageStateClient } from "../gameStateClient/ChatMessageStateClient";
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
 import { getRandomRole, TEAMS, Role, ROLES } from "./ROLES";
-import { PhaseStateMachine } from "./PHASE";
+import { PhaseStateMachine, PHASES } from "./PHASE";
 import settings from '../settings.json'
 /*
 weird stuff
@@ -76,6 +76,8 @@ let GameManager = {
         },10)
     },
     host : {
+        lastSentTime: 0,
+
         isHost : false,
         roomCode : "",
         players : {},
@@ -161,10 +163,13 @@ let GameManager = {
             //informationList.push(new ChatMessageState("NoTitle", "All Player", GameManager.COLOR.GAME_TO_ALL));
 
             //GIVE ROLES
-            let roleList = //[[null, null, "Godfather"]];
-            GameManager.host.importDefaultRoleList(
-                Object.keys(GameManager.host.players).length
-            )
+            let roleList = []//[[null, null, "Godfather"]];
+            // GameManager.host.importDefaultRoleList(
+            //     Object.keys(GameManager.host.players).length
+            // )
+            for(let phaseName in PHASES){
+                PHASES[phaseName].maxTimeSeconds = settings.defaultPhaseTimes.Testing[phaseName];
+            }
             //[
             //   //[faction, alignment, exact]
             //     ["Mafia", "Killing", null],
@@ -321,6 +326,7 @@ let GameManager = {
         },
         tick : function(){
             PhaseStateMachine.tick();
+            GameManager.HOST_TO_CLIENT["TIME_LEFT"].send();
         },
         importDefaultRoleList : function(numbPlayers){
             return settings.defaultRoleLists[numbPlayers];
@@ -439,7 +445,6 @@ let GameManager = {
         },
         clickVote : function(name){
             if(this.spamPreventer()) return;
-
             GameManager.CLIENT_TO_HOST["BUTTON_VOTE"].send(GameManager.client.playerName, name);
         },
         clickClearVote : function(){
@@ -617,9 +622,9 @@ let GameManager = {
                 
                 if(playerOnTrial !== null){
                     GameManager.host.cycle.playerOnTrial = playerOnTrial;
+                    GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycle.playerOnTrial.name);
                     PhaseStateMachine.startPhase("Testimony");
                 }
-                GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycle.playerOnTrial.name);
             },
         ),
         "BUTTON_CLEAR_VOTE":new MessageType(false,
@@ -1028,6 +1033,20 @@ let GameManager = {
             (contents)=>{
                 GameManager.client.chatGroupSendList = contents.playerIndividual[GameManager.client.playerName].chatGroupSendList;
                 GameManager.client.seeSelfAlive = contents.playerIndividual[GameManager.client.playerName].seeSelfAlive;
+            }
+        ),
+        "TIME_LEFT":new MessageType(true,
+            ()=>{
+                if(Date.now() - GameManager.host.lastSentTime < 1003) return;
+                GameManager.host.lastSentTime = Date.now();
+                let out = 0;
+                let tl = PhaseStateMachine.getTimeLeft();
+                if(tl) out = Math.ceil(tl/1000);
+                GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["TIME_LEFT"], {
+                    timeLeft : out,
+                });
+            },
+            (contents)=>{
             }
         ),
     },

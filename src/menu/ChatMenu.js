@@ -104,7 +104,7 @@ export class ChatMenu extends React.Component {
                 this.changeEnteredMessage(e.target.value.substring(0,GameManager.MAX_MESSAGE_LENGTH));
         }}/><br/>
     </div>}
-    render() {return (<div>
+    render() {return (<div className="Main">
         {/* <div className="Main-header">
             {this.state.title}<br/>
         </div><br/> */}

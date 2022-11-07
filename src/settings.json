@@ -1,4 +1,42 @@
 {
+    "defaultPhaseTimes":{
+        "RealGame":{
+            "Night":37,
+            "Morning":15,
+            "Discussion":45,
+            "Voting":30,
+            "Testimony":20,
+            "Judgement":20,
+            "FinalWords":7
+        },
+        "LongGame":{
+            "Night":90,
+            "Morning":15,
+            "Discussion":240,
+            "Voting":30,
+            "Testimony":30,
+            "Judgement":30,
+            "FinalWords":10
+        },
+        "ShortGame":{
+            "Night":60,
+            "Morning":15,
+            "Discussion":120,
+            "Voting":20,
+            "Testimony":20,
+            "Judgement":30,
+            "FinalWords":10
+        },
+        "Testing":{
+            "Night":10,
+            "Morning":1,
+            "Discussion":1,
+            "Voting":15,
+            "Testimony":1,
+            "Judgement":9,
+            "FinalWords":1
+        }
+    },
     "defaultRoleLists":[
         [],
         [

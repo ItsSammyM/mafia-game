@@ -17,7 +17,7 @@ export class WaitJoinMenu extends React.Component {
             Mafia
         </div><br/>
         <div className="Main-body">
-            Waiting
+            Waiting for host to start the game
         </div>
     </div>);}
 }

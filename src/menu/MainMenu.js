@@ -40,7 +40,6 @@ export class MainMenu extends React.Component {
                 return(<div style={{
                     gridColumn: 1,
                     gridRow: 1,
-                    overflowY: "scroll",
                     overflowX: "hidden",
                     borderRight: "1px solid black",
                     maxHeight : "100vh",
@@ -55,7 +54,6 @@ export class MainMenu extends React.Component {
                     return(<div style={{
                         gridColumn: 2,
                         gridRow: 1,
-                        overflowY: "scroll",
                         overflowX: "hidden",
                         borderLeft: "1px solid black",
                         maxHeight : "100vh",
