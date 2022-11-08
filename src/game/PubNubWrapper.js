@@ -20,8 +20,9 @@ export class PubNubWrapper{
             uuid: Date.now().toString() + " " + generateRandomString(5)
         });
 
-        this.channel = ""
-        this.messagesToSend = []; //list of publishPayloads to send 1 time per tick
+        this.channel = "";
+        this.messagesToSendStreamBufferLength = 2;
+        this.messagesToSendStream = []; //list of publishPayloads to send 1 time per tick
         
         this.realListener = {
             message : (m)=>{                
@@ -45,12 +46,12 @@ export class PubNubWrapper{
         );
     }
     tick(){
-        if(this.messagesToSend.length <= 0) return;
+        if(this.messagesToSendStream.length <= 0) return;
         // console.log(this.messagesToSend)
         this.pubnub.publish(
             {
                 channel : this.channel,
-                message : this.messagesToSend,
+                message : this.messagesToSendStream.splice(0, this.messagesToSendStreamBufferLength),
             }, 
             function(status, response) {
                 //console.log("Sending " + publishPayload.message.type);
@@ -58,10 +59,12 @@ export class PubNubWrapper{
                 // console.log(publishPayload);
             }
         );
-        this.messagesToSend = [];
+        //this.messagesToSendStream = [];
     }
     publish(message){
-        this.messagesToSend.push(message);
+        this.messagesToSendStream.push(message);
+        
+            
         // this.pubnub.publish(publishPayload, function(status, response) {
         //     //console.log("Sending " + publishPayload.message.type);
         //     // console.log(status, response);

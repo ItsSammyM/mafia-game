@@ -2,6 +2,9 @@ import React from "react";
 import { Button } from "../menuComponents/Button";
 import GameManager from "../game/GameManager";
 import "../styles/Main.css"
+import { DropDown } from "../menuComponents/DropDown";
+import { ROLES } from "../game/ROLES";
+import settings from "../settings"
 
 export class StartHostMenu extends React.Component {
     constructor(props) {
@@ -44,12 +47,46 @@ export class StartHostMenu extends React.Component {
         let roleListPickers = [];
 
         for(let i in roleList){
-            roleListPickers.push(<div key={i}>
-                <Button width="30%" text="Faction"/><Button width="30%" text="Alignment"/><Button width="30%" text="Exact"/>
-            </div>);
+            roleListPickers.push(<div key={i}>{this.renderRolePicker(i, roleList)}</div>);
         }
         
         return(roleListPickers);
+    }
+    changeRoleList(i, f, v){
+        let copy = this.state.roleList;
+        copy[i][f] = v?v:null;
+        this.setState({roleList : copy});
+    }
+    renderRolePicker(i, roleList){
+        let factions = [null];
+        let alignments = [null];
+        let exactRoles = [null];
+
+        for(let roleName in ROLES){
+
+            exactRoles.push(roleName);
+
+            if(!factions.includes(ROLES[roleName].faction))
+                factions.push(ROLES[roleName].faction);
+
+            if(!alignments.includes(ROLES[roleName].alignment) && (ROLES[roleName].faction === roleList[i][0] || !roleList[i][0]))
+                alignments.push(ROLES[roleName].alignment);
+        }
+
+        return(<div>
+            <DropDown width="30%" value={roleList[i][0]?roleList[i][0]:"Any"} onChange={(e)=>{this.changeRoleList(i, 0, e.target.value)}}>
+                {factions.map((p, i)=>{return(<option key={i}>{p?p:"Any"}</option>)})}
+            </DropDown>
+            <DropDown width="30%" value={roleList[i][1]?roleList[i][1]:"Any"} onChange={(e)=>{this.changeRoleList(i, 1, e.target.value)}}>
+                {alignments.map((p, i)=>{return(<option key={i}>{p?p:"Any"}</option>)})}
+            </DropDown>
+            <DropDown width="30%" value={roleList[i][2]?roleList[i][2]:"Any"} onChange={(e)=>{this.changeRoleList(i, 2, e.target.value)}}>
+                {exactRoles.map((p, i)=>{return(<option key={i}>{p?p:"Any"}</option>)})}
+            </DropDown>
+        </div>
+    )}
+    startButton(){
+        GameManager.host.startGame(this.state.roleList);
     }
     render() {return (<div className="Main">
         <div className="Main-header">
@@ -62,9 +99,38 @@ export class StartHostMenu extends React.Component {
             {this.renderPlayers(this.state.players)}<br/>
             {(()=>{
                 if(Object.keys(this.state.players).length>0) 
-                    return <div><Button text="Start" onClick={()=>{GameManager.host.startGame()}}/><br/></div>
+                    return <div><Button text="Start" onClick={()=>this.startButton()}/><br/></div>
             })()}
             <br/>
+
+            <Button text="Default" width="30%" onClick={()=>{
+                let newRoleList = settings.defaultRoleLists[Object.keys(this.state.players).length];
+                for(let roleSlotIndex in newRoleList){
+                    let roleSlot = newRoleList[roleSlotIndex];
+                    for(let i in roleSlot){
+                        this.changeRoleList(roleSlotIndex, i, newRoleList[roleSlotIndex][i]);
+                    }
+                }
+            }}/>
+            <Button text="All Any" width="30%" onClick={()=>{
+                let newRoleList = settings.defaultRoleLists[Object.keys(this.state.players).length];
+                for(let roleSlotIndex in newRoleList){
+                    let roleSlot = newRoleList[roleSlotIndex];
+                    for(let i in roleSlot){
+                        this.changeRoleList(roleSlotIndex, i, null);
+                    }
+                }
+            }}/>
+            <Button text="Vampires" width="30%" onClick={()=>{
+                let newRoleList = settings.defaultRoleLists[Object.keys(this.state.players).length];
+                for(let roleSlotIndex in newRoleList){
+                    let roleSlot = newRoleList[roleSlotIndex];
+                    for(let i in roleSlot){
+                        this.changeRoleList(roleSlotIndex, i, newRoleList[roleSlotIndex][i]);
+                    }
+                }
+            }}/>
+
             {this.renderRoleListPickers(this.state.roleList)}<br/>
         </div>
     </div>);}

@@ -6,7 +6,8 @@ export class PlayerState{
     constructor(name){
         this.name = name;
         this.chatMessageList = [];
-        this.unsentMessageList = [];
+        this.unsentMessageStream = [];
+        this.unsentMessageStreamBufferLength = 10;
 
         this.chatGroupSendList = [];
 
@@ -27,7 +28,7 @@ export class PlayerState{
     }
     addMessage(m){
         this.chatMessageList.push(m);
-        this.unsentMessageList.push(m)
+        this.unsentMessageStream.push(m)
     }
     addMessages(m){
         for(let i in m){
@@ -35,7 +36,7 @@ export class PlayerState{
         }
     }
     getUnsentMessages(){
-        return this.unsentMessageList.splice(0,this.unsentMessageList.length);
+        return this.unsentMessageStream.splice(0,this.unsentMessageStreamBufferLength);
     }
 
     setUpAvailableButtons(players){
@@ -140,7 +141,7 @@ export class PlayerState{
     }
     showDied(){
         let publicInformation = [];
-        publicInformation.push(new ChatMessageState(this.name+" died", "They were the "+this.role.cycle.shownRoleName, GameManager.COLOR.GAME_TO_ALL));
+        publicInformation.push(new ChatMessageState(this.name+" died", "Their role was "+this.role.cycle.shownRoleName, GameManager.COLOR.GAME_TO_ALL));
         publicInformation.push(new ChatMessageState(this.name+" died", "Their final will: "+this.role.cycle.shownWill, GameManager.COLOR.GAME_TO_ALL));
 
         for(let playerName in GameManager.host.players){
@@ -183,6 +184,7 @@ export class PlayerRole{
         };
         //copy extra persist over from role
         
+        if(!ROLES[roleName]) console.log(roleName)
         for(let key in ROLES[roleName].extraPersist){
             this.persist.extra[key] = ROLES[roleName].extraPersist[key];
         }

@@ -154,7 +154,7 @@ let GameManager = {
             return playerVoted;
         },
 
-        startGame : function(){
+        startGame : function(_roleList){
             GameManager.host.gameStarted = true;
 
             let informationList = [];
@@ -163,7 +163,7 @@ let GameManager = {
             //informationList.push(new ChatMessageState("NoTitle", "All Player", GameManager.COLOR.GAME_TO_ALL));
 
             //GIVE ROLES
-            let roleList = []//[[null, null, "Godfather"]];
+            let roleList = _roleList;//[[null, null, "Godfather"]];
             // GameManager.host.importDefaultRoleList(
             //     Object.keys(GameManager.host.players).length
             // )
@@ -250,59 +250,60 @@ let GameManager = {
                 }
             }
 
+            for(let playerName in GameManager.host.players){
+                GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(playerName, GameManager.host.players[playerName].role.persist.roleName);
+            }
+            GameManager.HOST_TO_CLIENT["ROLE_LIST_AND_PLAYERS"].send(
+                mergeSort(roleList, (a,b)=>{
 
-            GameManager.HOST_TO_CLIENT["START_GAME"].send(
+                if(a[0] !== b[0]){
+                    if(a[0] === null)  return -1000;
+                    if(b[0] === null)  return 1000;
+
+                    if(a[0] === "Mafia")  return 1000;
+                    if(b[0] === "Mafia")  return -1000;
+
+                    if(a[0] === "Coven")  return 1000;
+                    if(b[0] === "Coven")  return -1000;
+
+                    if(a[0] === "Town")  return 1000;
+                    if(b[0] === "Town")  return -1000;
+
+                    if(a[0] === "Neutral")  return -1000;
+                    if(b[0] === "Neutral")  return 1000;
+                }
+
+                if(a[1]!== b[1]){
+                    if(a[1] === null)  return -500;
+                    if(b[1] === null)  return 500;
+
+                    if(a[1] === "Chaos")  return 500;
+                    if(b[1] === "Chaos")  return -500;
+
+                    if(a[1] === "Investigative")  return 500;
+                    if(b[1] === "Investigative")  return -500;
+
+                    if(a[1] === "Killing")  return 500;
+                    if(b[1] === "Killing")  return -500;
+
+                    if(a[1] === "Protective")  return 500;
+                    if(b[1] === "Protective")  return -500;
+
+                    if(a[1] === "Support")  return 500;
+                    if(b[1] === "Support")  return -500;
+
+                    if(a[1] === "Deception")  return 500;
+                    if(b[1] === "Deception")  return -500;
+                }
+                }), 
                 ((()=>{
                     let out = [];
                     for(let playerName in GameManager.host.players){
                         out.push(playerName);
                     }
                     return out;
-                })()),  //all player names
-                playerIndividual,   //peoples own rolenames
-                mergeSort(roleList, (a,b)=>{
-
-                    if(a[0] !== b[0]){
-                        if(a[0] === null)  return -1000;
-                        if(b[0] === null)  return 1000;
-
-                        if(a[0] === "Mafia")  return 1000;
-                        if(b[0] === "Mafia")  return -1000;
-
-                        if(a[0] === "Coven")  return 1000;
-                        if(b[0] === "Coven")  return -1000;
-
-                        if(a[0] === "Town")  return 1000;
-                        if(b[0] === "Town")  return -1000;
-
-                        if(a[0] === "Neutral")  return -1000;
-                        if(b[0] === "Neutral")  return 1000;
-                    }
-
-                    if(a[1]!== b[1]){
-                        if(a[1] === null)  return -500;
-                        if(b[1] === null)  return 500;
-
-                        if(a[1] === "Chaos")  return 500;
-                        if(b[1] === "Chaos")  return -500;
-
-                        if(a[1] === "Investigative")  return 500;
-                        if(b[1] === "Investigative")  return -500;
-
-                        if(a[1] === "Killing")  return 500;
-                        if(b[1] === "Killing")  return -500;
-
-                        if(a[1] === "Protective")  return 500;
-                        if(b[1] === "Protective")  return -500;
-
-                        if(a[1] === "Support")  return 500;
-                        if(b[1] === "Support")  return -500;
-
-                        if(a[1] === "Deception")  return 500;
-                        if(b[1] === "Deception")  return -500;
-                    }
-                }), //give sorted rolelist as to give no clue to how it was randomly organized
-            );
+                })()));
+            GameManager.HOST_TO_CLIENT["START_GAME"].send();
             GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
             GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
             PhaseStateMachine.startPhase("Discussion");
@@ -428,7 +429,7 @@ let GameManager = {
 
         spamPreventer : function(){
             this.numOfPressesInTimeFrame++;
-            if(Date.now() - this.timeLastButtonClickedms < 500 && this.numOfPressesInTimeFrame > 2) return true;
+            if(Date.now() - this.timeLastButtonClickedms < 2000 && this.numOfPressesInTimeFrame > 2) return true;
             GameManager.client.timeLastButtonClickedms = Date.now();
             this.numOfPressesInTimeFrame=0;
             return false;
@@ -719,87 +720,61 @@ let GameManager = {
                 }
             }
         ),
-        "START_GAME":new MessageType(true, 
-            /**
-             * @param {Array[String]} allPlayerNames 
-             * @param {Object} playerIndividual - {
-             *  informationList : {array[ChatMessageState]}
-             * }
-             * @param {array[ChatMessageStateClient]} informationList
-             */
-            (allPlayerNames, playerIndividual, roleList)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["START_GAME"], {
-                playerIndividual  : playerIndividual,
-                allPlayerNames: allPlayerNames,
+        "ROLE_LIST_AND_PLAYERS":new MessageType(true,
+            (roleList, allPlayerNames)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["ROLE_LIST_AND_PLAYERS"], {
                 roleList: roleList,
+                allPlayerNames: allPlayerNames,
             })},
             (contents)=>{
                 GameManager.client.roleList = contents.roleList;
                 for(let i = 0; i < contents.allPlayerNames.length; i++){
                     GameManager.client.players[contents.allPlayerNames[i]] = new PlayerStateClient(contents.allPlayerNames[i]);
                 }
-
-                // for(let i = 0; i < contents.informationList.length; i++){
-                //     GameManager.client.addMessage(new ChatMessageStateClient(
-                //         contents.informationList[i].title, contents.informationList[i].text, contents.informationList[i].color
-                //     ));
-                // }
-                //individual
-                let player = contents.playerIndividual[GameManager.client.playerName];
-                if(player){
-                    // for(let i = 0; i < player.informationList.length; i++){
-                    //     GameManager.client.addMessage(new ChatMessageStateClient(
-                    //         player.informationList[i].title, player.informationList[i].text, player.informationList[i].color
-                    //     ));
-                    // }
-                    GameManager.client.roleName = player.roleName;
-                }
+            }
+        ),
+        "YOUR_ROLE":new MessageType(true,
+            (playerName, roleName)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["YOUR_ROLE"], {
+                playerName  : playerName,
+                roleName : roleName
+            })},
+            (contents)=>{
+                if(GameManager.client.playerName !== contents.playerName) return;
+                GameManager.client.roleName = contents.roleName;
+            }
+        ),
+        "START_GAME":new MessageType(true, 
+            ()=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["START_GAME"], {
+            })},
+            (contents)=>{
                 Main.instance.changeMenu(<MainMenu/>);
             }
         ),
-        "START_PHASE":new MessageType(true,
+        "AVAILABLE_BUTTONS":new MessageType(true,
             /**
              * 
-             * @param {String} newPhase 
-             * @param {Object} playerIndividual - {
-             *  informationList : [Array[ChatMessageState]]
-             *  availableButtons : Object - 
-             *      {
-             *          "Name":{target:false, whisper:true, vote: true}
-             *      }
-             * @param {Array[ChatMessageState]} informationList 
+             * @param {String} playerName
              */
-            (phaseName, cycleNumber, playerIndividual)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["START_PHASE"], {
-                phaseName : phaseName,
-                cycleNumber : cycleNumber,
-                playerIndividual : playerIndividual,
+            (playerName)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["AVAILABLE_BUTTONS"], {
+                playerName: playerName,
+                availableButtons: GameManager.host.players[playerName].availableButtons,
+            })},
+            (contents)=>{
+                if(GameManager.client.playerName!==contents.playerName) return;
+
+                for(let otherPlayerName in contents.availableButtons){
+                    GameManager.client.players[otherPlayerName].availableButtons = contents.availableButtons[otherPlayerName];
+                }
+            }
+        ),
+        "START_PHASE":new MessageType(true,
+            ()=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["START_PHASE"], {
+                phaseName : PhaseStateMachine.currentPhase,
+                cycleNumber : GameManager.host.cycleNumber,
             })},
             (contents)=>{
                 GameManager.client.phaseName = contents.phaseName;
                 GameManager.client.cycleNumber = contents.cycleNumber;
                 GameManager.client.setPhase();
-
-                // if(contents.informationList){
-                //     for(let i = 0; i < contents.informationList.length; i++){
-                //         GameManager.client.addMessage(new ChatMessageStateClient(
-                //             contents.informationList[i].title, contents.informationList[i].text, contents.informationList[i].color
-                //         ));
-                //     }
-                // }
-
-                if(contents.playerIndividual){
-                    //individual
-                    let player = contents.playerIndividual[GameManager.client.playerName];
-                    if(player){
-                        // for(let i = 0; i < player.informationList.length; i++){
-                        //     GameManager.client.addMessage(new ChatMessageStateClient(
-                        //         player.informationList[i].title, player.informationList[i].text, player.informationList[i].color
-                        //     ));
-                        // }
-                        for(let otherPlayerName in player.availableButtons){
-                            GameManager.client.players[otherPlayerName].availableButtons = player.availableButtons[otherPlayerName];
-                        }
-                    }
-                }
             }
         ),
         "PLAYER_ON_TRIAL":new MessageType(true,

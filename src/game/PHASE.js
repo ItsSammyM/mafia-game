@@ -34,10 +34,19 @@ export let PhaseStateMachine = {
         }
     }
 }
+let standardStartPhase = function(){
+    for(let playerName in GameManager.host.players){
+        //let player = GameManager.host.players[playerName];
+        GameManager.HOST_TO_CLIENT["AVAILABLE_BUTTONS"].send(playerName);
+    }
+    GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
+    GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
+    GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
+    GameManager.HOST_TO_CLIENT["START_PHASE"].send();
+}
 export const PHASES = {
     "Night":new Phase(settings.defaultPhaseTimes.RealGame.Night, 
         ()=>{
-            let playerIndividualMessage = {};
             let informationListMessage = [];
 
             informationListMessage.push(new ChatMessageState("Night "+GameManager.host.cycleNumber, "Do not speak, Target someone to use your ability on them.", GameManager.COLOR.GAME_TO_ALL));
@@ -45,10 +54,6 @@ export const PHASES = {
             //give players target buttons
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
-
-                playerIndividualMessage[playerName] = {
-                    availableButtons : {}
-                }
 
                 //can target loop
                 for(let otherPlayerName in GameManager.host.players){
@@ -58,12 +63,7 @@ export const PHASES = {
                     player.availableButtons[otherPlayerName].target = player.role.getRoleObject().canTargetFunction(player, otherPlayer);
                     player.availableButtons[otherPlayerName].vote = false;
                     player.availableButtons[otherPlayerName].whisper = false;
-
-                    //console.log(!player.role.getRoleObject().canTargetFunction.(player, otherPlayer))
                 }
-
-                playerIndividualMessage[playerName].availableButtons = player.availableButtons;
-                //player.addMessages(playerIndividualMessage[playerName].informationList);
                 player.addMessages(informationListMessage);
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
@@ -75,11 +75,7 @@ export const PHASES = {
             }
             
             
-            GameManager.HOST_TO_CLIENT["START_PHASE"].send(
-                "Night", GameManager.host.cycleNumber, playerIndividualMessage
-            );
-            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
-            GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
+            standardStartPhase();
         }, 
         ()=>{
             //set loop first
@@ -120,7 +116,6 @@ export const PHASES = {
     ),
     "Morning":new Phase(settings.defaultPhaseTimes.RealGame.Morning,
         ()=>{
-            let playerIndividualMessage = {};
             let informationListMessage = [];
 
             informationListMessage.push(new ChatMessageState("Morning "+GameManager.host.cycleNumber, "Do not speak, collect information.", GameManager.COLOR.GAME_TO_ALL));
@@ -128,10 +123,6 @@ export const PHASES = {
             //main loop
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
-
-                playerIndividualMessage[playerName] = {
-                    availableButtons : {}
-                }
 
                 for(let otherPlayerName in GameManager.host.players){
                     //let otherPlayer = GameManager.host.players[otherPlayerName];
@@ -141,14 +132,9 @@ export const PHASES = {
                     //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
                 }
                 
-                playerIndividualMessage[playerName].availableButtons = player.availableButtons;
-
-                
                 player.addMessages(informationListMessage);
                 shuffleList(player.role.cycle.nightInformation);
                 player.addMessages(player.role.cycle.nightInformation.map((l)=>{return l[0]}));
-                
-                
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
@@ -167,14 +153,7 @@ export const PHASES = {
                 player.showDied();
             }
 
-
-
-            GameManager.HOST_TO_CLIENT["START_PHASE"].send(
-                "Morning", GameManager.host.cycleNumber, playerIndividualMessage
-            );
-            GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
-            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
-            GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
+            standardStartPhase();
         },
         ()=>{
             for(let playerName in GameManager.host.players){
@@ -189,17 +168,12 @@ export const PHASES = {
     ),
     "Discussion":new Phase(settings.defaultPhaseTimes.RealGame.Discussion,
         ()=>{
-            let playerIndividualMessage = {};
             let informationListMessage = [];
 
             informationListMessage.push(new ChatMessageState("Discussion "+GameManager.host.cycleNumber, "Talk about what you know and convince people to do what you want.", GameManager.COLOR.GAME_TO_ALL));
 
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
-
-                playerIndividualMessage[playerName] = {
-                    availableButtons : {}
-                }
 
                 for(let otherPlayerName in GameManager.host.players){
                     //let otherPlayer = GameManager.host.players[otherPlayerName];
@@ -208,9 +182,6 @@ export const PHASES = {
                     player.availableButtons[otherPlayerName].vote = false;
                     //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
                 }
-                
-                playerIndividualMessage[playerName].availableButtons = player.availableButtons;
-
                 
                 player.addMessages(informationListMessage);
                 //player.addMessages(playerIndividualMessage[playerName].informationList);
@@ -224,11 +195,7 @@ export const PHASES = {
             }
 
             
-            GameManager.HOST_TO_CLIENT["START_PHASE"].send(
-                "Discussion", GameManager.host.cycleNumber, playerIndividualMessage
-            );
-            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
-            GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
+            standardStartPhase();
         },
         ()=>{
             if(GameManager.host.cycle.trialsLeftToday > 0){
@@ -243,7 +210,6 @@ export const PHASES = {
             GameManager.host.cycle.numVotesNeeded = Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.role.persist.alive}).length / 2) + 1;
             GameManager.host.cycle.playerOnTrial = null;
 
-            let playerIndividualMessage = {};
             let informationListMessage = [];
 
             informationListMessage.push(new ChatMessageState(
@@ -255,10 +221,6 @@ export const PHASES = {
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
-                playerIndividualMessage[playerName] = {
-                    availableButtons : {}
-                }
-
                 for(let otherPlayerName in GameManager.host.players){
                     let otherPlayer = GameManager.host.players[otherPlayerName];
 
@@ -268,11 +230,8 @@ export const PHASES = {
                     //player.availableButtons[otherPlayerName].vote = true;
                     //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
                 }
-                
-                playerIndividualMessage[playerName].availableButtons = player.availableButtons;
 
                 player.addMessages(informationListMessage);
-                //player.addMessages(playerIndividualMessage[playerName].informationList);
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
@@ -282,11 +241,7 @@ export const PHASES = {
                     player.chatGroupSendList.push("Dead");
             }
 
-            GameManager.HOST_TO_CLIENT["START_PHASE"].send(
-                "Voting", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
-            );
-            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
-            GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
+            standardStartPhase();
         },
         ()=>{
             //if somebody is voted then voting wouldnt have timed out
@@ -297,7 +252,6 @@ export const PHASES = {
         ()=>{
             GameManager.host.cycle.trialsLeftToday--;
 
-            let playerIndividualMessage = {};
             let informationListMessage = [];
 
             informationListMessage.push(new ChatMessageState(
@@ -309,10 +263,6 @@ export const PHASES = {
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
-                playerIndividualMessage[playerName] = {
-                    availableButtons : {}
-                }
-
                 for(let otherPlayerName in GameManager.host.players){
                     //let otherPlayer = GameManager.host.players[otherPlayerName];
 
@@ -321,28 +271,17 @@ export const PHASES = {
                     //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
                 }
 
-                playerIndividualMessage[playerName].availableButtons = player.availableButtons;
-
                 player.addMessages(informationListMessage);
-                //player.addMessages(playerIndividualMessage[playerName].informationList);
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-
-                
-                // if(player.role.cycle.aliveNow)
-                //     player.chatGroupSendList.push("All");
                 if(!player.role.cycle.aliveNow)
                     player.chatGroupSendList.push("Dead");
             }
             //player on trial needs to be able to talk
             GameManager.host.cycle.playerOnTrial.chatGroupSendList.push("All");
 
-            GameManager.HOST_TO_CLIENT["START_PHASE"].send(
-                "Testimony", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
-            );
-            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
-            GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
+            standardStartPhase();
         },
         ()=>{
             PhaseStateMachine.startPhase("Judgement");
@@ -350,7 +289,6 @@ export const PHASES = {
     ),
     "Judgement":new Phase(settings.defaultPhaseTimes.RealGame.Judgement, 
         ()=>{
-            let playerIndividualMessage = {};
             let informationListMessage = [];
 
             informationListMessage.push(new ChatMessageState(
@@ -362,10 +300,6 @@ export const PHASES = {
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
-                playerIndividualMessage[playerName] = {
-                    availableButtons : {}
-                }
-
                 for(let otherPlayerName in GameManager.host.players){
                     //let otherPlayer = GameManager.host.players[otherPlayerName];
 
@@ -373,8 +307,6 @@ export const PHASES = {
                     player.availableButtons[otherPlayerName].vote = false;
                     //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
                 }
-
-                playerIndividualMessage[playerName].availableButtons = player.availableButtons;
 
                 player.addMessages(informationListMessage);
                 //player.addMessages(playerIndividualMessage[playerName].informationList);
@@ -388,11 +320,7 @@ export const PHASES = {
                     player.chatGroupSendList.push("Dead");
             }
 
-            GameManager.HOST_TO_CLIENT["START_PHASE"].send(
-                "Judgement", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
-            );
-            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
-            GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
+            standardStartPhase();
         },
         ()=>{
             let whoVotedMessages = [];
@@ -450,7 +378,6 @@ export const PHASES = {
     ),
     "FinalWords":new Phase(settings.defaultPhaseTimes.RealGame.FinalWords,
         ()=>{
-            let playerIndividualMessage = {};
             let informationListMessage = [];
 
             informationListMessage.push(new ChatMessageState(
@@ -462,10 +389,6 @@ export const PHASES = {
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
-                playerIndividualMessage[playerName] = {
-                    availableButtons : {}
-                }
-
                 for(let otherPlayerName in GameManager.host.players){
                     //let otherPlayer = GameManager.host.players[otherPlayerName];
 
@@ -474,11 +397,7 @@ export const PHASES = {
                     //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
                 }
 
-                playerIndividualMessage[playerName].availableButtons = player.availableButtons;
-
                 player.addMessages(informationListMessage);
-                //player.addMessages(playerIndividualMessage[playerName].informationList);
-
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
@@ -488,11 +407,7 @@ export const PHASES = {
                     player.chatGroupSendList.push("Dead");
             }
 
-            GameManager.HOST_TO_CLIENT["START_PHASE"].send(
-                "FinalWords", GameManager.host.cycleNumber, playerIndividualMessage, informationListMessage
-            );
-            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
-            GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
+            standardStartPhase();
         },
         ()=>{
             PhaseStateMachine.startPhase("Night");

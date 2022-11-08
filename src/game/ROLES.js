@@ -404,8 +404,8 @@ export const ROLES = {
             if(!myTarget.role.cycle.aliveNow) return;
 
             player.role.persist.extra.cleansLeft--;
-            player.role.cycle.shownRoleName = "Cleaned";
-            player.role.cycle.shownWill = "Cleaned";
+            myTarget.role.cycle.shownRoleName = "Cleaned";
+            myTarget.role.cycle.shownWill = "Cleaned";
             if(!myTarget.role.persist.alive)
                 player.role.addNightInformation(new ChatMessageState(
                     null,
