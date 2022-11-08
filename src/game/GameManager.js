@@ -95,11 +95,9 @@ let GameManager = {
             playerOnTrial : null,
         },
         setCycle(){ //called on start of morning
-            GameManager.host.cycle = {
-                trialsLeftToday : 3,
-                numVotesNeeded : Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.role.persist.alive}).length / 2) + 1,
-                playerOnTrial : null,
-            }
+            GameManager.host.cycle.trialsLeftToday = 3;
+            GameManager.host.cycle.numVotesNeeded = Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.role.persist.alive}).length / 2) + 1;
+            GameManager.host.cycle.playerOnTrial = null;
         },
         /**
          * 
@@ -329,9 +327,6 @@ let GameManager = {
             PhaseStateMachine.tick();
             GameManager.HOST_TO_CLIENT["TIME_LEFT"].send();
         },
-        importDefaultRoleList : function(numbPlayers){
-            return settings.defaultRoleLists[numbPlayers];
-        },
         checkEndGame : function(){
             let livingRoleNamesList = [];
             for(let playerName in GameManager.host.players){
@@ -417,11 +412,11 @@ let GameManager = {
             judgementStatus : 0,
             playerOnTrialName : null,
         },
-        setPhase(){GameManager.client.cycle = {
-            targetedPlayerNames : [],
-            votedForName : null,
-            judgementStatus : 0,
-        }},
+        setPhase(){
+            GameManager.client.cycle.targetedPlayerNames = [];
+            GameManager.client.cycle.votedForName = null;
+            GameManager.client.cycle.judgementStatus = 0;
+        },
         
 
         timeLastButtonClickedms : 0,
@@ -494,7 +489,7 @@ let GameManager = {
             GameManager.pubNub.createAndPublish(messageType.ID, contents)
         },
         tick : function(){
-            
+            //console.log(GameManager.client.cycle.playerOnTrialName + "GameManager.client.cycle.playerOnTrialName");
         }
     },
     CLIENT_TO_HOST:{
@@ -621,9 +616,8 @@ let GameManager = {
                 let playerOnTrial = GameManager.host.someoneVoted();
 
                 
-                if(playerOnTrial !== null){
+                if(playerOnTrial){
                     GameManager.host.cycle.playerOnTrial = playerOnTrial;
-                    GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycle.playerOnTrial.name);
                     PhaseStateMachine.startPhase("Testimony");
                 }
             },
@@ -778,10 +772,11 @@ let GameManager = {
             }
         ),
         "PLAYER_ON_TRIAL":new MessageType(true,
-            (playerOnTrialName)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"], {
+            (playerOnTrialName)=>{console.log(playerOnTrialName + " sent"); GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"], {
                 playerOnTrialName : playerOnTrialName,
             })},
             (contents)=>{
+                console.log(contents.playerOnTrialName + " received");
                 GameManager.client.cycle.playerOnTrialName = contents.playerOnTrialName;
             }
         ),

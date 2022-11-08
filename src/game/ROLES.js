@@ -446,7 +446,7 @@ export const ROLES = {
 
                 myTarget1.role.addNightInformation(new ChatMessageState(
                     null,
-                    "A witch tried to controll you but you are immune",
+                    "A witch tried to control you but you are immune",
                     GameManager.COLOR.GAME_TO_YOU
                 ), false);
                 return;
@@ -458,7 +458,7 @@ export const ROLES = {
                 GameManager.COLOR.GAME_TO_YOU
             ), false);
             myTarget1.role.cycle.targeting = [myTarget2];
-            player.role.addNightInformation(new ChatMessageState(null, "Your first targets role was "+myTarget1.role.persist.roleName));
+            player.role.addNightInformation(new ChatMessageState(null, "Your first targets role was "+myTarget1.role.persist.roleName, GameManager.COLOR.GAME_TO_YOU));
             player.role.addNightInformationList(myTarget1.role.cycle.nightInformation);
         },
         (myPlayer, otherPlayer)=>{

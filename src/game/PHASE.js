@@ -250,6 +250,7 @@ export const PHASES = {
     ),
     "Testimony":new Phase(settings.defaultPhaseTimes.RealGame.Testimony,
         ()=>{
+            
             GameManager.host.cycle.trialsLeftToday--;
 
             let informationListMessage = [];
@@ -281,7 +282,9 @@ export const PHASES = {
             //player on trial needs to be able to talk
             GameManager.host.cycle.playerOnTrial.chatGroupSendList.push("All");
 
+            GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycle.playerOnTrial.name);
             standardStartPhase();
+
         },
         ()=>{
             PhaseStateMachine.startPhase("Judgement");

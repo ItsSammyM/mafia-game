@@ -1,9 +1,10 @@
 fix mayor -- set non 0 amount of mayors, make mayor work
+completly redo witch, everything is bad. especially messages she recieves
+make player mafioso if no mafia killing
 
-jamin was able to vote himself innocent/guilty
+redo setPhase and setCycle in host and client because theyre weird and wrong
 
 make it so when entered wrong room code, it tells you
-
 
 ALIBI
 Graveyard
@@ -13,6 +14,8 @@ WIN CONDITIONS
 
 Entire wikipedia for game including priorities
 drop down for what role you think someone is on player list - The tyler thing
+
+text shows up weird on tefts phone
 
 --------
 i want this role

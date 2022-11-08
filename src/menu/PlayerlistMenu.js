@@ -21,7 +21,7 @@ export class PlayerListMenu extends React.Component {
             targetedPlayerNames : [],
             votedForName : null,
             judgementStatus : 0,
-            playerOnTrialName : null,
+            playerOnTrialName : GameManager.client.cycle.playerOnTrialName,
 
             timeLeft : GameManager.client.timeLeft,
 
@@ -205,9 +205,7 @@ export class PlayerListMenu extends React.Component {
                         
                         My Vote: {this.state.votedForName}<br/>
                         <Button text="Clear Vote" onClick={()=>{GameManager.client.clickClearVote()}}/><br/>
-                    </div>})()} 
-                    
-                    
+                    </div>})()}                    
                 </div>);
             case "Testimony":
                 return(<div>
@@ -255,7 +253,7 @@ export class PlayerListMenu extends React.Component {
                 
                 Time Left: {this.state.timeLeft}
                 <div className="Main-box">
-                    {this.renderPhase(this.state.phaseName)}
+                    {this.renderPhase(this.state.phaseName, this.state.playerOnTrial)}
                 </div><br/>
                 <br/>
                 
