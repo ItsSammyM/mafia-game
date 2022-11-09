@@ -1,6 +1,5 @@
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
 import GameManager from "./GameManager";
-import settings from "../settings.json"
 import { shuffleList } from "./functions";
 
 class Phase{
@@ -45,7 +44,7 @@ let standardStartPhase = function(){
     GameManager.HOST_TO_CLIENT["START_PHASE"].send();
 }
 export const PHASES = {
-    "Night":new Phase(settings.defaultPhaseTimes.RealGame.Night, 
+    "Night":new Phase(1, 
         ()=>{
             let informationListMessage = [];
 
@@ -98,8 +97,14 @@ export const PHASES = {
                         for(let t = 0; t < player.role.cycle.targeting.length; t++){
                             let targeted = player.role.cycle.targeting[t];
 
-                            targeted.role.cycle.targetedBy.push(player)
-                            //INCOMEPLETE INCOMPLETE INCOMPLETE
+                            let isAstral = false;
+                            let astralVisitsList = player.role.getRoleObject().astralVisitsList;
+
+                            if(astralVisitsList && astralVisitsList.length >= t)
+                                isAstral = player.role.getRoleObject().astralVisitsList[t];
+
+                            if(!isAstral)
+                                targeted.role.cycle.targetedBy.push(player);
                         }
                     }
                     
@@ -114,7 +119,7 @@ export const PHASES = {
             PhaseStateMachine.startPhase("Morning");
         }
     ),
-    "Morning":new Phase(settings.defaultPhaseTimes.RealGame.Morning,
+    "Morning":new Phase(1,
         ()=>{
             let informationListMessage = [];
 
@@ -166,7 +171,7 @@ export const PHASES = {
             PhaseStateMachine.startPhase("Discussion");
         }
     ),
-    "Discussion":new Phase(settings.defaultPhaseTimes.RealGame.Discussion,
+    "Discussion":new Phase(1,
         ()=>{
             let informationListMessage = [];
 
@@ -205,7 +210,7 @@ export const PHASES = {
             }            
         }
     ),
-    "Voting":new Phase(settings.defaultPhaseTimes.RealGame.Voting,
+    "Voting":new Phase(1,
         ()=>{
             GameManager.host.cycle.numVotesNeeded = Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.role.persist.alive}).length / 2) + 1;
             GameManager.host.cycle.playerOnTrial = null;
@@ -248,7 +253,7 @@ export const PHASES = {
             PhaseStateMachine.startPhase("Night");
         } 
     ),
-    "Testimony":new Phase(settings.defaultPhaseTimes.RealGame.Testimony,
+    "Testimony":new Phase(1,
         ()=>{
             
             GameManager.host.cycle.trialsLeftToday--;
@@ -290,7 +295,7 @@ export const PHASES = {
             PhaseStateMachine.startPhase("Judgement");
         }
     ),
-    "Judgement":new Phase(settings.defaultPhaseTimes.RealGame.Judgement, 
+    "Judgement":new Phase(1, 
         ()=>{
             let informationListMessage = [];
 
@@ -379,7 +384,7 @@ export const PHASES = {
             GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
         }
     ),
-    "FinalWords":new Phase(settings.defaultPhaseTimes.RealGame.FinalWords,
+    "FinalWords":new Phase(1,
         ()=>{
             let informationListMessage = [];
 

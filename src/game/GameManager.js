@@ -9,7 +9,6 @@ import { ChatMessageStateClient } from "../gameStateClient/ChatMessageStateClien
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
 import { getRandomRole, TEAMS, Role, ROLES } from "./ROLES";
 import { PhaseStateMachine, PHASES } from "./PHASE";
-import settings from '../settings.json'
 /*
 weird stuff
 
@@ -152,7 +151,7 @@ let GameManager = {
             return playerVoted;
         },
 
-        startGame : function(_roleList){
+        startGame : function(_roleList, _phaseTimes){
             GameManager.host.gameStarted = true;
 
             let informationList = [];
@@ -166,7 +165,7 @@ let GameManager = {
             //     Object.keys(GameManager.host.players).length
             // )
             for(let phaseName in PHASES){
-                PHASES[phaseName].maxTimeSeconds = settings.defaultPhaseTimes.Testing[phaseName];
+                PHASES[phaseName].maxTimeSeconds = _phaseTimes[phaseName];
             }
             //[
             //   //[faction, alignment, exact]

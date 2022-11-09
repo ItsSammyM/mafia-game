@@ -15,6 +15,7 @@ export class StartHostMenu extends React.Component {
             players : {},
 
             roleList : [],
+            phaseTimes : {},
         };
         this.updatePlayers = {
             listener : (contents)=>{
@@ -32,10 +33,46 @@ export class StartHostMenu extends React.Component {
     componentDidMount() {
         if(GameManager.host.isHost)
             GameManager.CLIENT_TO_HOST["ASK_JOIN"].addReceiveListener(this.updatePlayers);
+
+        for(let phaseTimesDefault in settings.defaultPhaseTimes){
+            
+            this.setDefaultPhaseTimes(phaseTimesDefault)
+            break;
+        }
     }
     componentWillUnmount() {
         GameManager.CLIENT_TO_HOST["ASK_JOIN"].removeReceiveListener(this.updatePlayers);
     }
+
+    startButton(){
+        GameManager.host.startGame(this.state.roleList, this.state.phaseTimes);
+    }
+    setDefaultRoleList(type){
+        if(type==="All Any"){
+            let playerNumb = Object.keys(this.state.players).length;
+            for(let roleSlotIndex = 0; roleSlotIndex < playerNumb; roleSlotIndex++){
+                for(let i = 0; i < 3; i++){
+                    this.changeRoleList(roleSlotIndex, i, null);
+                }
+            }
+            return;
+        }
+        let newRoleList = settings.defaultRoleLists[type][Object.keys(this.state.players).length];
+        for(let roleSlotIndex in newRoleList){
+            let roleSlot = newRoleList[roleSlotIndex];
+            for(let i in roleSlot){
+                this.changeRoleList(roleSlotIndex, i, newRoleList[roleSlotIndex][i]);
+            }
+        }
+    }
+    setDefaultPhaseTimes(type){
+        let phaseTimes = {};
+        for(let phase in settings.defaultPhaseTimes[type]){
+            phaseTimes[phase] = settings.defaultPhaseTimes[type][phase]
+        }
+        this.setState({phaseTimes : phaseTimes});
+    }
+
     renderPlayers(players){
         let out = [];
         for(let playerName in players){
@@ -85,9 +122,6 @@ export class StartHostMenu extends React.Component {
             </DropDown>
         </div>
     )}
-    startButton(){
-        GameManager.host.startGame(this.state.roleList);
-    }
     render() {return (<div className="Main">
         <div className="Main-header">
             Mafia
@@ -96,39 +130,36 @@ export class StartHostMenu extends React.Component {
             Room Code:<br/>
             {this.state.roomCode}<br/>
             <br/>
-            {this.renderPlayers(this.state.players)}<br/>
+            {this.renderPlayers(this.state.players)}
             {(()=>{
                 if(Object.keys(this.state.players).length>0) 
                     return <div><Button text="Start" onClick={()=>this.startButton()}/><br/></div>
             })()}
             <br/>
 
-            <Button text="Default" width="30%" onClick={()=>{
-                let newRoleList = settings.defaultRoleLists[Object.keys(this.state.players).length];
-                for(let roleSlotIndex in newRoleList){
-                    let roleSlot = newRoleList[roleSlotIndex];
-                    for(let i in roleSlot){
-                        this.changeRoleList(roleSlotIndex, i, newRoleList[roleSlotIndex][i]);
+            Phase Times<br/>
+            <DropDown onChange={(e)=>{
+                this.setDefaultPhaseTimes(e.target.value)
+            }}>
+                {(()=>{
+                    let defaultPhaseTimesOptions = [];
+                    for(let phaseTimesName in settings.defaultPhaseTimes){
+                        defaultPhaseTimesOptions.push((<option key={phaseTimesName}>{phaseTimesName}</option>));
                     }
-                }
+                    return defaultPhaseTimesOptions;
+                })()}
+            </DropDown><br/>
+            <br/>
+            Role Lists<br/>
+            <Button text="Mafia" width="30%" onClick={()=>{
+                this.setDefaultRoleList("Mafia");
+                
             }}/>
             <Button text="All Any" width="30%" onClick={()=>{
-                let newRoleList = settings.defaultRoleLists[Object.keys(this.state.players).length];
-                for(let roleSlotIndex in newRoleList){
-                    let roleSlot = newRoleList[roleSlotIndex];
-                    for(let i in roleSlot){
-                        this.changeRoleList(roleSlotIndex, i, null);
-                    }
-                }
+                this.setDefaultRoleList("All Any");
             }}/>
             <Button text="Vampires" width="30%" onClick={()=>{
-                let newRoleList = settings.defaultRoleLists[Object.keys(this.state.players).length];
-                for(let roleSlotIndex in newRoleList){
-                    let roleSlot = newRoleList[roleSlotIndex];
-                    for(let i in roleSlot){
-                        this.changeRoleList(roleSlotIndex, i, newRoleList[roleSlotIndex][i]);
-                    }
-                }
+                this.setDefaultRoleList("Vampire");
             }}/>
 
             {this.renderRoleListPickers(this.state.roleList)}<br/>

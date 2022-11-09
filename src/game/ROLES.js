@@ -15,36 +15,41 @@ export class Role{
      * @param {function} _doRole
      */
     constructor(
-
         _name, _basicDescription, _emoji,
+        _advancedDescription, 
+        _priorityDescription, 
         _faction, _alignment, _team, 
         _victoryGroup, _maximumCount,
         _defense, _attack, 
         _roleblockable, _witchable, _isSuspicious, 
         _extraPersist, 
         _doRole, 
-        _canTargetFunction
-    
+        _canTargetFunction,
+        _astralVisitsList,
         ){
         this.name = _name;
         this.emoji = _emoji;
         this.basicDescription = _basicDescription;
 
+        this.advancedDescription = _advancedDescription;
+        this.priorityDescription = _priorityDescription;
+
         this.faction = _faction;
-        this.team = _team;
         this.alignment = _alignment;
+        this.team = _team;
+
+        this.victoryGroup = _victoryGroup;
+        this.maximumCount = _maximumCount;  //Infinity, 0 is you cant have one. 1 is normal unique
 
         this.defense=_defense;
         this.attack=_attack;
 
         this.roleblockable=_roleblockable;
         this.witchable=_witchable;
-
         this.isSuspicious=_isSuspicious;
 
-        this.victoryGroup = _victoryGroup;
-        this.maximumCount = _maximumCount;
-        //-1 is infinite, 0 is you cant have one. 1 is normal unique
+        this.extraPersist=_extraPersist;
+        this.doRole=_doRole;
 
         this.canTargetFunction = _canTargetFunction ? _canTargetFunction : (myPlayer, otherPlayer)=>{
             let otherInMyTeam = Role.onSameTeam(myPlayer, otherPlayer);
@@ -56,9 +61,7 @@ export class Role{
                 myPlayer.role.cycle.targeting.length < 1    //havent already targeted at least 1 person
             );
         };
-
-        this.extraPersist=_extraPersist;
-        this.doRole=_doRole;
+        this.astralVisitsList = _astralVisitsList;
     }
     static onSameTeam(playerA, playerB){
         return playerA.role.getRoleObject().team === playerB.role.getRoleObject().team && //same team
@@ -83,6 +86,9 @@ export const ROLES = {
     //#region Town
     "Sheriff":new Role(
         "Sheriff", "Target a player to find out if they're innocent or suspicious", "🕵️",
+        "What you see isnt always true. A player could look suspicious if they're framed, doused, or other. A Godfather will also look innocent even though they're evil.\n"+
+        "Regardless, if you see someone as suspicious, thats alot of information, and you should tell the town immedietly.",
+        "4 > Get Results",
         "Town", "Investigative", null, 
         "Town", Infinity,
         0, 0,
@@ -102,10 +108,14 @@ export const ROLES = {
                 "Your target seems to be " + (myTarget.role.cycle.isSuspicious ? "suspicious." : "innocent."),
                 GameManager.COLOR.GAME_TO_YOU
             ), true);
-        }
+        },
+        null,
+        null
     ),
     "Lookout":new Role(
         "Lookout", "Target a player to find out who else visited them, (find out who else targeted them)", "🔭",
+        "Its often a good idea to choose players who you think will get killed because if they get killed then you will get to know who killed them and can tell the town who the killer was.",
+        "4 > Get Results",
         "Town", "Investigative", null, 
         "Town", Infinity,
         0, 0,
@@ -129,10 +139,15 @@ export const ROLES = {
                     GameManager.COLOR.GAME_TO_YOU
                 ), true);
             }
-        }
+        },
+        null,
+        null
     ),
     "Veteran":new Role(
         "Veteran", "Target yourself to go on alert and attack everyone who visits you", "🎖️",
+        "Going on alert grants you powerfull defense (2) and all visitors will die, but you can only use it 3 times.",
+        "-12 > If decide to alert you get defense,\n"+
+        "6 > Kill all visitors",
         "Town", "Killing", null,
         "Town", 1,
         0, 2,
@@ -149,8 +164,6 @@ export const ROLES = {
                 if(!myTarget.role.cycle.aliveNow) return;
 
                 if(player === myTarget && player.role.persist.extra.alertsLeft > 0){
-                    player.role.cycle.targeting = [];
-
                     player.role.persist.extra.alertsLeft--;
                     player.role.cycle.extra.isVeteranOnAlert = true;
 
@@ -179,10 +192,15 @@ export const ROLES = {
                 myPlayer.name === otherPlayer.name && //targeting self
                 myPlayer.role.persist.extra.alertsLeft > 0
             );
-        }
+        },
+        [true]
     ),
     "Doctor":new Role(
         "Doctor", "Target a player to save them from an attack, you can save yourself once", "💉",
+        "Targeting a player will grant them powerfull defense (2). You will know if they were attacked, but they wont know they've been healed unless theyre attacked.\n"+
+        "It is usually a good idea to try to keep yourself hidden becuase you can only save yourself 1 time. Obviously you should try to pick those who would be targets for the mafia",
+        "2 > Grant defense,\n"+
+        "8 > Tell both players if the doctor saved them",
         "Town", "Protective", null, 
         "Town", Infinity,
         0, 0,
@@ -206,12 +224,14 @@ export const ROLES = {
                 myTarget.role.cycle.extra.healedByDoc = true;
             }
             if(priority === 8){
-                if(myTarget.role.cycle.extra.healedByDoc && myTarget.role.cycle.extra.attackedTonight)
+                if(myTarget.role.cycle.extra.healedByDoc && myTarget.role.cycle.extra.attackedTonight){
                     player.role.addNightInformation(new ChatMessageState(
                         null,
                         "You healed your target",
                         GameManager.COLOR.GAME_TO_YOU
                     ), true);
+                    myTarget.role.addNightInformation(new ChatMessageState(null, "You were healed by a Doctor", GameManager.COLOR.GAME_TO_YOU), false);
+                }
             }
             
         },
@@ -226,10 +246,13 @@ export const ROLES = {
                     myPlayer.name!==otherPlayer.name //healing someone else
                 ) 
             );
-        }
+        },
+        null
     ),
     "Mayor":new Role(
         "Mayor", "Reveal any time during the day, from that moment forward you will get 3 times the voting power", "🏛️",
+        "You can't do anyhting during night, but revealing will confirm to everyone what your role is without question.",
+        "No night ability",
         "Town", "Support", null, 
         "Town", 0,  //this should be 1
         0, 0,
@@ -240,10 +263,13 @@ export const ROLES = {
         },
         (myPlayer, otherPlayer)=>{
             return false;
-        }
+        },
+        null
     ),
     "Escort":new Role(
         "Escort", "Target a player to roleblock them, they cannot use their role for that night", "💋",
+        "People will know if they have been roleblocked. A good idea is to roleblock those you think are evil, if no one dies in the night, you may have roleblocked a killer",
+        "-6 > Roleblock the person",
         "Town", "Support", null, 
         "Town", Infinity,
         0, 0,
@@ -258,10 +284,15 @@ export const ROLES = {
             if(!myTarget.role.cycle.aliveNow) return;
 
             myTarget.roleblock();
-        }
+        },
+        null,
+        null
     ),
     "Transporter":new Role(
-        "Transporter", "Target 2 players to swap them. Everyone that wants to target one person will target the other", "🔄",
+        "Transporter", "Target 2 players to swap them. Everyone that wants to target one person will instead target the other", "🔄",
+        "People will know if they were transported and the order of your targets doesn't matter. The ability will only work if you targeted 2 people.\n"+
+        " Try to swap people who might be killed tonight with people you think are evil. This way the killers will accidentally kill themselves.",
+        "-10 > Swap",
         "Town", "Support", null,
         "Town", Infinity,
         0, 0,
@@ -316,12 +347,17 @@ export const ROLES = {
                 myPlayer.role.cycle.targeting.length < 2 &&   //havent already targeted at least 2 person
                 (myPlayer.role.cycle.targeting[0] !== otherPlayer)
             );
-        }
+        },
+        null
     ),
     //#endregion
     //#region Mafa
     "Godfather":new Role(
         "Godfather", "Target a player to kill them. If there is a mafioso, they will do whatever kill you commanded them to do", "👴",
+        "If theres is a mafioso in the game. Your visit will be an astral visit. And the mafioso will instead do the killing. Otherwise you will do the killing.\n"+
+        "Because the mafioso does the killing and you appear as innocent, You might have an easier time decieving the town and pretending to be a townie.",
+        "-4 > Direct mafioso and clear yourself,\n"+
+        "6 > if theres no mafioso, you kill",
         "Mafia", "Killing", "Mafia",
         "Mafia", 1,
         1, 1,
@@ -349,11 +385,16 @@ export const ROLES = {
             }else if(priority === 6){
                 myTarget.tryNightKill(player, player.role.cycle.attack);
             }
-        }
+        },
+        null,
+        null
     ),
     "Mafioso":new Role(
         "Mafioso", "Target a player to kill them, the godfathers choice could override yours", "🌹",
         "Mafia", "Killing", "Mafia", 
+        "You do the killing. Whoever you pick will die. If theres a godfather, they can force you to kill a different person.\n"+
+        "If your target has defense and they are not killed. They are likely to be a neutral role, you should tell the mafia this and decide what to do. However they could also have been protected by a doctor or other.",
+        "6 > Kill",
         "Mafia", 1,
         0, 1,
         true, true, true,
@@ -367,10 +408,15 @@ export const ROLES = {
             if(!myTarget.role.cycle.aliveNow) return;
 
             myTarget.tryNightKill(player, player.role.cycle.attack);
-        }
+        },
+        null,
+        null
     ),
     "Consort":new Role(
         "Consort", "Target a player to roleblock them, they cannot use their role for that night", "💄",
+        "People will know if they have been roleblocked. Your role works very similarly to the Escort, making claiming escort very easy, but people know that you could be a consort.\n"+
+        " You should roleblock any town member deemed a threat. Especially Vigilantes if you know theyre going to shoot a mafia memeber.",
+        "-6 > Roleblock the person",
         "Mafia", "Support", "Mafia", 
         "Mafia", Infinity,
         0, 0,
@@ -385,10 +431,14 @@ export const ROLES = {
             if(!myTarget.role.cycle.aliveNow) return;
 
             myTarget.roleblock();
-        }
+        },
+        null,
+        null
     ),
     "Janitor":new Role(
-        "Janitor", "Target a player who might die tonight, if they do, their role and will", "🧹",
+        "Janitor", "Target a player who might die tonight, if they do, their role and will will be cleaned", "🧹",
+        "A clean means the town wont know what their role was, but you still will. This makes it easy for you to pretend to be what they were. You should tell the other mafia members what the dead players role was.",
+        "8 > clean",
         "Mafia", "Deception", "Mafia",
         "Mafia", Infinity,
         0, 0,
@@ -404,62 +454,107 @@ export const ROLES = {
             if(!myTarget.role.cycle.aliveNow) return;
 
             player.role.persist.extra.cleansLeft--;
+
+            
             myTarget.role.cycle.shownRoleName = "Cleaned";
             myTarget.role.cycle.shownWill = "Cleaned";
-            if(!myTarget.role.persist.alive)
+            if(!myTarget.role.persist.alive){
                 player.role.addNightInformation(new ChatMessageState(
                     null,
                     "Your targets role was "+myTarget.role.persist.roleName,
                     GameManager.COLOR.GAME_TO_YOU
                 ), true);
-        }
+                player.role.addNightInformation(new ChatMessageState(
+                    null,
+                    "Your targets will was :"+myTarget.role.persist.will,
+                    GameManager.COLOR.GAME_TO_YOU
+                ), true);
+            }
+                
+
+            
+        },
+        null,
+        null
     ),
     //#endregion
     //#region Neutral
-    "Witch":new Role(       //WITCH IS COMPLETLY BROKEN
+    "Witch":new Role(
         "Witch", "Target 2 players, the first one will be forced to target the second one", "🧙‍♀️",
+        "The first persons target will be changed to be your second target. Your ability wont work if the first target is witch immune. Your second target is an astral visit.\n"+
+        " You have a sheild that grants you basic defense(1), this sheild dissapears after you were attacked, even if you were saved by a protective role. Because you win with any team that isnt town, You should try your best to find out who else is evil and get them to work with you.",
+        "-8 > Controll target and tell show that they were controlled,\n"+
+        "12 > steal their information",
         "Neutral", "Evil", null,
         null, Infinity,
         0, 0,
         false, false, false,
         {hasSheild : true},
         (priority, player)=>{
-            if(priority !== -8) return;
+            if(priority === -8){
+                //give witch sheild
+                if(player.role.cycle.defense < 1 && player.role.persist.extra.hasSheild)
+                    player.role.cycle.defense = 1;
+            
+                if(player.role.cycle.targeting.length < 2) return;
+                if(!player.role.cycle.aliveNow) return;
 
-            if(player.role.cycle.targeting.length < 2) return;
-            if(!player.role.cycle.aliveNow) return;
+                let myTarget1 = player.role.cycle.targeting[0];
+                let myTarget2 = player.role.cycle.targeting[1];
 
-            let myTarget1 = player.role.cycle.targeting[0];
-            let myTarget2 = player.role.cycle.targeting[1];
+                if(!myTarget1.role.cycle.aliveNow) return;
+                if(!myTarget2.role.cycle.aliveNow) return;
 
-            if(!myTarget1.role.cycle.aliveNow) return;
-            if(!myTarget2.role.cycle.aliveNow) return;
+                if(!myTarget1.role.getRoleObject().witchable){
 
+                    player.role.addNightInformation(new ChatMessageState(
+                        null,
+                        "Your target was immune to being controlled",
+                        GameManager.COLOR.GAME_TO_YOU
+                    ), true);
 
-            if(!myTarget1.role.getRoleObject().witchable){
-
-                player.role.addNightInformation(new ChatMessageState(
-                    null,
-                    "Your target was immune to being controlled",
-                    GameManager.COLOR.GAME_TO_YOU
-                ), true);
+                    myTarget1.role.addNightInformation(new ChatMessageState(
+                        null,
+                        "A witch tried to control you but you are immune",
+                        GameManager.COLOR.GAME_TO_YOU
+                    ), false);
+                    return;
+                }
 
                 myTarget1.role.addNightInformation(new ChatMessageState(
                     null,
-                    "A witch tried to control you but you are immune",
+                    "You were controlled by a witch",
                     GameManager.COLOR.GAME_TO_YOU
                 ), false);
-                return;
+                myTarget1.role.cycle.targeting = [myTarget2];
+                player.role.addNightInformation(new ChatMessageState(
+                    null,
+                    "Your first targets role was "+myTarget1.role.persist.roleName,
+                    GameManager.COLOR.GAME_TO_YOU),
+                    true
+                );
+            }
+            if(priority === 12){
+                if(player.role.cycle.targeting.length < 2) return;
+                let myTarget1 = player.role.cycle.targeting[0];
+                
+                //steal information
+                for(let i in myTarget1.role.cycle.nightInformation){
+                    player.role.addNightInformation(
+                        new ChatMessageState(
+                            myTarget1.role.cycle.nightInformation[i][0].title,
+                            "Targets Message: "+myTarget1.role.cycle.nightInformation[i][0].text,
+                            myTarget1.role.cycle.nightInformation[i][0].color
+                        ),
+                        myTarget1.role.cycle.nightInformation[i][1]
+                    );
+                }
+                
+                //remove sheild
+                if(player.role.cycle.extra.attackedTonight)
+                    player.role.persist.extra.hasSheild = false;
             }
 
-            myTarget1.role.addNightInformation(new ChatMessageState(
-                null,
-                "You were controlled by a witch",
-                GameManager.COLOR.GAME_TO_YOU
-            ), false);
-            myTarget1.role.cycle.targeting = [myTarget2];
-            player.role.addNightInformation(new ChatMessageState(null, "Your first targets role was "+myTarget1.role.persist.roleName, GameManager.COLOR.GAME_TO_YOU));
-            player.role.addNightInformationList(myTarget1.role.cycle.nightInformation);
         },
         (myPlayer, otherPlayer)=>{
             return (
@@ -471,7 +566,8 @@ export const ROLES = {
                     (myPlayer.role.cycle.targeting.length === 1)
                 )
             );
-        }
+        },
+        [false, true]
     ),
     //#endregion
 
@@ -483,7 +579,7 @@ Everyones target is set first
 
 -12: Veteran(Decides Alert) Vigilante(Suicide) Jester(Kill)
 -10: Transporter(Swaps)
--8: Witch(Swaps)
+-8: Witch(Swaps, Activate sheild)
 -6: Escort / Consort(Roleblock)
 -4 Godfather(Swap mafioso target and clear self)
 -2 bodyguard(swap)
@@ -493,7 +589,7 @@ Everyones target is set first
 +6: Mafioso/Godfather, SerialKiller, Werewolf, Veteran, Vampire, Arsonist, Crusader, Bodyguard, Vigilante (All kill)
 +8: Amnesiac(Convert) Vampire(Convert) Forger(Change info), Janitor(Clean & info), Doctor(Notify)
 +10 Spy(Collect info)
-+12 Witch(Steal info)
++12 Witch(Steal info & Remove sheild)
 
 --------
 investigator idea

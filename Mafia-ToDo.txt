@@ -1,5 +1,4 @@
 fix mayor -- set non 0 amount of mayors, make mayor work
-completly redo witch, everything is bad. especially messages she recieves
 make player mafioso if no mafia killing
 
 redo setPhase and setCycle in host and client because theyre weird and wrong

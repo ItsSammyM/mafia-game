@@ -31,10 +31,18 @@ export class WikiMenu extends React.Component {
         <br/>
         {roleConst.basicDescription}<br/>
         <br/>
-        Defense: {roleConst.defense}<br/>
-        RoleBlockable: {roleConst.roleblockable?"true":"false"}<br/>
-        Witchable: {roleConst.witchable?"true":"false"}<br/>
-        Interogation Results: {roleConst.isSuspicious?"Suspicious":"Innocent"}<br/>
+        {roleConst.advancedDescription}<br/>
+        <br/>
+        Priorities:<br/>
+        {roleConst.priorityDescription}<br/>
+        <br/>
+        Defense: {roleConst.defense}, Attack: {roleConst.attack}<br/>
+        <br/>
+        {roleConst.roleblockable?"":"Roleblock Immune"} {roleConst.witchable?"":"Witch Immune"}<br/>
+        Interogation: {roleConst.isSuspicious?"Suspicious":"Innocent"}<br/>
+
+        How many can exist: {roleConst.maximumCount}<br/>
+        {roleConst.victoryGroup?("Victory group: "+roleConst.victoryGroup):"No victory group"}<br/>
         <br/>
         
     </div>);}
