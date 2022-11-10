@@ -1,5 +1,11 @@
+add people to dead chat at correct times
+
+Tevin and Jamin couldnt change their targets
+
 fix mayor -- set non 0 amount of mayors, make mayor work
 make player mafioso if no mafia killing
+
+skip phase button
 
 redo setPhase and setCycle in host and client because theyre weird and wrong
 
@@ -22,10 +28,6 @@ i dont want this faction/alignment
 Thomas thing
 ---------
 
-
-
-
-
 //IMPOSTER -- You blackmail someone for a day and you can talk under their name, 3 uses
 //GRAVESTEALER -- Like Janitor, but instead of cleaning, it doesnt show that their dead... all day, every day, until they are voted up.... 
         AKA, theyre blackmailed and roleblocked every day until voted up. And they can talk in dead chat
@@ -35,7 +37,8 @@ Thomas thing
 //JOURNALIST -- can write in a journal and anonymously post to town every morning
 //LEEROY JENKINS -- You pick someone during the day and they die instantly revealing your name to everyone
         i reveal as mayor /// NO YOU DONT!
-
+// --Hides what everyone is voting for and gives themself 3x vote
+//Jounralist
 
 
 
