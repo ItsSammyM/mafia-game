@@ -1,6 +1,6 @@
 import { PubNubWrapper } from "./PubNubWrapper"
 import { generateRandomString, shuffleList, mergeSort} from "./functions"
-import { PlayerState } from "../gameStateHost/PlayerState";
+import { PlayerRole, PlayerState } from "../gameStateHost/PlayerState";
 import { PlayerStateClient } from "../gameStateClient/PlayerStateClient";
 import { Main } from "../Main"
 import { WaitJoinMenu } from "../menu/WaitJoinMenu";
@@ -203,13 +203,6 @@ let GameManager = {
                 playerIndividual[playerName] = {
                     roleName : player.role.persist.roleName,
                 };
-                player.addMessage(
-                    new ChatMessageState(
-                        player.role.getRoleObject().faction+" "+player.role.getRoleObject().alignment+", "+player.role.persist.roleName, 
-                        player.role.getRoleObject().basicDescription, 
-                        GameManager.COLOR.GAME_TO_YOU
-                    )
-                );
                 player.addMessages(informationList);
                 index++;
             }
@@ -358,6 +351,32 @@ let GameManager = {
                 player.addMessage(new ChatMessageState("Game Over", "Win conditions not implemented yet", GameManager.COLOR.GAME_TO_YOU));
             }
             GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
+        },
+        swapMafioso(){
+            //find if mafioso
+            let gameHasMafiosoOrGodfather = false;
+
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+
+                if(player.role.persist.alive && (player.role.persist.roleName === "Mafioso" || player.role.persist.roleName === "Godfather")){
+                    gameHasMafiosoOrGodfather = true;
+                    break;
+                }
+            }
+            if(gameHasMafiosoOrGodfather) return;
+
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+                if(player.role.persist.alive && player.role.getRoleObject().faction === "Mafia"){
+                    GameManager.host.changePlayerRole(player, "Mafioso");
+                    break;
+                }
+            }
+        },
+        changePlayerRole(player, newRoleName){
+            player.role = new PlayerRole(newRoleName);
+            GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.role.persist.roleName);
         }
     },
     client : {
@@ -771,11 +790,10 @@ let GameManager = {
             }
         ),
         "PLAYER_ON_TRIAL":new MessageType(true,
-            (playerOnTrialName)=>{console.log(playerOnTrialName + " sent"); GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"], {
+            (playerOnTrialName)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"], {
                 playerOnTrialName : playerOnTrialName,
             })},
             (contents)=>{
-                console.log(contents.playerOnTrialName + " received");
                 GameManager.client.cycle.playerOnTrialName = contents.playerOnTrialName;
             }
         ),

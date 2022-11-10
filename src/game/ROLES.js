@@ -163,8 +163,8 @@ export const ROLES = {
                 let myTarget = player.role.cycle.targeting[0];
                 if(!myTarget.role.cycle.aliveNow) return;
 
-                if(player === myTarget && player.role.persist.extra.alertsLeft > 0){
-                    player.role.persist.extra.alertsLeft--;
+                if(player === myTarget && player.role.persist.roleExtra.alertsLeft > 0){
+                    player.role.persist.roleExtra.alertsLeft--;
                     player.role.cycle.extra.isVeteranOnAlert = true;
 
                     if(player.role.cycle.defense<2)
@@ -190,7 +190,7 @@ export const ROLES = {
                 myPlayer.role.persist.alive && //im alive
                 myPlayer.role.cycle.targeting.length < 1 && //im targeting nobody already
                 myPlayer.name === otherPlayer.name && //targeting self
-                myPlayer.role.persist.extra.alertsLeft > 0
+                myPlayer.role.persist.roleExtra.alertsLeft > 0
             );
         },
         [true]
@@ -213,10 +213,10 @@ export const ROLES = {
             let myTarget = player.role.cycle.targeting[0];
             if(!myTarget.role.cycle.aliveNow) return;
 
-            if(player.role.persist.extra.selfHealed && player === myTarget) return; //if already self healed and trying it again
+            if(player.role.persist.roleExtra.selfHealed && player === myTarget) return; //if already self healed and trying it again
 
             if(priority === 2){
-                if(player === myTarget) player.role.persist.extra.selfHealed=true;
+                if(player === myTarget) player.role.persist.roleExtra.selfHealed=true;
 
                 if(myTarget.role.cycle.defense < 2){
                     myTarget.role.cycle.defense=2;
@@ -242,7 +242,7 @@ export const ROLES = {
                 myPlayer.role.persist.alive && //im alive
                 myPlayer.role.cycle.targeting.length < 1 && //im targeting nobody already
                 (
-                    (myPlayer.name===otherPlayer.name && !myPlayer.role.persist.extra.selfHealed) || //self healing
+                    (myPlayer.name===otherPlayer.name && !myPlayer.role.persist.roleExtra.selfHealed) || //self healing
                     myPlayer.name!==otherPlayer.name //healing someone else
                 ) 
             );
@@ -355,7 +355,7 @@ export const ROLES = {
     "Godfather":new Role(
         "Godfather", "Target a player to kill them. If there is a mafioso, they will do whatever kill you commanded them to do", "👴",
         "If theres is a mafioso in the game. Your visit will be an astral visit. And the mafioso will instead do the killing. Otherwise you will do the killing.\n"+
-        "Because the mafioso does the killing and you appear as innocent, You might have an easier time decieving the town and pretending to be a townie.",
+        "Because the mafioso does the killing, you appear as innocent, and you have defense, you might have an easier time decieving the town and pretending to be a townie.",
         "-4 > Direct mafioso and clear yourself,\n"+
         "6 > if theres no mafioso, you kill",
         "Mafia", "Killing", "Mafia",
@@ -391,10 +391,10 @@ export const ROLES = {
     ),
     "Mafioso":new Role(
         "Mafioso", "Target a player to kill them, the godfathers choice could override yours", "🌹",
-        "Mafia", "Killing", "Mafia", 
         "You do the killing. Whoever you pick will die. If theres a godfather, they can force you to kill a different person.\n"+
         "If your target has defense and they are not killed. They are likely to be a neutral role, you should tell the mafia this and decide what to do. However they could also have been protected by a doctor or other.",
         "6 > Kill",
+        "Mafia", "Killing", "Mafia", 
         "Mafia", 1,
         0, 1,
         true, true, true,
@@ -448,12 +448,12 @@ export const ROLES = {
             if(priority !== 8) return;
             if(player.role.cycle.targeting.length < 1) return;
             if(!player.role.cycle.aliveNow) return;
-            if(player.role.persist.extra.cleansLeft <= 0) return;
+            if(player.role.persist.roleExtra.cleansLeft <= 0) return;
 
             let myTarget = player.role.cycle.targeting[0];
             if(!myTarget.role.cycle.aliveNow) return;
 
-            player.role.persist.extra.cleansLeft--;
+            player.role.persist.roleExtra.cleansLeft--;
 
             
             myTarget.role.cycle.shownRoleName = "Cleaned";
@@ -493,7 +493,7 @@ export const ROLES = {
         (priority, player)=>{
             if(priority === -8){
                 //give witch sheild
-                if(player.role.cycle.defense < 1 && player.role.persist.extra.hasSheild)
+                if(player.role.cycle.defense < 1 && player.role.persist.roleExtra.hasSheild)
                     player.role.cycle.defense = 1;
             
                 if(player.role.cycle.targeting.length < 2) return;
@@ -534,7 +534,7 @@ export const ROLES = {
                     true
                 );
             }
-            if(priority === 12){
+            else if(priority === 12){
                 if(player.role.cycle.targeting.length < 2) return;
                 let myTarget1 = player.role.cycle.targeting[0];
                 
@@ -552,7 +552,7 @@ export const ROLES = {
                 
                 //remove sheild
                 if(player.role.cycle.extra.attackedTonight)
-                    player.role.persist.extra.hasSheild = false;
+                    player.role.persist.roleExtra.hasSheild = false;
             }
 
         },
@@ -569,6 +569,86 @@ export const ROLES = {
         },
         [false, true]
     ),
+    "Arsonist":new Role(
+        "Arsonist", "Target a player to douse them in gasoline, target yourself to ignite and kill all doused players.", "🔥",
+        "If there is another arsonist, you will also ignite the people they doused. Doused players appear as an arsonist to investigative roles. You get to know who visits you at night. If you target nobody, you will clean gasoline off yourself. \n"+
+        "Try to douse people you think will stay alive till late game, so you when you ignite, all the doused players arent already dead. This means dousing quiet people. Try to stay hidden, as you pose a large threat to the town and the mafia",
+        "-12 > clean gas off yourself, \n"+
+        "2 > Douse and douse visitors, \n"+
+        "6 > Ignition",
+        "Neutral", "Killing", null,
+        "Arsonist", Infinity,
+        1, 3, 
+        false, true, false, //fix roleblock stuff later
+        {},
+        (priority, player)=>{
+            if(!player.role.cycle.aliveNow) return;
+            
+
+            if(priority === -12){   //clean gas
+                
+                if(player.role.cycle.targeting > 0) return;
+                player.role.persist.roleExtra.doused = false;
+                player.role.addNightInformation(new ChatMessageState(
+                    null,
+                    "You cleaned the gas off yourself",
+                    GameManager.COLOR.GAME_TO_YOU),
+                    true
+                );
+            }
+            if(priority === 2){ //douse
+
+                //visit douse
+                for(let i in player.role.cycle.targetedBy){
+                    player.role.addNightInformation(new ChatMessageState(
+                        null,
+                        "You doused a visitor named "+player.role.cycle.targetedBy[i].name,
+                        GameManager.COLOR.GAME_TO_YOU
+                    ), true);
+                    
+                    player.role.cycle.targetedBy[i].role.persist.roleExtra.doused = true;
+                }
+
+                //regular douse
+                if(player.role.cycle.targeting.length < 1) return;
+                let myTarget = player.role.cycle.targeting[0];
+
+                if(player.role.cycle.targeting[0] === player) return;
+                if(!myTarget.role.cycle.aliveNow) return;
+
+                myTarget.role.persist.roleExtra.doused = true;
+
+                player.role.addNightInformation(new ChatMessageState(
+                    null,
+                    "You doused a visitor named "+myTarget.name,
+                    GameManager.COLOR.GAME_TO_YOU
+                ), true);
+            }
+            else if(priority === 6){    //ignite
+                if(player.role.cycle.targeting.length < 1) return;
+                let myTarget = player.role.cycle.targeting[0];
+
+                if(myTarget !== player) return;
+
+                for(let playerName in GameManager.host.players){
+                    let dousedPlayer = GameManager.host.players[playerName];
+                    if(dousedPlayer.role.persist.doused)
+                        dousedPlayer.tryNightKill(player, player.role.cycle.attack);
+                }
+            }
+
+        },
+        (myPlayer, otherPlayer)=>{
+            return (
+                //myPlayer.name!==otherPlayer.name && //Not targeting myself
+                otherPlayer.role.persist.alive && //theyre alive
+                myPlayer.role.persist.alive && //im alive
+                //!otherInMyTeam && //not on same team
+                myPlayer.role.cycle.targeting.length < 1    //havent already targeted at least 1 person
+            );
+        },
+        null
+    ),
     //#endregion
 
 }
@@ -577,7 +657,7 @@ export const ROLES = {
 Priority
 Everyones target is set first
 
--12: Veteran(Decides Alert) Vigilante(Suicide) Jester(Kill)
+-12: Veteran(Decides Alert) Vigilante(Suicide) Jester(Kill) Arsonist(Clean self)
 -10: Transporter(Swaps)
 -8: Witch(Swaps, Activate sheild)
 -6: Escort / Consort(Roleblock)
@@ -585,7 +665,7 @@ Everyones target is set first
 -2 bodyguard(swap)
  0: visits happen here
 +2: Doctor(Heal), Blackmailer(Decide), Crusader(Heal), Arsonist(Douse), Framer, Disguiser
-+4: Sheriff, Invest, Consig, Lookout, Tracker,
++4: Sheriff, Invest, Consig, Lookout, Tracker, Arsonist(Find who visited)
 +6: Mafioso/Godfather, SerialKiller, Werewolf, Veteran, Vampire, Arsonist, Crusader, Bodyguard, Vigilante (All kill)
 +8: Amnesiac(Convert) Vampire(Convert) Forger(Change info), Janitor(Clean & info), Doctor(Notify)
 +10 Spy(Collect info)

@@ -89,6 +89,13 @@ export class PlayerListMenu extends React.Component {
                         timeLeft : c.timeLeft,
                     });
                 }
+            },
+            YOUR_ROLE_LISTENER : {
+                listener : (c)=>{
+                    this.setState({
+                        roleName : GameManager.client.roleName,
+                    });
+                }
             }
         };
     }
@@ -128,6 +135,8 @@ export class PlayerListMenu extends React.Component {
         
         GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].addReceiveListener(this.state.UPDATE_CLIENT_LISTENER);
         GameManager.HOST_TO_CLIENT["TIME_LEFT"].addReceiveListener(this.state.TIME_LEFT_LISTENER);
+
+        GameManager.HOST_TO_CLIENT["YOUR_ROLE"].addReceiveListener(this.state.YOUR_ROLE_LISTENER);
     }
     componentWillUnmount() {
         GameManager.HOST_TO_CLIENT["START_PHASE"].removeReceiveListener(this.state.START_PHASE_LISTENER);
@@ -145,6 +154,8 @@ export class PlayerListMenu extends React.Component {
 
         GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].removeReceiveListener(this.state.UPDATE_CLIENT_LISTENER);
         GameManager.HOST_TO_CLIENT["TIME_LEFT"].removeReceiveListener(this.state.TIME_LEFT_LISTENER);
+
+        GameManager.HOST_TO_CLIENT["YOUR_ROLE"].removeReceiveListener(this.state.YOUR_ROLE_LISTENER);
     }
     renderPlayers() {
         let out = [];

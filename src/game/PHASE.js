@@ -73,7 +73,7 @@ export const PHASES = {
                     player.chatGroupSendList.push("Dead");
             }
             
-            
+            GameManager.host.swapMafioso();
             standardStartPhase();
         }, 
         ()=>{

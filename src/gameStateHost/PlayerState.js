@@ -53,6 +53,13 @@ export class PlayerState{
 
     createPlayerRole(exact){
         this.role = new PlayerRole(exact);
+        this.addMessage(
+            new ChatMessageState(
+                this.role.getRoleObject().faction+" "+this.role.getRoleObject().alignment+", "+this.role.persist.roleName, 
+                this.role.getRoleObject().basicDescription, 
+                GameManager.COLOR.GAME_TO_YOU
+            )
+        );
     }
     doMyRole(priority){
         if(!this.role) return;
@@ -136,6 +143,7 @@ export class PlayerState{
 
         this.role.persist.alive = false;
 
+        GameManager.host.swapMafioso();
         //GameManager.host.checkEndGame();
     }
     showDied(){
@@ -155,6 +163,7 @@ export class PlayerState{
 }
 export class PlayerRole{
     constructor(_roleName){
+        
         this.setPersist(_roleName);
         this.setCycle();
     }
@@ -174,18 +183,20 @@ export class PlayerRole{
             roleName : roleName,
             will : "",
             extra: {
-                // doused : false,
+                doused : false,
                 // framed : false,
                 // revealed : false,
+
                 // selfHealed : false,
                 // diedOnCycle : 2
-            }
+            },
+            roleExtra: {}
         };
         //copy extra persist over from role
         
         if(!ROLES[roleName]) console.log(roleName)
         for(let key in ROLES[roleName].extraPersist){
-            this.persist.extra[key] = ROLES[roleName].extraPersist[key];
+            this.persist.roleExtra[key] = ROLES[roleName].extraPersist[key];
         }
     }
     /**
