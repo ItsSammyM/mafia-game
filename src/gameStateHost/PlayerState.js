@@ -13,6 +13,8 @@ export class PlayerState{
 
         this.role = null;
 
+        this.savedNotePad = {};
+
         this.availableButtons = {};
         /*
             {
@@ -122,7 +124,8 @@ export class PlayerState{
         defense always wins over attack.. If == then no kill
         */
 
-        this.role.cycle.extra.attackedTonight = true;
+        this.role.cycle.attackedTonight = true;
+        this.role.cycle.attackedBy.push(attacker);
         if(this.role.cycle.defense >= attackPower){
             //safe
             attacker.role.addNightInformation(new ChatMessageState(null, "Your target had defense and survived", GameManager.COLOR.GAME_TO_YOU), false);
@@ -138,8 +141,6 @@ export class PlayerState{
     die(){
         //ADD TO DEAD CHAT
         GameManager.host.chatGroups["Dead"].push(this);
-        // if(this.role.getRoleObject().team)
-        //     GameManager.host.chatGroups[this.role.getRoleObject().team].push(this);
 
         this.role.persist.alive = false;
 
@@ -148,6 +149,18 @@ export class PlayerState{
     }
     showDied(){
         let publicInformation = [];
+        let killedByString = "";
+        for(let i in this.role.cycle.attackedBy){
+            let attacker = this.role.cycle.attackedBy[i];
+            if(attacker.role.getRoleObject().team){
+                killedByString+=attacker.role.getRoleObject().team+", ";
+            }else{
+                killedByString+=attacker.role.persist.roleName+", ";
+            }
+        }
+        if(killedByString.length > 2) killedByString = killedByString.substring(0, killedByString.length-2);
+
+        publicInformation.push(new ChatMessageState(this.name+" died", "They were killed by "+killedByString, GameManager.COLOR.GAME_TO_ALL));
         publicInformation.push(new ChatMessageState(this.name+" died", "Their role was "+this.role.cycle.shownRoleName, GameManager.COLOR.GAME_TO_ALL));
         publicInformation.push(new ChatMessageState(this.name+" died", "Their final will: "+this.role.cycle.shownWill, GameManager.COLOR.GAME_TO_ALL));
 
@@ -220,9 +233,13 @@ export class PlayerRole{
             isSuspicious : ROLES[this.persist.roleName].isSuspicious,
 
             shownRoleName : this.persist.roleName,
-            shownWill : this.persist.will,
+            shownWill : "",
+            shownNote : "",
+
 
             nightInformation : [],
+
+            attackedBy : [],
 
             extra : {
                 //idk this is for weird stuff exclusively
@@ -232,7 +249,6 @@ export class PlayerRole{
                 //savedByBodyguard : false,
                 //killedTonight : false
             },
-            
         }
     }
     addNightInformation(chatMessageState, roleSpecific){

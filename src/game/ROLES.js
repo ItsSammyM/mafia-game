@@ -78,7 +78,6 @@ class TEAM{
         this.showFactionMembers = _showFactionMembers;
     }
 }
-
 export const TEAMS = {
     "Mafia":new TEAM("Mafia", true),
 };
@@ -130,15 +129,19 @@ export const ROLES = {
             let myTarget = player.role.cycle.targeting[0];
             if(!myTarget.role.cycle.aliveNow) return;
             
+            let outString = "";
             for(let visitorIndex in myTarget.role.cycle.targetedBy){
                 let visitor = myTarget.role.cycle.targetedBy[visitorIndex];
 
-                player.role.addNightInformation(new ChatMessageState(
-                    null,
-                    "Your target was visited by " + visitor.name,
-                    GameManager.COLOR.GAME_TO_YOU
-                ), true);
+                outString += visitor.name + ", ";
             }
+            outString = outString.substring(0, outString.length-2);
+
+            player.role.addNightInformation(new ChatMessageState(
+                null,
+                "This is who visited your target: " + outString,
+                GameManager.COLOR.GAME_TO_YOU
+            ), true);
         },
         null,
         null
@@ -155,21 +158,26 @@ export const ROLES = {
         {alertsLeft : 3},
         (priority, player)=>{
             
-            if(!player.role.cycle.aliveNow) return;            
+            if(!player.role.cycle.aliveNow) return;
 
             if(priority === -12){
 
                 if(player.role.cycle.targeting.length < 1) return;
                 let myTarget = player.role.cycle.targeting[0];
-                if(!myTarget.role.cycle.aliveNow) return;
 
-                if(player === myTarget && player.role.persist.roleExtra.alertsLeft > 0){
-                    player.role.persist.roleExtra.alertsLeft--;
-                    player.role.cycle.extra.isVeteranOnAlert = true;
+                if(player !== myTarget && player.role.persist.roleExtra.alertsLeft <= 0) return;
 
-                    if(player.role.cycle.defense<2)
-                        player.role.cycle.defense = 2;
-                }
+                player.role.persist.roleExtra.alertsLeft--;
+                player.role.cycle.extra.isVeteranOnAlert = true;
+
+                player.role.addNightInformation(new ChatMessageState(
+                    null,
+                    "You went on alert tonight, you now have "+player.role.persist.roleExtra.alertsLeft+" alerts left",
+                    GameManager.COLOR.GAME_TO_YOU
+                ), true);
+
+                if(player.role.cycle.defense < 2) player.role.cycle.defense = 2;
+            
             }else if(priority === 6){
                 //kill all visitors
                 if(player.role.cycle.extra.isVeteranOnAlert){
@@ -194,6 +202,56 @@ export const ROLES = {
             );
         },
         [true]
+    ),
+    "Vigilante":new Role(
+        "Vigilante", "Target a player to shoot them, if you kill a townie, then you will die the next night.", "🔫",
+        "You cant shoot the first night. You can only shoot up to a maximum of 3 times. If you shoot and kill a town member, you will shoot youself the next night. \n"+
+        "You cant shoot someone else on the night you shoot yourself. It is a good idea to wait untill your sure someone is evil to shoot. Be weary revealing yourself because if there is a Witch in the game, they can control you and force you to shoot a town member.",
+        "-12 > Suicide \n"+
+        "6 > Kill",
+        "Town", "Killing", null,
+        "Town", Infinity,
+        0, 1,
+        true, true, false,
+        {bulletsLeft : 3, didShootTownie: false},
+        (priority, player)=>{
+            if(!player.role.cycle.aliveNow) return;
+
+            if(priority === -12){
+                if(!player.role.persist.roleExtra.didShootTownie) return;
+                
+                player.tryNightKill(player, 3);
+
+                player.role.addNightInformation(new ChatMessageState(
+                    null,
+                    "You attempt suicide due to the guilt of killing a town member",
+                    GameManager.COLOR.GAME_TO_YOU
+                ), true);
+
+            }else if(priority === 6){
+                if(GameManager.host.cycleNumber <= 1) return;
+                if(player.role.persist.roleExtra.didShootTownie) return;
+                if(player.role.cycle.targeting.length < 1) return;
+                let myTarget = player.role.cycle.targeting[0];
+
+                if(player === myTarget || player.role.persist.roleExtra.bulletsLeft <= 0) return;
+                player.role.persist.roleExtra.bulletsLeft--;
+
+                myTarget.tryNightKill(player, player.role.cycle.attack);
+                if(!myTarget.role.persist.alive && myTarget.role.getRoleObject().faction === "Town")
+                    player.role.persist.roleExtra.didShootTownie = true;
+            }
+        },
+        (myPlayer, otherPlayer)=>{
+            return (
+                myPlayer.name!==otherPlayer.name && //Not targeting myself
+                otherPlayer.role.persist.alive && //theyre alive
+                myPlayer.role.persist.alive && //im alive
+                myPlayer.role.cycle.targeting.length < 1 &&   //havent already targeted at least 1 person
+                GameManager.host.cycleNumber > 1    //its not night 1
+            );
+        },
+        null
     ),
     "Doctor":new Role(
         "Doctor", "Target a player to save them from an attack, you can save yourself once", "💉",
@@ -320,8 +378,10 @@ export const ROLES = {
                 GameManager.COLOR.GAME_TO_YOU
             ), false);
 
-            for(let playerName in GameManager.host.players){
-                let otherPlayer = GameManager.host.players[playerName];
+            for(let otherPlayerName in GameManager.host.players){
+                let otherPlayer = GameManager.host.players[otherPlayerName];
+
+                if(otherPlayer === player) continue;
 
                 for(let i in otherPlayer.role.cycle.targeting){
 
@@ -436,7 +496,7 @@ export const ROLES = {
         null
     ),
     "Janitor":new Role(
-        "Janitor", "Target a player who might die tonight, if they do, their role and will will be cleaned", "🧹",
+        "Janitor", "Target a player who might die tonight, if they do, their role and will will appear to be cleaned", "🧹",
         "A clean means the town wont know what their role was, but you still will. This makes it easy for you to pretend to be what they were. You should tell the other mafia members what the dead players role was.",
         "8 > clean",
         "Mafia", "Deception", "Mafia",
@@ -473,6 +533,22 @@ export const ROLES = {
                 
 
             
+        },
+        null,
+        null
+    ),
+    "Forger":new Role(
+        "Forger", "Target a player who might die tonight, if they do, their role and will will appear to be what you decided", "🖋️",
+        "In order to decide what you want to change your targets role and will to be, use your notepad. The notepad should include an all capital letter name of a role and then the will. \n"+
+        "You should try to forge wills to make them look realistic in a way to help mafia. Beware of what the player has said during the whole game and keep in mind a medium will know if you forged someone.",
+        "PRIORITY INCOMPLETE",
+        "Mafia", "Deception", "Mafia",
+        "Mafia", Infinity,
+        0, 0,
+        true, true, true,
+        {forgesLeft : 2},
+        ()=>{
+            //INCOMPLETE ROLE
         },
         null,
         null
@@ -584,29 +660,31 @@ export const ROLES = {
         (priority, player)=>{
             if(!player.role.cycle.aliveNow) return;
             
-
             if(priority === -12){   //clean gas
                 
-                if(player.role.cycle.targeting > 0) return;
-                player.role.persist.roleExtra.doused = false;
-                player.role.addNightInformation(new ChatMessageState(
-                    null,
-                    "You cleaned the gas off yourself",
-                    GameManager.COLOR.GAME_TO_YOU),
-                    true
-                );
+                if(player.role.cycle.targeting.length > 0) return;
+                if(player.role.persist.extra.doused)
+                    player.role.addNightInformation(new ChatMessageState(
+                        null,
+                        "You cleaned the gas off yourself",
+                        GameManager.COLOR.GAME_TO_YOU),
+                        true
+                    );
+                player.role.persist.extra.doused = false;
             }
             if(priority === 2){ //douse
 
                 //visit douse
                 for(let i in player.role.cycle.targetedBy){
+                    if(player.role.cycle.targetedBy[i] === player) continue;
+
                     player.role.addNightInformation(new ChatMessageState(
                         null,
                         "You doused a visitor named "+player.role.cycle.targetedBy[i].name,
                         GameManager.COLOR.GAME_TO_YOU
                     ), true);
                     
-                    player.role.cycle.targetedBy[i].role.persist.roleExtra.doused = true;
+                    player.role.cycle.targetedBy[i].role.persist.extra.doused = true;
                 }
 
                 //regular douse
@@ -616,11 +694,11 @@ export const ROLES = {
                 if(player.role.cycle.targeting[0] === player) return;
                 if(!myTarget.role.cycle.aliveNow) return;
 
-                myTarget.role.persist.roleExtra.doused = true;
+                myTarget.role.persist.extra.doused = true;
 
                 player.role.addNightInformation(new ChatMessageState(
                     null,
-                    "You doused a visitor named "+myTarget.name,
+                    "You doused "+myTarget.name,
                     GameManager.COLOR.GAME_TO_YOU
                 ), true);
             }
@@ -632,7 +710,7 @@ export const ROLES = {
 
                 for(let playerName in GameManager.host.players){
                     let dousedPlayer = GameManager.host.players[playerName];
-                    if(dousedPlayer.role.persist.doused)
+                    if(dousedPlayer.role.persist.extra.doused)
                         dousedPlayer.tryNightKill(player, player.role.cycle.attack);
                 }
             }

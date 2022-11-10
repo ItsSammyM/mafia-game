@@ -1,19 +1,16 @@
-add people to dead chat at correct times
-
+make game able to send more messages at a time
 Tevin and Jamin couldnt change their targets
 
 fix mayor -- set non 0 amount of mayors, make mayor work
-make player mafioso if no mafia killing
 
 skip phase button
 
 redo setPhase and setCycle in host and client because theyre weird and wrong
 
 make it so when entered wrong room code, it tells you
+show players joined to non hosts
 
-ALIBI
 Graveyard
-NOTES
 
 WIN CONDITIONS
 
@@ -27,6 +24,8 @@ i want this role
 i dont want this faction/alignment
 Thomas thing
 ---------
+
+electron -- like discord
 
 //IMPOSTER -- You blackmail someone for a day and you can talk under their name, 3 uses
 //GRAVESTEALER -- Like Janitor, but instead of cleaning, it doesnt show that their dead... all day, every day, until they are voted up.... 

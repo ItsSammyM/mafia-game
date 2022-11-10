@@ -46,6 +46,8 @@ let standardStartPhase = function(){
 export const PHASES = {
     "Night":new Phase(1, 
         ()=>{
+            GameManager.host.cycle.playerOnTrial = null;
+            
             let informationListMessage = [];
 
             informationListMessage.push(new ChatMessageState("Night "+GameManager.host.cycleNumber, "Do not speak, Target someone to use your ability on them.", GameManager.COLOR.GAME_TO_ALL));
@@ -67,9 +69,9 @@ export const PHASES = {
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(player.role.getRoleObject().team && player.role.cycle.aliveNow)
+                if(player.role.getRoleObject().team && player.role.persist.alive)
                     player.chatGroupSendList.push(player.role.getRoleObject().team);
-                if(!player.role.cycle.aliveNow)
+                if(!player.role.persist.alive)
                     player.chatGroupSendList.push("Dead");
             }
             
@@ -82,6 +84,10 @@ export const PHASES = {
                 let player = GameManager.host.players[playerName];
 
                 player.role.cycle.aliveNow = player.role.persist.alive;
+                if(player.savedNotePad["Will"])
+                    player.role.cycle.shownWill = player.savedNotePad["Will"];
+                if(player.savedNotePad["Note"])
+                    player.role.cycle.shownNote = player.savedNotePad["Note"];
             }
 
             //main loop 
@@ -143,7 +149,7 @@ export const PHASES = {
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(!player.role.cycle.aliveNow)
+                if(!player.role.persist.alive)
                     player.chatGroupSendList.push("Dead");
             }
 
@@ -193,9 +199,9 @@ export const PHASES = {
                 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(player.role.cycle.aliveNow)
+                if(player.role.persist.alive)
                     player.chatGroupSendList.push("All");
-                if(!player.role.cycle.aliveNow)
+                if(!player.role.persist.alive)
                     player.chatGroupSendList.push("Dead");
             }
 
@@ -240,9 +246,9 @@ export const PHASES = {
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(player.role.cycle.aliveNow)
+                if(player.role.persist.alive)
                     player.chatGroupSendList.push("All");
-                if(!player.role.cycle.aliveNow)
+                if(!player.role.persist.alive)
                     player.chatGroupSendList.push("Dead");
             }
 
@@ -281,7 +287,7 @@ export const PHASES = {
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(!player.role.cycle.aliveNow)
+                if(!player.role.persist.alive)
                     player.chatGroupSendList.push("Dead");
             }
             //player on trial needs to be able to talk
@@ -322,9 +328,9 @@ export const PHASES = {
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(player.role.cycle.aliveNow)
+                if(player.role.persist.alive)
                     player.chatGroupSendList.push("All");
-                if(!player.role.cycle.aliveNow)
+                if(!player.role.persist.alive)
                     player.chatGroupSendList.push("Dead");
             }
 
@@ -365,8 +371,7 @@ export const PHASES = {
 
             if(totalJudgement < 0){
                 //guilty
-                GameManager.host.cycle.playerOnTrial.die();
-                GameManager.host.cycle.playerOnTrial.showDied();
+               
 
                 PhaseStateMachine.startPhase("FinalWords");
             }else if(GameManager.host.cycle.trialsLeftToday > 0){
@@ -380,7 +385,6 @@ export const PHASES = {
                 }
                 PhaseStateMachine.startPhase("Night");
             }
-            GameManager.host.cycle.playerOnTrial = null;
             GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
         }
     ),
@@ -409,15 +413,20 @@ export const PHASES = {
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(player.role.cycle.aliveNow)
+                if(player.role.persist.alive)
                     player.chatGroupSendList.push("All");
-                if(!player.role.cycle.aliveNow)
+                if(!player.role.persist.alive)
                     player.chatGroupSendList.push("Dead");
             }
 
             standardStartPhase();
         },
         ()=>{
+            GameManager.host.cycle.playerOnTrial.die();
+            GameManager.host.cycle.playerOnTrial.showDied();
+            
+            GameManager.host.cycle.playerOnTrial.chatGroupSendList.push("Dead");
+            
             PhaseStateMachine.startPhase("Night");
         }
     )

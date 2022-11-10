@@ -91,6 +91,7 @@ export class StartHostMenu extends React.Component {
     }
     changeRoleList(i, f, v){
         let copy = this.state.roleList;
+        if(v==="Any") v=null;
         copy[i][f] = v?v:null;
         this.setState({roleList : copy});
     }

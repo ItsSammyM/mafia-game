@@ -395,6 +395,16 @@ let GameManager = {
         players : {},
         information : [],
         chatMessageList : [],
+
+        savedNotePad : {},
+        /*
+            savedNotePad:{
+                Will: "Sus",
+                Note : "Latio"
+            }
+
+        */
+
         addMessage(m, invokeListeners=true){
             GameManager.client.chatMessageList.push(m);
 
@@ -485,9 +495,15 @@ let GameManager = {
                     GameManager.COLOR.CHAT
                 ));
         },
+        clickSaveNotePad : function(notePadName, notePadValue){
+            GameManager.client.savedNotePad[notePadName] = notePadValue;
+            GameManager.CLIENT_TO_HOST["SEND_NOTEPAD"].send(GameManager.client.playerName, notePadName);
+        },
         clickWhisper : function(name){
 
         },
+
+
         create: function(_roomCode, _playerName){
             GameManager.client.roomCode = _roomCode;
             GameManager.client.playerName = _playerName;
@@ -710,6 +726,18 @@ let GameManager = {
                     }
                 }
                 GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
+            }
+        ),
+        "SEND_NOTEPAD":new MessageType(false,
+            (playerName, notePadName)=>{GameManager.client.sendMessage(GameManager.CLIENT_TO_HOST["SEND_NOTEPAD"], {
+                playerName : playerName, 
+                notePadName : notePadName,
+                notePadValue : GameManager.client.savedNotePad[notePadName]
+            })},
+            (contents)=>{
+                let player = GameManager.host.players[contents.playerName];
+                if(!player) return;
+                player.savedNotePad[contents.notePadName] = contents.notePadValue;
             }
         ),
     },

@@ -32,7 +32,7 @@
             "Night":10,
             "Morning":1,
             "Discussion":1,
-            "Voting":15,
+            "Voting":10,
             "Testimony":1,
             "Judgement":9,
             "FinalWords":1
@@ -113,16 +113,15 @@
             [
                 [null, null, "Godfather"],
                 ["Mafia", "Support", null],
-                ["Mafia", null, null],
 
                 ["Town", "Investigative", null],
                 ["Town", "Protective", null],
                 ["Town", "Support", null],
-                ["Town", null, null],
+                ["Town", "Killing", null],
                 ["Town", null, null],
                 ["Town", null, null],
                 
-                ["Neutral", "Evil", null]
+                [null, null, "Witch"]
             ],
             [
                 [null, null, "Godfather"],
@@ -149,7 +148,7 @@
                 ["Town", "Investigative", null],
                 ["Town", "Protective", null],
                 ["Town", "Support", null],
-                ["Town", null, null],
+                ["Town", "Killing", null],
                 ["Town", null, null],
                 ["Town", null, null],
                 

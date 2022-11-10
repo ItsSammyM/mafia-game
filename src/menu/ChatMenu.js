@@ -93,7 +93,7 @@ export class ChatMenu extends React.Component {
         <Button text="Send" onClick={()=>{
             this.sendButton();
         }}/><br/>
-        <Button text="Send-Alibi" onClick={()=>{
+        <Button text="Send Will" onClick={()=>{
         }}/><br/>
         <TextInput 
             value={this.state.enteredMessage}
