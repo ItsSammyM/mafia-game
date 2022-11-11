@@ -37,6 +37,11 @@ export class PlayerState{
             this.addMessage(m[i]);
         }
     }
+    copyMessagesToUnsentMessages(){
+        for(let i in this.chatMessageList){
+            this.unsentMessageStream.push(this.chatMessageList[i]);
+        }
+    }
     getUnsentMessages(){
         return this.unsentMessageStream.splice(0,this.unsentMessageStreamBufferLength);
     }
@@ -246,6 +251,7 @@ export class PlayerRole{
                 healedByDoc : false,
                 attackedTonight : false,
                 isVeteranOnAlert : false,
+                blackmailed : false,
                 //savedByBodyguard : false,
                 //killedTonight : false
             },

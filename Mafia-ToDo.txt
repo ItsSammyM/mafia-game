@@ -1,8 +1,5 @@
 add way to refresh page while waiting
 
-make game able to send more messages at a time
-Tevin and Jamin couldnt change their targets
-
 fix mayor -- set non 0 amount of mayors, make mayor work
 
 skip phase button
@@ -54,8 +51,6 @@ Escort, Transporter, Consort, or Hypnotist.
 Doctor, Disguiser, Serial Killer, or Potion Master.
 Investigator, Consigliere, Mayor, Tracker, or Plaguebearer.
 Bodyguard, Godfather, Arsonist, or Crusader.
-
-Blackmailer 🪡 ✉️ 🤐
 
 Transporter 🐎🚕
 Medium🔮

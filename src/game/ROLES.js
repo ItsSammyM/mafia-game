@@ -499,6 +499,33 @@ export const ROLES = {
         null,
         null
     ),
+    "Blackmailer":new Role(
+        "Blackmailer", "Target a player to blackmail them, they cannot speak for the whole next day.", "🤐",
+        "You can read peoples whispers. You should try to target people who are most likely going to say something important the next day. Town Investigative roles often are huge targets for blackmailers.",
+        "2 > Silence",
+        "Mafia", "Support", "Mafia",
+        "Mafia", Infinity,
+        0, 0,
+        true, true, true,
+        {},
+        (priority, player)=>{
+            if(priority!==2) return;
+            if(player.role.cycle.targeting.length < 1) return;
+            if(!player.role.cycle.aliveNow) return;
+
+            let myTarget = player.role.cycle.targeting[0];
+            if(!myTarget.role.cycle.aliveNow) return;
+
+            myTarget.role.cycle.extra.blackmailed = true;
+            myTarget.role.addNightInformation(new ChatMessageState(
+                "BLACKMAILED",
+                "You were blackmailed. Do not under any circumstances speak during the next day. You can not write in chat. You can still vote.",
+                GameManager.COLOR.GAME_TO_YOU
+            ), false);
+        },
+        null,
+        null
+    ),
     "Janitor":new Role(
         "Janitor", "Target a player who might die tonight, if they do, their role and will will appear to be cleaned. You have 3 uses.", "🧹",
         "A clean means the town wont know what their role was, but you still will. This makes it easy for you to pretend to be what they were. You should tell the other mafia members what the dead players role was.",

@@ -199,7 +199,7 @@ export const PHASES = {
                 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(player.role.persist.alive)
+                if(player.role.persist.alive && !player.role.cycle.extra.blackmailed)
                     player.chatGroupSendList.push("All");
                 if(!player.role.persist.alive)
                     player.chatGroupSendList.push("Dead");
@@ -246,7 +246,7 @@ export const PHASES = {
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(player.role.persist.alive)
+                if(player.role.persist.alive && !player.role.cycle.extra.blackmailed)
                     player.chatGroupSendList.push("All");
                 if(!player.role.persist.alive)
                     player.chatGroupSendList.push("Dead");
@@ -291,7 +291,8 @@ export const PHASES = {
                     player.chatGroupSendList.push("Dead");
             }
             //player on trial needs to be able to talk
-            GameManager.host.cycle.playerOnTrial.chatGroupSendList.push("All");
+            if(!GameManager.host.cycle.playerOnTrial.role.cycle.extra.blackmailed)
+                GameManager.host.cycle.playerOnTrial.chatGroupSendList.push("All");
 
             GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycle.playerOnTrial.name);
             standardStartPhase();
@@ -328,7 +329,7 @@ export const PHASES = {
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(player.role.persist.alive)
+                if(player.role.persist.alive && !player.role.cycle.extra.blackmailed)
                     player.chatGroupSendList.push("All");
                 if(!player.role.persist.alive)
                     player.chatGroupSendList.push("Dead");
@@ -413,7 +414,7 @@ export const PHASES = {
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(player.role.persist.alive)
+                if(player.role.persist.alive && !player.role.cycle.extra.blackmailed)
                     player.chatGroupSendList.push("All");
                 if(!player.role.persist.alive)
                     player.chatGroupSendList.push("Dead");

@@ -35,8 +35,8 @@ export class PlayerListMenu extends React.Component {
                         players : GameManager.client.players,
                         phaseName : GameManager.client.phaseName,
 
-                        targetedPlayerNames : [],
-                        votedForName : null,
+                        targetedPlayerNames : GameManager.client.cycle.targetedPlayerNames,
+                        votedForName : GameManager.client.cycle.votedForName,
                         judgementStatus : GameManager.client.judgementStatus,
                     });
                 }

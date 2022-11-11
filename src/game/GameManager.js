@@ -9,6 +9,7 @@ import { ChatMessageStateClient } from "../gameStateClient/ChatMessageStateClien
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
 import { getRandomRole, TEAMS, Role, ROLES } from "./ROLES";
 import { PhaseStateMachine, PHASES } from "./PHASE";
+import { StartMenu } from "../menu/StartMenu";
 /*
 weird stuff
 
@@ -204,46 +205,11 @@ let GameManager = {
                 player.addMessages(informationList);
                 index++;
             }
+            //sort and save rolelist
+            GameManager.host.roleList = mergeSort(roleList, (a,b)=>{
 
-
-            //CHAT GROUPS
-            for(let teamName in TEAMS){
-                GameManager.host.chatGroups[teamName] = [];
-            }
-
-            //after roleList is picked, create extra chat groups
-            for(let playerName in GameManager.host.players){
-                let player = GameManager.host.players[playerName];
-
-                //WHISPER
-                GameManager.host.chatGroups[playerName] = [player]; //also add blackmailer
-                //ALL
-                GameManager.host.chatGroups["All"].push(player);
-                //TEAMS
-                if(player.role.getRoleObject().team)
-                    GameManager.host.chatGroups[player.role.getRoleObject().team].push(player);
-            }
-
-
-            //SUFFIXES
-            for(let playerName in GameManager.host.players){
-                let player = GameManager.host.players[playerName];
-                player.addSuffix(player.name, player.role.persist.roleName);    //suffix yourself
-
-                for(let otherPlayerName in GameManager.host.players){
-                    let otherPlayer = GameManager.host.players[otherPlayerName];
-    
-                    if(Role.onSameTeam(player, otherPlayer) && TEAMS[player.role.getRoleObject().team].showFactionMembers)
-                        player.addSuffix(otherPlayer.name, otherPlayer.role.persist.roleName);  //suffix for same team members
-                }
-            }
-
-            //Send game state and stuff.
-            for(let playerName in GameManager.host.players){
-                GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(playerName, GameManager.host.players[playerName].role.persist.roleName);
-            }
-            GameManager.HOST_TO_CLIENT["ROLE_LIST_AND_PLAYERS"].send(
-                mergeSort(roleList, (a,b)=>{
+                if(a[2]) return 10000;
+                if(b[2]) return 10000;
 
                 if(a[0] !== b[0]){
                     if(a[0] === null)  return -1000;
@@ -284,7 +250,46 @@ let GameManager = {
                     if(a[1] === "Deception")  return 500;
                     if(b[1] === "Deception")  return -500;
                 }
-                }), 
+                })
+
+            //CHAT GROUPS
+            for(let teamName in TEAMS){
+                GameManager.host.chatGroups[teamName] = [];
+            }
+
+            //after roleList is picked, create extra chat groups
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+
+                //WHISPER
+                GameManager.host.chatGroups[playerName] = [player]; //also add blackmailer
+                //ALL
+                GameManager.host.chatGroups["All"].push(player);
+                //TEAMS
+                if(player.role.getRoleObject().team)
+                    GameManager.host.chatGroups[player.role.getRoleObject().team].push(player);
+            }
+
+
+            //SUFFIXES
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+                player.addSuffix(player.name, player.role.persist.roleName);    //suffix yourself
+
+                for(let otherPlayerName in GameManager.host.players){
+                    let otherPlayer = GameManager.host.players[otherPlayerName];
+    
+                    if(Role.onSameTeam(player, otherPlayer) && TEAMS[player.role.getRoleObject().team].showFactionMembers)
+                        player.addSuffix(otherPlayer.name, otherPlayer.role.persist.roleName);  //suffix for same team members
+                }
+            }
+
+            //Send game state and stuff.
+            for(let playerName in GameManager.host.players){
+                GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(playerName, GameManager.host.players[playerName].role.persist.roleName);
+            }
+            GameManager.HOST_TO_CLIENT["ROLE_LIST_AND_PLAYERS"].send(
+                GameManager.host.roleList, 
                 ((()=>{
                     let out = [];
                     for(let playerName in GameManager.host.players){
@@ -537,22 +542,49 @@ let GameManager = {
 
                 let alreadyJoined = false;
                 for(let playerName in GameManager.host.players){
-                    if(playerName === contents.playerName)
+                    if(playerName === contents.playerName){
                         alreadyJoined = true;
                         break;
+                    }
                 }
 
                 if(!GameManager.host.gameStarted){
-                    if(!alreadyJoined)GameManager.host.players[contents.playerName] = (new PlayerState(contents.playerName));
+                    if(!alreadyJoined)
+                        GameManager.host.players[contents.playerName] = (new PlayerState(contents.playerName));
                     GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, true);
                 }else{
 
+                
                     // LATE JOINING IMPLEment LAteR
-                    // if(alreadyJoined){
-                    //     GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, true, true);
-                    // }else{
-                    //     GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, false);
-                    // }
+                    if(alreadyJoined){
+                        let player = GameManager.host.players[contents.playerName];
+
+                        GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(player.name, true, true);
+                        GameManager.HOST_TO_CLIENT["ROLE_LIST_AND_PLAYERS"].send(GameManager.host.roleList, 
+                            ((()=>{
+                                let out = [];
+                                for(let playerName in GameManager.host.players){
+                                    out.push(playerName);
+                                }
+                                return out;
+                            })()) 
+                        );
+                        
+                        GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.role.persist.roleName);
+                        GameManager.HOST_TO_CLIENT["AVAILABLE_BUTTONS"].send(player.name);
+                        GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
+                        GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycle.playerOnTrial);
+                        GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
+
+                        //resend messages
+                        player.copyMessagesToUnsentMessages();
+                        GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
+                        GameManager.HOST_TO_CLIENT["START_PHASE"].send();
+                        //start phase
+
+                    }else{
+                        GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, false);
+                    }
                      
                 }
 
@@ -756,6 +788,8 @@ let GameManager = {
                     }else{
                         Main.instance.changeMenu(<WaitJoinMenu/>);
                     }
+                }else{
+                    Main.instance.changeMenu(<StartMenu/>);
                 }
             }
         ),
@@ -767,7 +801,9 @@ let GameManager = {
             (contents)=>{
                 GameManager.client.roleList = contents.roleList;
                 for(let i = 0; i < contents.allPlayerNames.length; i++){
-                    GameManager.client.players[contents.allPlayerNames[i]] = new PlayerStateClient(contents.allPlayerNames[i]);
+                    //if we already have the player then dont re add them
+                    if(!    (contents.allPlayerNames[i] in GameManager.client.players)  )
+                        GameManager.client.players[contents.allPlayerNames[i]] = new PlayerStateClient(contents.allPlayerNames[i]);
                 }
             }
         ),
@@ -811,9 +847,13 @@ let GameManager = {
                 cycleNumber : GameManager.host.cycleNumber,
             })},
             (contents)=>{
+                //if phase actually changed
+                if(GameManager.client.phaseName !== contents.phaseName)
+                    GameManager.client.setPhase();
+
                 GameManager.client.phaseName = contents.phaseName;
                 GameManager.client.cycleNumber = contents.cycleNumber;
-                GameManager.client.setPhase();
+                
             }
         ),
         "PLAYER_ON_TRIAL":new MessageType(true,
@@ -1037,6 +1077,7 @@ let GameManager = {
                     playerIndividual[playerName] = {
                         seeSelfAlive : player.role.persist.alive,
                         chatGroupSendList : player.chatGroupSendList,
+                        savedNotePad : player.savedNotePad,
                     };
                 }
 
@@ -1047,6 +1088,7 @@ let GameManager = {
             (contents)=>{
                 GameManager.client.chatGroupSendList = contents.playerIndividual[GameManager.client.playerName].chatGroupSendList;
                 GameManager.client.seeSelfAlive = contents.playerIndividual[GameManager.client.playerName].seeSelfAlive;
+                GameManager.client.savedNotePad = contents.playerIndividual[GameManager.client.playerName].savedNotePad;
             }
         ),
         "TIME_LEFT":new MessageType(true,
