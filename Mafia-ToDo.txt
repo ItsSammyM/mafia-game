@@ -1,3 +1,5 @@
+add way to refresh page while waiting
+
 make game able to send more messages at a time
 Tevin and Jamin couldnt change their targets
 
@@ -17,15 +19,15 @@ WIN CONDITIONS
 Entire wikipedia for game including priorities
 drop down for what role you think someone is on player list - The tyler thing
 
-text shows up weird on tefts phone
+text shows up weird on tefts phone. Font is weird
+
+on the first night. Mafia gets no kills. but they get to know 3 roles that arent in the game.
 
 --------
 i want this role
 i dont want this faction/alignment
 Thomas thing
 ---------
-
-electron -- like discord
 
 //IMPOSTER -- You blackmail someone for a day and you can talk under their name, 3 uses
 //GRAVESTEALER -- Like Janitor, but instead of cleaning, it doesnt show that their dead... all day, every day, until they are voted up.... 
@@ -53,32 +55,19 @@ Doctor, Disguiser, Serial Killer, or Potion Master.
 Investigator, Consigliere, Mayor, Tracker, or Plaguebearer.
 Bodyguard, Godfather, Arsonist, or Crusader.
 
-https://town-of-salem-investigator-results.fandom.com/wiki/Investigator_Results
-https://town-of-salem.fandom.com/wiki/Victory#:~:text=the%20same%20faction.-,Town%20Victory,one%20of%20them%20is%20killed.
-https://emojipedia.org/search/?q=lips
-give all roles emojis
-
-Godfather 
-Mafioso 🌹
-
 Blackmailer 🪡 ✉️ 🤐
-Consort 💄
-Janitor 🧹
 
 Transporter 🐎🚕
-Escort 💋
 Medium🔮
 
 Tracker 👣
-Lookout 🔭
 Spy 📻
-Sheriff 🕵️
 Investigator 🔍
 
-Doctor 💉
 Crusader 🛡️
 
-Veteran 🎖️
-vigilante 🔫
+https://town-of-salem-investigator-results.fandom.com/wiki/Investigator_Results
+https://town-of-salem.fandom.com/wiki/Victory#:~:text=the%20same%20faction.-,Town%20Victory,one%20of%20them%20is%20killed.
+https://emojipedia.org/search/?q=lips
 
-Witch 🧙‍♀️
+
