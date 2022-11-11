@@ -105,12 +105,13 @@ export const PHASES = {
 
                             let isAstral = false;
                             let astralVisitsList = player.role.getRoleObject().astralVisitsList;
-
                             if(astralVisitsList && astralVisitsList.length >= t)
                                 isAstral = player.role.getRoleObject().astralVisitsList[t];
+                            if(isAstral) continue;
 
-                            if(!isAstral)
-                                targeted.role.cycle.targetedBy.push(player);
+                            if(player.role.cycle.roleblocked && player.role.getRoleObject().roleblockable) continue;
+
+                            targeted.role.cycle.targetedBy.push(player);
                         }
                     }
                     

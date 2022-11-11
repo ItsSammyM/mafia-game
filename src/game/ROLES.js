@@ -148,9 +148,73 @@ export const ROLES = {
         null,
         null
     ),
+    "Spy":new Role(
+        "Spy", "Target a player to bug them and see some messages they recieved. You can see who the mafia vists.", "📻",
+        "If it is required for a player to be a specific role to recieve a message, then the spy can't see it using a bug. You cant see astral visits \n"+
+        "Seeing mafia visits can let you know if someone is lying about being blackmailed, and figure out what mafia roles there are. \n"+
+        "You can also deduce who is mafia based on the fact that mafia usually can't visit themselves.",
+        "10 > Get information",
+        "Town", "Investigative", null,
+        "Town", Infinity,
+        0, 0,
+        true, true, false,
+        {},
+        (priority, player)=>{
+            if(priority !== 10) return;
+
+            if(!player.role.cycle.aliveNow) return;
+
+            //give mafia visits
+            let outString = "The mafia visited these players: ";
+            let mafiaVisitedSomeone = false;
+            for(let eachPlayerName in GameManager.host.players){
+                let eachPlayer = GameManager.host.players[eachPlayerName];
+
+                for(let i in eachPlayer.role.cycle.targetedBy){
+                    let visitor = eachPlayer.role.cycle.targetedBy[i];
+
+                    if(visitor.role.getRoleObject().faction === "Mafia"){
+                        outString+=eachPlayer.name+", "; mafiaVisitedSomeone=true;
+                    }
+                }
+            }
+            if(outString.length > 2) outString = outString.substring(0, outString.length-2);
+
+            if(mafiaVisitedSomeone){
+                player.role.addNightInformation(new ChatMessageState(
+                    null, outString, GameManager.COLOR.GAME_TO_YOU
+                ),true);
+            }else{
+                player.role.addNightInformation(new ChatMessageState(
+                    null, "The mafia didn't visit anyone", GameManager.COLOR.GAME_TO_YOU
+                ),true);
+            }
+
+
+
+            //bug
+            if(player.role.cycle.targeting.length < 1) return;
+
+            let myTarget = player.role.cycle.targeting[0];
+            if(!myTarget.role.cycle.aliveNow) return;
+
+            for(let i in myTarget.role.cycle.nightInformation){
+                let information = myTarget.role.cycle.nightInformation[i];
+                //if not role specific
+                if(information[1] === false)
+                    player.role.addNightInformation(new ChatMessageState(
+                        information[0].title,
+                        "Targets message: "+information[0].text,
+                        GameManager.COLOR.GAME_TO_YOU
+                    ), true);
+            }
+        },
+        null,
+        null
+    ),
     "Veteran":new Role(
-        "Veteran", "Target yourself to go on alert and attack everyone who visits you", "🎖️",
-        "Going on alert grants you powerfull defense (2) and all visitors will die, but you can only use it 3 times.",
+        "Veteran", "Target yourself to go on alert and attack everyone who visits you. 3 uses only", "🎖️",
+        "Going on alert grants you powerfull(2) defense and all visitors will die, but you can only use it 3 times. Try to get evil people to visit you and then go on alert. However, it is easy to accidentally kill many townies.",
         "-12 > If decide to alert you get defense,\n"+
         "6 > Kill all visitors",
         "Town", "Killing", null,
@@ -713,8 +777,8 @@ export const ROLES = {
                     player.role.addNightInformation(
                         new ChatMessageState(
                             myTarget1.role.cycle.nightInformation[i][0].title,
-                            "Targets Message: "+myTarget1.role.cycle.nightInformation[i][0].text,
-                            myTarget1.role.cycle.nightInformation[i][0].color
+                            "Targets message: "+myTarget1.role.cycle.nightInformation[i][0].text,
+                            GameManager.COLOR.GAME_TO_YOU
                         ),
                         myTarget1.role.cycle.nightInformation[i][1]
                     );
@@ -843,24 +907,6 @@ Everyones target is set first
 +12 Witch(Steal info & Remove sheild)
 
 --------
-investigator idea
-
-Lets say rolelist is
-TI
-TI
-TS
-TP
-TK
-GF
-MAFIOSO
-MR
-MR
-NK
-NE
-
-Randomly generates investigative results before the start of each match. Wiki tab will show what all the options are
-
-Town Town Neutral Mafia Coven
 */
 
 export function getRandomFaction(alreadyPickedRolesList){
@@ -955,208 +1001,4 @@ export function getRoleList(faction, alignment, alreadyPickedRolesList){
     }
     return allRoles;
 }
-// export const ROLES = {
-//     Sheriff: {
-//         faction : "Town",
-//         alignment : "Investigative",
-//         roleblockable : true,
-//         witchable : true,
-//         defense : 0,
-//         interrogationResults : "Innocent",
-//         extraPersist : {},
-//         doRole : function(priority, player){
-//             if(!player.role.aliveTonight) return;
-//             if(player.role.targeting.length < 1) return;
-//             if(priority!==4) return;
-
-//             let targeted = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
-//             player.addGiveInformation("Your target was found to be "+ROLES[targeted.role.roleTitle].interrogationResults,false);
-//         }
-//     },
-//     Lookout: {
-//         faction : "Town",
-//         alignment : "Investigative",
-//         roleblockable : true,
-//         witchable : true,
-//         defense : 0,
-//         interrogationResults : "Innocent",
-//         extraPersist : {},
-//         doRole : function(priority, player){
-//             if(!player.role.aliveTonight) return;
-//             if(player.role.targeting.length < 1) return;
-//             if(priority!==4) return;
-
-//             let targeted = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
-//             let v = "";
-//             for(let i = 0 ; i < targeted.role.targetedBy.length; i++){
-//                 v+=targeted.role.targetedBy[i]+", ";
-//             }
-//             v = v.substring(0,v.length-2);
-//             player.addGiveInformation("The visitors to your target were "+v,false);
-//         }
-//     },
-//     Escort: {
-//         faction : "Town",
-//         alignment : "Support",
-//         roleblockable : false,
-//         witchable : true,
-//         defense : 0,
-//         interrogationResults : "Innocent",
-//         extraPersist : {},
-//         doRole : function(priority, player){
-//             if(!player.role.aliveTonight) return;
-//             if(player.role.targeting.length < 1) return;
-//             if(priority!==-6) return;
-
-//             let targeted = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
-//             targeted.roleBlock();
-//         }
-//     },
-//     Transporter: {
-//         faction : "Town",
-//         alignment : "Support",
-//         roleblockable : false,
-//         witchable : false,
-//         defense : 0,
-//         interrogationResults : "Innocent",
-//         extraPersist : {},
-//         doRole : function(priority, player){
-//             if(!player.role.aliveTonight) return;
-//             if(player.role.targeting.length < 2) return;
-
-//             if(priority!==-10) return;
-
-//             let playerA = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
-//             let playerB = GameManager.instance.getPlayerFromName(player.role.targeting[1]);
-
-//             playerA.addGiveInformation("You were transported!", false);
-//             playerB.addGiveInformation("You were transported!", false);
-
-//             for(let i = 0; i < GameManager.instance.completeState.gameState.players.length; i++){
-//                 let swapTargetPlayer = GameManager.instance.completeState.gameState.players[i];
-                
-//                 for(let j = 0; j < swapTargetPlayer.role.targeting.length; j++){
-//                     if(swapTargetPlayer.role.targeting[j] === playerA.name){
-//                         swapTargetPlayer.role.targeting[j] = playerB.name
-//                     }else if(swapTargetPlayer.role.targeting[j] === playerB.name){
-//                         swapTargetPlayer.role.targeting[j] = playerA.name
-//                     }
-//                 }
-//             }
-//         }
-//     },
-//     Mafioso: {
-//         faction : "Mafia",
-//         alignment : "Killing",
-//         roleblockable : true,
-//         witchable : true,
-//         defense : 0,
-//         interrogationResults : "Suspicious",
-//         extraPersist : {},
-//         doRole : function(priority, player){
-//             if(!player.role.aliveTonight) return;
-//             if(player.role.targeting.length < 1) return;
-//             if(priority!==6) return;
-
-//             let targeted = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
-//             targeted.nightKill(player);
-//         }
-//     },
-//     Godfather: {
-//         faction : "Mafia",
-//         alignment : "Killing",
-//         roleblockable : true,
-//         witchable : true,
-//         defense : 1,
-//         interrogationResults : "Innocent",
-//         extraPersist : {},
-//         doRole : function(priority, player){
-//             if(!player.role.aliveTonight) return;
-//             if(player.role.targeting.length < 1) return;
-//             let targeted = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
-
-//             if(priority===-4){
-//                 let mafioso = GameManager.instance.getPlayerByRole("Mafioso");
-//                 if(mafioso !== null) player.role.extra.foundMafioso = true;
-
-//                 if(player.role.extra.foundMafioso && !mafioso.role.extra.witched && mafioso !== targeted){
-//                     mafioso.role.targeting = [targeted.name];
-//                     mafioso.addGiveInformation("The godfather ordered you to attack his target", false);
-//                     player.role.targeting = [];
-//                 }
-//             }else if(priority===6 && !player.role.extra.foundMafioso){
-//                 targeted.nightKill(player);
-//             }            
-//         }
-//     },
-//     Consort: {
-//         faction : "Mafia",
-//         alignment : "Support",
-//         roleblockable : false,
-//         witchable : true,
-//         defense : 0,
-//         interrogationResults : "Suspicious",
-//         extraPersist : {},
-//         doRole : function(priority, player){
-//             if(!player.role.aliveTonight) return;
-//             if(player.role.targeting.length < 1) return;
-//             if(priority!==-6) return;
-
-//             let targeted = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
-//             targeted.roleBlock();
-//         }
-//     },
-//     Janitor: {
-//         faction : "Mafia",
-//         alignment : "Support",
-//         roleblockable : false,
-//         witchable : true,
-//         defense : 0,
-//         interrogationResults : "Suspicious",
-//         extraPersist : { cleans : 3 },
-//         doRole : function(priority, player){
-//             if(!player.role.aliveTonight) return;
-//             if(player.role.targeting.length < 1) return;
-//             if(priority!==8) return;
-
-//             let targeted = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
-//             if(targeted.role.alive === true) return;
-
-//             if(player.role.extraPersist.Janitor.cleans <= 0){player.addGiveInformation("You have already used all of your cleans", false); return;}
-
-//             targeted.grave = new GraveState("Alibi was cleaned", "Cleaned", "", "");
-//             player.role.extraPersist.Janitor.cleans--;
-//         }
-//     },
-//     Witch: {
-//         faction : "Neutral",
-//         alignment : "Evil",
-//         roleblockable : false,
-//         witchable : false,
-//         defense : 1,
-//         interrogationResults : "Innocent",
-//         extraPersist : {},
-//         doRole : function(priority, player){
-//             if(!player.role.aliveTonight) return;
-            
-//             if(priority===-8){
-//                 if(player.role.targeting.length < 2) return;
-//                 let controlled = GameManager.instance.getPlayerFromName(player.role.targeting[0]);
-
-//                 if(controlled.getMyRole().witchable){
-//                     controlled.role.extra.witched = true;
-//                     controlled.role.targeting[0] = player.role.targeting[1];
-//                     player.role.targeting = [player.role.targeting[0]];
-
-//                     controlled.addGiveInformation("You were controlled by the witch, your target was changed.", false);
-//                     player.role.extra.controlled = controlled;
-//                 }
-//             }
-//             if(priority===10 && player.role.extra.controlled){
-//                 player.addGiveInformation("Your targets role is "+player.role.extra.controlled.role.roleTitle+"\n here is the information they recieved");
-//                 player.addGiveInformationList(player.role.extra.controlled.giveInformation);
-//             }
-//         }
-//     }
-// }
 
