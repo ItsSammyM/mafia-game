@@ -26,14 +26,14 @@
 }
 .Main-header {
     /* justify-content: center; */
-    font-size: 4vmin;
+    font-size: calc(10px + 4vmin);
     font-weight: 900;
-    -webkit-text-stroke: 3.5px rgb(0, 0, 0);
+    -webkit-text-stroke: 2.5px rgb(0, 0, 0);
     color: rgb(220, 220, 220);
     /* align-items: center; */
 }
 .Main-body {
-    font-size: 3vmin;
+    font-size: calc(6px + 3vmin);
     -webkit-text-stroke: 1px rgb(0, 0, 0);
     font-weight: 500;
     color: rgb(173, 173, 173);
@@ -43,7 +43,7 @@
 .Main-box {
     color: #000000;
     background-color: #ffffff;
-    font-size: 2.3vmin;
+    font-size: calc(6px + 2.3vmin);
     -webkit-text-stroke: 1px rgb(0, 0, 0);
     width: 90%;
     border: 5px solid black;
