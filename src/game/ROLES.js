@@ -4,15 +4,17 @@ import GameManager from "./GameManager"
 export class Role{
     /**
      * @param {string} _name
-     * @param {string} _faction 
+     * @param {string} _faction
      * @param {string} _alignment
      * @param {string} _team
-     * @param {int} _defense 
-     * @param {bool} _roleblockable 
-     * @param {bool} _witchable 
-     * @param {bool} _isSuspicious 
-     * @param {Object} _extraPersist 
+     * @param {int} _defense
+     * @param {bool} _roleblockable
+     * @param {bool} _witchable
+     * @param {bool} _isSuspicious
+     * @param {Object} _extraPersist
      * @param {function} _doRole
+     * @param {function} _canTargetFunction
+     * @param {Array} _astralVisitsList
      */
     constructor(
         _name, _basicDescription, _emoji,
@@ -88,10 +90,10 @@ export const ROLES = {
         "What you see isnt always true. A player could look suspicious if they're framed, doused, or other. A Godfather will also look innocent even though they're evil.\n"+
         "Regardless, if you see someone as suspicious, thats alot of information, and you should tell the town immedietly.",
         "4 > Get Results",
-        "Town", "Investigative", null, 
+        "Town", "Investigative", null,
         "Town", Infinity,
         0, 0,
-        true, true, false, 
+        true, true, false,
         {},
         (priority, player)=>{
             if(priority !== 4) return;
@@ -248,7 +250,9 @@ export const ROLES = {
                 otherPlayer.role.persist.alive && //theyre alive
                 myPlayer.role.persist.alive && //im alive
                 myPlayer.role.cycle.targeting.length < 1 &&   //havent already targeted at least 1 person
-                GameManager.host.cycleNumber > 1    //its not night 1
+                GameManager.host.cycleNumber > 1 &&   //its not night 1
+                myPlayer.role.persist.roleExtra.bulletsLeft > 0 && //still has bullets left
+                !myPlayer.role.persist.roleExtra.didShootTownie
             );
         },
         null
@@ -411,7 +415,7 @@ export const ROLES = {
         null
     ),
     //#endregion
-    //#region Mafa
+    //#region Mafia
     "Godfather":new Role(
         "Godfather", "Target a player to kill them. If there is a mafioso, they will do whatever kill you commanded them to do", "👴",
         "If theres is a mafioso in the game. Your visit will be an astral visit. And the mafioso will instead do the killing. Otherwise you will do the killing.\n"+
@@ -496,7 +500,7 @@ export const ROLES = {
         null
     ),
     "Janitor":new Role(
-        "Janitor", "Target a player who might die tonight, if they do, their role and will will appear to be cleaned", "🧹",
+        "Janitor", "Target a player who might die tonight, if they do, their role and will will appear to be cleaned. You have 3 uses.", "🧹",
         "A clean means the town wont know what their role was, but you still will. This makes it easy for you to pretend to be what they were. You should tell the other mafia members what the dead players role was.",
         "8 > clean",
         "Mafia", "Deception", "Mafia",
@@ -530,27 +534,90 @@ export const ROLES = {
                     GameManager.COLOR.GAME_TO_YOU
                 ), true);
             }
-                
-
-            
         },
-        null,
+        (myPlayer, otherPlayer)=>{
+            let otherInMyTeam = Role.onSameTeam(myPlayer, otherPlayer);
+            return(
+                myPlayer.name!==otherPlayer.name && //Not targeting myself
+                otherPlayer.role.persist.alive && //theyre alive
+                myPlayer.role.persist.alive && //im alive
+                !otherInMyTeam && //not on same team
+                myPlayer.role.cycle.targeting.length < 1 &&   //havent already targeted at least 1 person
+                myPlayer.role.persist.roleExtra.cleansLeft > 0  //has cleans left
+            );
+        },
         null
     ),
     "Forger":new Role(
-        "Forger", "Target a player who might die tonight, if they do, their role and will will appear to be what you decided", "🖋️",
-        "In order to decide what you want to change your targets role and will to be, use your notepad. The notepad should include an all capital letter name of a role and then the will. \n"+
-        "You should try to forge wills to make them look realistic in a way to help mafia. Beware of what the player has said during the whole game and keep in mind a medium will know if you forged someone.",
-        "PRIORITY INCOMPLETE",
+        "Forger", "Target a player who might die tonight, if they do, their role and will will appear to be what you decided. You have 2 uses.", "🖋️",
+        "To decide your targets role and will you must use your notepad. The notepad should include an all capital letter name of a role and then the forged will. Everything after the capital role name will be included in the forged will.\n"+
+        "After a forge, you get to know what your targets real role and will was. You should try to forge wills to make them look realistic and help mafia. Beware of what the player has said and how they acted during the whole game and keep in mind a medium will know if you forged someone.",
+        "8 > Change appeared role and will",
         "Mafia", "Deception", "Mafia",
         "Mafia", Infinity,
         0, 0,
         true, true, true,
         {forgesLeft : 2},
-        ()=>{
-            //INCOMPLETE ROLE
+        (priority, player)=>{
+            if(priority !== 8) return;
+            if(player.role.cycle.targeting.length < 1) return;
+            if(!player.role.cycle.aliveNow) return;
+            if(player.role.persist.roleExtra.forgesLeft <= 0) return;
+
+            let myTarget = player.role.cycle.targeting[0];
+            if(!myTarget.role.cycle.aliveNow) return;
+
+            player.role.persist.roleExtra.forgesLeft--;
+
+            //find what shownRoleName should be changed to
+            let roleNameIndex = Infinity;
+            let foundShownRoleName = null;
+            let foundShownWill = null;
+
+            //find lowest index that a roleName appears at
+            for(let roleName in ROLES){
+                let capitalRoleName = roleName.toLocaleUpperCase();
+                let index = player.role.cycle.shownNote.indexOf(capitalRoleName);
+
+                if(roleNameIndex > index && index!==-1){
+                    roleNameIndex = index;
+                    foundShownRoleName = roleName;
+                }
+            }
+            //remove the rolename from the notepad to get the will
+            if(roleNameIndex!==Infinity){
+                //remove roleName from will
+                foundShownWill = player.role.cycle.shownNote.substring(roleNameIndex+foundShownRoleName.length, player.role.cycle.shownNote.length).trim();
+
+                //actually change everything
+                myTarget.role.cycle.shownRoleName = foundShownRoleName?foundShownRoleName:"Incomprehensible";
+                myTarget.role.cycle.shownWill = foundShownWill?foundShownWill:"";
+            }
+
+            if(!myTarget.role.persist.alive){
+                player.role.addNightInformation(new ChatMessageState(
+                    null,
+                    "Your targets real role was "+myTarget.role.persist.roleName,
+                    GameManager.COLOR.GAME_TO_YOU
+                ), true);
+                player.role.addNightInformation(new ChatMessageState(
+                    null,
+                    "Your targets real will was :"+myTarget.role.persist.will,
+                    GameManager.COLOR.GAME_TO_YOU
+                ), true);
+            }
         },
-        null,
+        (myPlayer, otherPlayer)=>{
+            let otherInMyTeam = Role.onSameTeam(myPlayer, otherPlayer);
+            return(
+                myPlayer.name!==otherPlayer.name && //Not targeting myself
+                otherPlayer.role.persist.alive && //theyre alive
+                myPlayer.role.persist.alive && //im alive
+                !otherInMyTeam && //not on same team
+                myPlayer.role.cycle.targeting.length < 1 &&   //havent already targeted at least 1 person
+                myPlayer.role.persist.roleExtra.forgesLeft > 0  //has forges left
+            );
+        },
         null
     ),
     //#endregion
@@ -728,7 +795,6 @@ export const ROLES = {
         null
     ),
     //#endregion
-
 }
 
 /*

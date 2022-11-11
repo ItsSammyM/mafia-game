@@ -75,10 +75,13 @@ export class ChatMenu extends React.Component {
         GameManager.client.clickSendMessage(this.state.enteredMessage);
         this.changeEnteredMessage("");
     }
+    postButton(){
+        if(GameManager.client.savedNotePad["Will"])
+            GameManager.client.clickSendMessage(GameManager.client.savedNotePad["Will"]);
+    }
     changeEnteredMessage(m){
         this.setState({enteredMessage : m});
-            this.state.onChangeMessageListener(m);
-
+        this.state.onChangeMessageListener(m);
 
         if(!m || m===""){
             setTimeout(()=>{
@@ -90,11 +93,18 @@ export class ChatMenu extends React.Component {
 
     renderFixed(){return<div style={{position: "sticky", bottom: 10, width: "100%"}}>
         {this.state.sendBarHeader}<br/>
-        <Button text="Send" onClick={()=>{
-            this.sendButton();
-        }}/><br/>
-        <Button text="Send Will" onClick={()=>{
-        }}/><br/>
+        <div>
+            <div style={{width:"45%", display:"inline-block"}}>
+                <Button text="Post" onClick={()=>{
+                    this.postButton();
+                }}/>
+            </div>
+            <div style={{width:"45%", display:"inline-block"}}>
+                <Button text="Send" onClick={()=>{
+                    this.sendButton();
+                }}/>
+            </div>
+        </div>
         <TextInput 
             value={this.state.enteredMessage}
             onEnter={()=>{

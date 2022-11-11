@@ -82,9 +82,12 @@ let GameManager = {
         players : {},
         gameStarted : false,
 
+        roleList : null,
+        phaseTimes : null,
+
         chatGroups : {
-            "Dead":[],//list of all dead players
-            "All":[]//list of all players
+            "Dead" : [],//list of all dead players
+            "All" : []//list of all players
         },
 
         cycleNumber : 1, //game starts with day 1, then goes into night 1, //increments on morning timeout
@@ -153,26 +156,21 @@ let GameManager = {
 
         startGame : function(_roleList, _phaseTimes){
             GameManager.host.gameStarted = true;
+            GameManager.host.phaseTimes = _phaseTimes;
+            GameManager.host.roleList = _roleList;
 
             let informationList = [];
             let playerIndividual = {};
 
             //informationList.push(new ChatMessageState("NoTitle", "All Player", GameManager.COLOR.GAME_TO_ALL));
 
-            //GIVE ROLES
-            let roleList = _roleList;//[[null, null, "Godfather"]];
-            // GameManager.host.importDefaultRoleList(
-            //     Object.keys(GameManager.host.players).length
-            // )
+            //SET PHASE TIMES
             for(let phaseName in PHASES){
                 PHASES[phaseName].maxTimeSeconds = _phaseTimes[phaseName];
             }
-            //[
-            //   //[faction, alignment, exact]
-            //     ["Mafia", "Killing", null],
-            //     ["Town", "Protective", null],
-            //     ["Town", "Investigative", null],
-            // ];
+
+            //GIVE ROLES
+            let roleList = _roleList;
             shuffleList(roleList);
 
             let alreadyPickedRolesList = [];
@@ -240,6 +238,7 @@ let GameManager = {
                 }
             }
 
+            //Send game state and stuff.
             for(let playerName in GameManager.host.players){
                 GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(playerName, GameManager.host.players[playerName].role.persist.roleName);
             }
@@ -496,7 +495,7 @@ let GameManager = {
                 ));
         },
         clickSaveNotePad : function(notePadName, notePadValue){
-            GameManager.client.savedNotePad[notePadName] = notePadValue;
+            GameManager.client.savedNotePad[notePadName] = notePadValue.trim();
             GameManager.CLIENT_TO_HOST["SEND_NOTEPAD"].send(GameManager.client.playerName, notePadName);
         },
         clickWhisper : function(name){
@@ -737,7 +736,7 @@ let GameManager = {
             (contents)=>{
                 let player = GameManager.host.players[contents.playerName];
                 if(!player) return;
-                player.savedNotePad[contents.notePadName] = contents.notePadValue;
+                player.savedNotePad[contents.notePadName] = contents.notePadValue.trim();
             }
         ),
     },

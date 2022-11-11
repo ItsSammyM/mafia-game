@@ -255,7 +255,7 @@ export class PlayerListMenu extends React.Component {
                 Room Code: {this.state.roomCode}<br/>
                 <br/>
                 <Button text="Role List" onClick={()=>MainMenu.instance.setRightPanel(<RoleListMenu/>)}/><br/>
-                <Button text="Note Pad" onClick={()=>MainMenu.instance.setRightPanel(<NotePadMenu/>)}/><br/>
+                <Button text="NotePad" onClick={()=>MainMenu.instance.setRightPanel(<NotePadMenu/>)}/><br/>
             </div>
             <br/>
             <div className="Main-header">

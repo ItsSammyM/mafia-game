@@ -42,27 +42,29 @@ export class NotePadMenu extends React.Component {
                 <div style={{width:"45%", display:"inline-block"}}>
                     <Button text="Back" onClick={()=>{
                         MainMenu.instance.setRightPanel(<PlayerListMenu/>);
-                    }}/><br/>
+                    }}/>
                 </div>
                 <div style={{width:"45%", display:"inline-block"}}>
                     <Button text="Save" color={this.state.saved?null:GameManager.COLOR.IMPORTANT} onClick={()=>{
                         this.clickSave();
-                    }}/><br/>
-                </div>
-            </div>
-            <TextArea value={this.state.notePadValue} onChange={(e)=>{this.setState({saved:false, notePadValue : e.target.value});}}/><br/>
-            <div>
+                    }}/>
+                </div><br/>
+                <div>
+
                 <div style={{width:"45%", display:"inline-block"}}>
                     <Button text="Will" onClick={()=>{
                         this.loadNotePad("Will");
-                    }}/><br/>
+                    }}/>
                 </div>
                 <div style={{width:"45%", display:"inline-block"}}>
                     <Button text="Note" onClick={()=>{
                         this.loadNotePad("Note");
-                    }}/><br/>
+                    }}/>
                 </div>
             </div>
+            </div>
+            <TextArea value={this.state.notePadValue} onChange={(e)=>{this.setState({saved:false, notePadValue : e.target.value});}}/><br/>
+            
         </div>
     </div>);}
 
