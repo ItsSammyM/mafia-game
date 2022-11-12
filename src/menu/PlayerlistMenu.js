@@ -3,7 +3,7 @@ import { Button } from "../menuComponents/Button";
 import GameManager from "../game/GameManager";
 import "../styles/Main.css"
 import { mergeSort } from "../game/functions";
-import { RoleListMenu } from "./RoleListMenu"
+import { WikiMenu } from "./WikiMenu"
 import { MainMenu } from "./MainMenu";
 import { NotePadMenu } from "./NotePadMenu";
 
@@ -83,11 +83,11 @@ export class PlayerListMenu extends React.Component {
                     });
                 }
             },
-            TIME_LEFT_LISTENER : {
-                listener : (c)=>{
-                    if(c.timeLeft!==0)
+            TICK_LISTENER : {
+                listener : ()=>{
+                    if(GameManager.client.timeLeftMs>0)
                     this.setState({
-                        timeLeft : c.timeLeft,
+                        timeLeft : Math.ceil(GameManager.client.timeLeftMs/1000),
                     });
                 }
             },
@@ -135,7 +135,7 @@ export class PlayerListMenu extends React.Component {
         GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].addReceiveListener(this.state.UPDATE_PLAYERS_LISTENER);
         
         GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].addReceiveListener(this.state.UPDATE_CLIENT_LISTENER);
-        GameManager.HOST_TO_CLIENT["TIME_LEFT"].addReceiveListener(this.state.TIME_LEFT_LISTENER);
+        GameManager.client.addTickListener(this.state.TICK_LISTENER);
 
         GameManager.HOST_TO_CLIENT["YOUR_ROLE"].addReceiveListener(this.state.YOUR_ROLE_LISTENER);
     }
@@ -154,7 +154,7 @@ export class PlayerListMenu extends React.Component {
         GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].removeReceiveListener(this.state.UPDATE_PLAYERS_LISTENER);
 
         GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].removeReceiveListener(this.state.UPDATE_CLIENT_LISTENER);
-        GameManager.HOST_TO_CLIENT["TIME_LEFT"].removeReceiveListener(this.state.TIME_LEFT_LISTENER);
+        GameManager.client.removeTickListener(this.state.TICK_LISTENER);
 
         GameManager.HOST_TO_CLIENT["YOUR_ROLE"].removeReceiveListener(this.state.YOUR_ROLE_LISTENER);
     }
@@ -254,7 +254,7 @@ export class PlayerListMenu extends React.Component {
             <div className="Main-body">
                 Room Code: {this.state.roomCode}<br/>
                 <br/>
-                <Button text="Role List" onClick={()=>MainMenu.instance.setRightPanel(<RoleListMenu/>)}/><br/>
+                <Button text="Wiki" onClick={()=>MainMenu.instance.setRightPanel(<WikiMenu/>)}/><br/>
                 <Button text="NotePad" onClick={()=>MainMenu.instance.setRightPanel(<NotePadMenu/>)}/><br/>
             </div>
             <br/>

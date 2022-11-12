@@ -1,9 +1,10 @@
 import React from "react";
 import { Button } from "../menuComponents/Button";
 import "../styles/Main.css"
-import { ROLES } from "../game/ROLES";
+import GameManager from "../game/GameManager";
 import { MainMenu } from "./MainMenu";
-import { RoleListMenu } from "./RoleListMenu";
+import { PlayerListMenu } from "./PlayerlistMenu";
+import { RoleWikiMenu } from "./RoleWikiMenu";
 
 export class WikiMenu extends React.Component {
 
@@ -11,9 +12,7 @@ export class WikiMenu extends React.Component {
         super(props);
         
         this.state = {
-            faction : props.faction,
-            alignment : props.alignment,
-            exactRole : props.exactRole,
+            
         };
     }
     componentDidMount() {
@@ -25,57 +24,60 @@ export class WikiMenu extends React.Component {
     componentDidUpdate() {
         
     }
-    renderSingleRole(roleConst){return(<div className="Main-box" key={roleConst.name}>
-        {roleConst.name+roleConst.emoji}<br/>
-        {roleConst.faction+" "+roleConst.alignment}<br/>
-        <br/>
-        {roleConst.basicDescription}<br/>
-        <br/>
-        {roleConst.advancedDescription}<br/>
-        <br/>
-        Priorities:<br/>
-        {roleConst.priorityDescription}<br/>
-        <br/>
-        Defense: {roleConst.defense}, Attack: {roleConst.attack}<br/>
-        <br/>
-        {roleConst.roleblockable?"":"Roleblock Immune"} {roleConst.witchable?"":"Witch Immune"}<br/>
-        Interogation: {roleConst.isSuspicious?"Suspicious":"Innocent"}<br/>
-
-        How many can exist: {roleConst.maximumCount}<br/>
-        {roleConst.victoryGroup?("Victory group: "+roleConst.victoryGroup):"No victory group"}<br/>
-        <br/>
-        
-    </div>);}
     renderRoleList(){
+        return GameManager.client.roleList.map(
+            (r, i)=>{
+                let outString = ((r[0]?r[0]:"")+" "+(r[1]?r[1]:"")+" "+(r[2]?r[2]:"")).trim();
+                if(!outString||outString==="") outString="Any";
+                return(<div key={i}>
+                    <Button text={outString} onClick={()=>{
+                        MainMenu.instance.setRightPanel(<RoleWikiMenu faction={r[0]} alignment={r[1]} exactRole={r[2]}/>);
+                    }}/><br/>
+                </div> );
+            }
+        );
+    }
+    renderInvestigatorResults(){
         let out = [];
-        for(let roleName in ROLES){
-            let roleConst = ROLES[roleName];
-
-            //if its not supposed to be shown
-            if(!(
-                (this.state.faction===null || roleConst.faction===this.state.faction) && 
-                (this.state.alignment===null || roleConst.alignment===this.state.alignment) && 
-                (this.state.exactRole===null || roleConst.name===this.state.exactRole) &&
-                (roleConst.maximumCount>0)
-            ))continue;
-
-            out.push(
-                this.renderSingleRole(roleConst)
-            );
+        for(let i in GameManager.client.investigativeResults){
+            out.push(this.renderSingleInvestigatorResult(i));
         }
         return out;
     }
-    render() {return (<div>
+    renderSingleInvestigatorResult(i){
+        let numbRoles = GameManager.client.investigativeResults[i].length;
+
+        if(numbRoles === 0) return;
+
+        let out = [];
+        for(let j in GameManager.client.investigativeResults[i]){
+            let roleName = GameManager.client.investigativeResults[i][j];
+
+            out.push(<div key={j} style={{width:`${90/(numbRoles)}%`, display:"inline-block"}}>
+                <Button key={roleName} text={roleName}
+                    onClick={()=>{
+                        MainMenu.instance.setRightPanel(<RoleWikiMenu faction={null} alignment={null} exactRole={roleName}/>);
+                }}/>
+            </div>);
+        }
+        return(<div key={i}>{out}<br/></div>);
+    }
+    render() {return (<div className="Main">
         <div className="Main-header">
-            Roles Wiki<br/>
+            Roles<br/>
         </div>
         
         <div className="Main-body">
             <Button text="Back" onClick={()=>{
-                MainMenu.instance.setRightPanel(<RoleListMenu/>);
+                MainMenu.instance.setRightPanel(<PlayerListMenu/>);
             }}/><br/>
             <br/>
+            Role List
             {this.renderRoleList()}
+            <br/>
+            Investigative Results
+            {this.renderInvestigatorResults()}
+
         </div>
     </div>);}
 }

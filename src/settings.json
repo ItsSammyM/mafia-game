@@ -1,6 +1,41 @@
 {
     "defaultInvestigativeResults":{
         "Default":[
+            ["Vigilante", "Veteran", "Mafioso", "Ambusher"],
+            ["Medium", "Janitor", "Retributionist"],
+            ["Spy", "Blackmailer", "Jailor"],
+            ["Sheriff", "Executioner", "Werewolf"],
+            ["Framer", "Vampire", "Jester", "Pestilence"],
+            ["Lookout", "Forger", "Witch"],
+            ["Escort", "Transporter", "Consort"],
+            ["Doctor", "Disguiser", "Serial Killer"],
+            ["Investigator", "Consigliere", "Mayor"],
+            ["Bodyguard", "Godfather", "Arsonist"]
+        ],
+        "Jamin":[
+            ["Investigator", "Consigliere", "Serial Killer"],
+            ["Mayor", "Framer", "Jailor", "Transporter"],
+            ["Escort", "Consort", "Amnesiac"],
+            ["Janitor", "Lookout", "Spy"],
+            ["Godfather", "Bodyguard", "Executioner"],
+            ["Vigilante", "Mafioso", "Jester", "Pestilence"],
+            ["Sheriff", "Vampire", "Disguiser"],
+            ["Doctor", "Blackmailer", "Arsonist"],
+            ["Medium", "Witch", "Forger"],
+            ["Veteran", "Retributionist", "Werewolf", "Ambusher"]
+        ],
+        "Sammy":[
+            ["Doctor", "Veteran", "Arsonist"],
+            ["Bodyguard", "Disguiser", "Serial Killer"],
+            ["Vigilante", "Forger", "Witch"],
+            ["Sheriff", "Consigliere", "Ambusher", "Pestilence"],
+            ["Investigator", "Blackmailer", "Executioner"],
+            ["Medium", "Lookout", "Mafioso"],
+            ["Escort", "Janitor", "Witch", "Hypnotist"],
+            ["Transporter", "Retributionist", "Godfather"],
+            ["Spy", "Jester", "Consort"],
+            ["Framer", "Amnesiac", "Vampire", "Jailor"],
+            ["Mayor"]
         ]
     },
     "defaultPhaseTimes":{
@@ -11,7 +46,7 @@
             "Voting":30,
             "Testimony":30,
             "Judgement":30,
-            "FinalWords":10
+            "Final Words":10
         },
         "Short":{
             "Night":60,
@@ -20,7 +55,7 @@
             "Voting":20,
             "Testimony":20,
             "Judgement":30,
-            "FinalWords":10
+            "Final Words":10
         },
         "Classic":{
             "Night":37,
@@ -29,7 +64,7 @@
             "Voting":30,
             "Testimony":20,
             "Judgement":20,
-            "FinalWords":7
+            "Final Words":7
         },
 
         "Test":{
@@ -39,7 +74,7 @@
             "Voting":10,
             "Testimony":1,
             "Judgement":9,
-            "FinalWords":1
+            "Final Words":1
         }
     },
     "defaultRoleLists":{

@@ -16,6 +16,7 @@ export class StartHostMenu extends React.Component {
 
             roleList : [],
             phaseTimes : {},
+            investigativeResults : [],
         };
         this.updatePlayers = {
             listener : (contents)=>{
@@ -35,17 +36,19 @@ export class StartHostMenu extends React.Component {
             GameManager.CLIENT_TO_HOST["ASK_JOIN"].addReceiveListener(this.updatePlayers);
 
         for(let phaseTimesDefault in settings.defaultPhaseTimes){
-            
-            this.setDefaultPhaseTimes(phaseTimesDefault)
+            this.setDefaultPhaseTimes(phaseTimesDefault);
             break;
         }
+
+        this.setDefaultInvestigativeResults("Random");
+        
     }
     componentWillUnmount() {
         GameManager.CLIENT_TO_HOST["ASK_JOIN"].removeReceiveListener(this.updatePlayers);
     }
 
     startButton(){
-        GameManager.host.startGame(this.state.roleList, this.state.phaseTimes);
+        GameManager.host.startGame(this.state.roleList, this.state.phaseTimes, this.state.investigativeResults);
     }
     setDefaultRoleList(type){
         if(type==="All Any"){
@@ -71,6 +74,19 @@ export class StartHostMenu extends React.Component {
             phaseTimes[phase] = settings.defaultPhaseTimes[type][phase]
         }
         this.setState({phaseTimes : phaseTimes});
+    }
+    setDefaultInvestigativeResults(type){
+        if(type === "Random"){
+            //set type to one of them
+            let typeList = [];
+            for(let myType in settings.defaultInvestigativeResults){
+                typeList.push(myType);
+            }
+            type = typeList[Math.floor(Math.random() * typeList.length)];
+        }
+
+        let investigativeResults = settings.defaultInvestigativeResults[type];
+        this.setState({investigativeResults : investigativeResults});
     }
 
     renderPlayers(players){
@@ -140,7 +156,7 @@ export class StartHostMenu extends React.Component {
 
             Phase Times<br/>
             <DropDown onChange={(e)=>{
-                this.setDefaultPhaseTimes(e.target.value)
+                this.setDefaultPhaseTimes(e.target.value);
             }}>
                 {(()=>{
                     let defaultPhaseTimesOptions = [];
@@ -162,8 +178,27 @@ export class StartHostMenu extends React.Component {
             <Button text="Vampires" width="30%" onClick={()=>{
                 this.setDefaultRoleList("Vampire");
             }}/>
-
+            <br/>
             {this.renderRoleListPickers(this.state.roleList)}<br/>
+
+
+            Investigative Results<br/>
+            <DropDown onChange={(e)=>{
+                this.setDefaultInvestigativeResults(e.target.value);
+            }}>
+                <option>Random</option>
+                {(()=>{
+                    let defaultInvestigativeResultsOptions = [];
+                    for(let investigativeResultsName in settings.defaultInvestigativeResults){
+                        defaultInvestigativeResultsOptions.push((<option key={investigativeResultsName}>{investigativeResultsName}</option>));
+                    }
+                    return defaultInvestigativeResultsOptions;
+                })()}
+            </DropDown><br/>
         </div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
     </div>);}
 }

@@ -1,10 +1,18 @@
+
+redo setPhase and setCycle in host and client because theyre weird and wrong
+THE WORD CYCLE SHOULD BE ENTIRELY REMOVED FROM THE code
+
+EACH PROPERTY FOR A PLAYER SHOULD BE CHANGED WITH AN OBJECT
+OBJECT STORES THE PROPERTY ITSELF AND WHEN IT SHOULD RESET
+
+EACH TARGET SHOULD BE AN OBJECT
+TARGET WILL STORE WEATHER IT IS ASTRAL, AN ATTACK, ATTACK POWER, TARGETER, TARGETED
+
 add way to refresh page while waiting
 
 fix mayor -- set non 0 amount of mayors, make mayor work
 
 skip phase button
-
-redo setPhase and setCycle in host and client because theyre weird and wrong
 
 make it so when entered wrong room code, it tells you
 show players joined to non hosts
@@ -38,30 +46,13 @@ Thomas thing
 // --Hides what everyone is voting for and gives themself 3x vote
 //Jounralist
 
-
-
-Vigilante, Veteran, Mafioso, Pirate, or Ambusher.
-Medium, Janitor, Retributionist, Necromancer, or Trapper.
-Survivor, Vampire Hunter, Amnesiac, Medusa, or Psychic.
-Spy, Blackmailer, Jailor, or Guardian Angel.
-Sheriff, Executioner, Werewolf, or Poisoner.
-Framer, Vampire, Jester, or Hex Master.
-Lookout, Forger, Juggernaut, or Coven Leader.
-Escort, Transporter, Consort, or Hypnotist.
-Doctor, Disguiser, Serial Killer, or Potion Master.
-Investigator, Consigliere, Mayor, Tracker, or Plaguebearer.
-Bodyguard, Godfather, Arsonist, or Crusader.
-
 Transporter 🐎🚕
 Medium🔮
 
 Tracker 👣
-Investigator 🔍
 
 Crusader 🛡️
 
 https://town-of-salem-investigator-results.fandom.com/wiki/Investigator_Results
 https://town-of-salem.fandom.com/wiki/Victory#:~:text=the%20same%20faction.-,Town%20Victory,one%20of%20them%20is%20killed.
 https://emojipedia.org/search/?q=lips
-
-

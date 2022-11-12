@@ -11,6 +11,25 @@ export function shuffleList(l){
     }
 }
 /**
+ * returns randomly shuffled array
+ * @param {array} l array to shuffle
+ * @return {array} suffled array
+ */
+ export function shuffledList(l){
+    let copy = [];
+    for(let i = 0; i < l.length; i++){
+        copy.push(l[i]);
+    }
+    
+    for(let i = 0; i < copy.length; i++){
+        let r = Math.floor(Math.random()*copy.length);
+        let t = copy[r];
+        copy[r] = copy[i];
+        copy[i] = t;
+    }
+    return copy;
+}
+/**
  * 
  * @param {Array} a array to sort
  * @param {Function} compareFunc takes 2 parameters and returns integer, if integer is positive then first param should come first

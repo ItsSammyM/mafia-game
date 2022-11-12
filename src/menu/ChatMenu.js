@@ -130,7 +130,8 @@ export class ChatMenu extends React.Component {
                             text={(()=>{return(
                                 <div>
                                     {(() => {if(e.title) return (<div>{"<"+e.title+">"}<br/></div>)})()}
-                                    {e.text}<br/>
+                                    {(() => {if(e.text) return (<div>{e.text}<br/></div>)})()}
+                                    
                                 </div>
                             )})()}
                         />

@@ -1,4 +1,5 @@
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
+import { shuffledList } from "./functions";
 import GameManager from "./GameManager"
 
 export class Role{
@@ -106,7 +107,7 @@ export const ROLES = {
 
             player.role.addNightInformation(new ChatMessageState(
                 null,
-                "Your target seems to be " + (myTarget.role.cycle.isSuspicious ? "suspicious." : "innocent."),
+                "Your target seems to be " + (myTarget.role.cycle.disguisedAs.role.cycle.isSuspicious ? "suspicious." : "innocent."),
                 GameManager.COLOR.GAME_TO_YOU
             ), true);
         },
@@ -116,7 +117,7 @@ export const ROLES = {
     "Lookout":new Role(
         "Lookout", "Target a player to find out who else visited them, (find out who else targeted them)", "🔭",
         "Its often a good idea to choose players who you think will get killed because if they get killed then you will get to know who killed them and can tell the town who the killer was.",
-        "4 > Get Results",
+        "4 > Get results",
         "Town", "Investigative", null, 
         "Town", Infinity,
         0, 0,
@@ -135,7 +136,7 @@ export const ROLES = {
             for(let visitorIndex in myTarget.role.cycle.targetedBy){
                 let visitor = myTarget.role.cycle.targetedBy[visitorIndex];
 
-                outString += visitor.name + ", ";
+                outString += visitor.role.cycle.disguisedAs.name + ", ";
             }
             outString = outString.substring(0, outString.length-2);
 
@@ -144,6 +145,63 @@ export const ROLES = {
                 "This is who visited your target: " + outString,
                 GameManager.COLOR.GAME_TO_YOU
             ), true);
+        },
+        null,
+        null
+    ),
+    "Investigator":new Role(
+        "Investigator", "Target a player to get a clue to what their role is.", "🔍",
+        "All possible investigative results are listed in the wiki. It is often a good idea to get people to claim before you reveal that you investigated them, this way people are more likely to admit guilt.",
+        "4 > Get results",
+        "Town", "Investigative", null,
+        "Town", Infinity,
+        0, 0,
+        true, true, false,
+        {},
+        (priority, player)=>{
+            if(priority !== 4) return;
+
+            if(player.role.cycle.targeting.length < 1) return;
+            if(!player.role.cycle.aliveNow) return;
+
+            let myTarget = player.role.cycle.targeting[0];
+            if(!myTarget.role.cycle.aliveNow) return;
+            
+            let outString = "";
+            let foundResult = false;
+            //find what list to use
+            for(let investigativeResultIndex in GameManager.host.investigativeResults){
+                let investigativeResult = GameManager.host.investigativeResults[investigativeResultIndex];
+
+                if(investigativeResult.includes(myTarget.role.cycle.disguisedAs.role.persist.roleName)){
+                    //found result
+                    
+                    //now loop through result and add them to list
+                    let investigativeResult = GameManager.host.investigativeResults[investigativeResultIndex];
+                    investigativeResult = shuffledList(investigativeResult);
+                    
+                    for(let roleNameIndex in investigativeResult){
+                        foundResult = true;
+                        outString += investigativeResult[roleNameIndex]+", ";
+                    }
+                    break;
+                }
+                
+            }
+            if(foundResult && outString.length>2){
+                outString = outString.substring(0, outString.length-2);
+                player.role.addNightInformation(new ChatMessageState(
+                    null,
+                    "Your target could be one of these roles: " + outString,
+                    GameManager.COLOR.GAME_TO_YOU
+                ), true);
+            }
+            if(!foundResult)
+                player.role.addNightInformation(new ChatMessageState(
+                    null,
+                    "Your target is: " + myTarget.role.cycle.disguisedAs.role.persist.roleName,
+                    GameManager.COLOR.GAME_TO_YOU
+                ), true);            
         },
         null,
         null
@@ -590,6 +648,67 @@ export const ROLES = {
         null,
         null
     ),
+    "Consigliere":new Role(
+        "Consigliere", "Target a player to find out exactly what their role is.", "🧐",
+        "You get to know your targets exact role. Faking investigator is easy, make sure you check the investigator results so you can lie about what you saw a person as. Just beware of spies",
+        "4 > Know",
+        "Mafia", "Support", "Mafia",
+        "Mafia", Infinity,
+        0, 0,
+        true, true, true,
+        {},
+        (priority, player)=>{
+            if(priority!==4) return;
+            if(player.role.cycle.targeting.length < 1) return;
+            if(!player.role.cycle.aliveNow) return;
+
+            let myTarget = player.role.cycle.targeting[0];
+            if(!myTarget.role.cycle.aliveNow) return;
+
+            player.role.addNightInformation(new ChatMessageState(
+                null,
+                "Your targets role was "+myTarget.role.persist.roleName,
+                GameManager.COLOR.GAME_TO_YOU
+            ), true);
+        },
+        null,
+        null
+    ),
+    "Disguiser":new Role(
+        "Disguiser", "Target two players to disguise them as eachother", "🎭",
+        "Swaps all results for both players. One player looks like the other, even names will change for lookout. \n"+
+        "If you disguise two suspicious seeming townies as eachother, then their results will be changed and investigative roles will likely think their lying and lynch the townies.",
+        "2 > Disguise",
+        "Mafia", "Deception", "Mafia",
+        "Mafia", Infinity,
+        0, 0,
+        true, false, true,
+        {},
+        (priority, player)=>{
+            if(priority!==2) return;
+            
+            if(player.role.cycle.targeting.length < 2) return;
+            if(!player.role.cycle.aliveNow) return;
+
+            let myTarget1 = player.role.cycle.targeting[0];
+            let myTarget2 = player.role.cycle.targeting[1];
+
+            if(!myTarget1.role.cycle.aliveNow) return;
+            if(!myTarget2.role.cycle.aliveNow) return;
+
+            myTarget1.role.cycle.disguisedAs = myTarget2;
+            myTarget2.role.cycle.disguisedAs = myTarget1;
+        },
+        (myPlayer, otherPlayer)=>{
+            return (
+                otherPlayer.role.persist.alive && //theyre alive
+                myPlayer.role.persist.alive && //im alive
+                myPlayer.role.cycle.targeting.length < 2 &&   //i havent already targeted at least 2 people
+                (myPlayer.role.cycle.targeting[0] !== otherPlayer)  //cant target same person twice
+            );
+        },
+        null
+    ),
     "Janitor":new Role(
         "Janitor", "Target a player who might die tonight, if they do, their role and will will appear to be cleaned. You have 3 uses.", "🧹",
         "A clean means the town wont know what their role was, but you still will. This makes it easy for you to pretend to be what they were. You should tell the other mafia members what the dead players role was.",
@@ -713,6 +832,39 @@ export const ROLES = {
     ),
     //#endregion
     //#region Neutral
+    "Jester":new Role(
+        "Jester", "Your goal is to be lynched. If you are lynched, you may kill one player after the fact", "🤡",
+        "You have no night ability untill you are lynched. Then you can kill anybody who voted you guilty with an unstoppable(3) attack. Try to look like a mafia pretending to be a townie. \n"+
+        "If you just say your mafia then it will be obvious you are the jester.",
+        "-12 > Kill",
+        "Neutral", "Evil", null,
+        0, Infinity,
+        0, 3, 
+        true, true, false,
+        {},
+        (priority, player)=>{
+            if(priority===-12) return;
+            if(player.role.persist.alive) return;
+            if(player.role.persist.cycleDied !== GameManager.host.cycleNumber)  return;
+            if(player.role.cycle.targeting.length < 1) return;
+            let myTarget = player.role.cycle.targeting[0];
+
+            if(myTarget.role.cycle.judgement>0) return;
+            if(!myTarget.role.persist.alive) return;
+            
+            myTarget.tryNightKill(player, 3);
+        },
+        (myPlayer, otherPlayer)=>{
+            return(
+                otherPlayer.role.cycle.judgement <= 0 && //voted guilty
+                !myPlayer.role.persist.alive &&    //im dead
+                myPlayer.role.persist.cycleDied === GameManager.host.cycleNumber &&   // i just died
+                otherPlayer.role.persist.alive &&//other person is alive
+                myPlayer.role.cycle.targeting.length < 1    //i didnt already target someone
+            );
+        },
+        null
+    ),
     "Witch":new Role(
         "Witch", "Target 2 players, the first one will be forced to target the second one", "🧙‍♀️",
         "The first persons target will be changed to be your second target. Your ability wont work if the first target is witch immune. Your second target is an astral visit.\n"+

@@ -148,6 +148,7 @@ export class PlayerState{
         GameManager.host.chatGroups["Dead"].push(this);
 
         this.role.persist.alive = false;
+        this.role.persist.cycleDied = GameManager.host.cycleNumber;
 
         GameManager.host.swapMafioso();
         //GameManager.host.checkEndGame();
@@ -200,6 +201,7 @@ export class PlayerRole{
             alive : true,
             roleName : roleName,
             will : "",
+            cycleDied : null,
             extra: {
                 doused : false,
                 // framed : false,
@@ -236,6 +238,7 @@ export class PlayerRole{
             defense : ROLES[this.persist.roleName].defense,
             attack : ROLES[this.persist.roleName].attack,
             isSuspicious : ROLES[this.persist.roleName].isSuspicious,
+            disguisedAs : null,
 
             shownRoleName : this.persist.roleName,
             shownWill : "",

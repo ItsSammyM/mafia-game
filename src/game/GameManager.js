@@ -73,7 +73,7 @@ let GameManager = {
         if(GameManager.client) GameManager.client.tick()
         setTimeout(()=>{
             GameManager.tick();
-        },10)
+        },20)
     },
     host : {
         lastSentTime: 0,
@@ -85,6 +85,7 @@ let GameManager = {
 
         roleList : null,
         phaseTimes : null,
+        investigativeResults : null,
 
         chatGroups : {
             "Dead" : [],//list of all dead players
@@ -155,10 +156,24 @@ let GameManager = {
             return playerVoted;
         },
 
-        startGame : function(_roleList, _phaseTimes){
+        startGame : function(_roleList, _phaseTimes, _investigativeResults){
             GameManager.host.gameStarted = true;
             GameManager.host.phaseTimes = _phaseTimes;
             GameManager.host.roleList = _roleList;
+            GameManager.host.investigativeResults = _investigativeResults;
+
+            //remove Investigative results if theyre impossible to exist
+            for(let i = 0; i < GameManager.host.investigativeResults.length; i++){
+                for(let j = 0; j < GameManager.host.investigativeResults[i].length; j++){
+
+                    let roleName = GameManager.host.investigativeResults[i][j];
+
+                    if(!GameManager.host.rolePossibleToExist(roleName)){
+                        GameManager.host.investigativeResults[i].splice(j, 1);
+                        j--;
+                    }
+                }
+            }
 
             let informationList = [];
             let playerIndividual = {};
@@ -297,10 +312,12 @@ let GameManager = {
                     }
                     return out;
                 })()));
+
+            GameManager.HOST_TO_CLIENT["INVESTIGATIVE_RESULTS"].send();
             GameManager.HOST_TO_CLIENT["START_GAME"].send();
             GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
             GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
-            PhaseStateMachine.startPhase("Discussion");
+            PhaseStateMachine.startPhase("Final Words");
         },
         create : function(){
             GameManager.host.isHost = true;
@@ -321,7 +338,6 @@ let GameManager = {
         },
         tick : function(){
             PhaseStateMachine.tick();
-            GameManager.HOST_TO_CLIENT["TIME_LEFT"].send();
         },
         checkEndGame : function(){
             let livingRoleNamesList = [];
@@ -381,6 +397,24 @@ let GameManager = {
         changePlayerRole(player, newRoleName){
             player.role = new PlayerRole(newRoleName);
             GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.role.persist.roleName);
+        },
+        rolePossibleToExist(roleName){
+            let roleObject = ROLES[roleName];
+
+            if(!roleObject) return false;
+            if(roleObject.maximumCount < 1) return false;
+
+            for(let i = 0; i < GameManager.host.roleList.length; i++){
+                let faction = GameManager.host.roleList[i][0];
+                let alignment = GameManager.host.roleList[i][1];
+                let exactRole = GameManager.host.roleList[i][2];
+                
+                if(exactRole === roleName) return true;
+                if(exactRole === null && (faction===roleObject.faction || faction===null) && (alignment===roleObject.alignment || alignment===null))
+                    return true;
+            }
+            return false;
+            
         }
     },
     client : {
@@ -396,9 +430,14 @@ let GameManager = {
         cycleNumber : 1,
 
         roleList : [],
+        investigativeResults : [],
         players : {},
         information : [],
         chatMessageList : [],
+
+        maxTimeMs : 0,
+        starTimeMs : 0,
+        timeLeftMs : 0,
 
         savedNotePad : {},
         /*
@@ -425,6 +464,7 @@ let GameManager = {
                 GameManager.client.messageUpdateListeners[i].listener();
             }
         },
+
         messageUpdateListeners : [],
         addMessageListener(l){
             GameManager.client.messageUpdateListeners.push(l);
@@ -437,6 +477,25 @@ let GameManager = {
                 }
             }
         },
+
+        tickListeners : [],
+        addTickListener(l){
+            GameManager.client.tickListeners.push(l);
+        },
+        removeTickListener(l){
+            for(let i = 0; i < GameManager.client.tickListeners.length; i++){
+                if(GameManager.client.tickListeners[i] === l){
+                    GameManager.client.tickListeners.splice(i);
+                    return;
+                }
+            }
+        },
+        invokeTickListeners(){
+            for(let i in GameManager.client.tickListeners){
+                GameManager.client.tickListeners[i].listener();
+            }
+        },
+
 
         cycle : {
             targetedPlayerNames : [],
@@ -528,6 +587,8 @@ let GameManager = {
         },
         tick : function(){
             //console.log(GameManager.client.cycle.playerOnTrialName + "GameManager.client.cycle.playerOnTrialName");
+            GameManager.client.timeLeftMs = Math.max(GameManager.client.maxTimeMs - (Date.now() - GameManager.client.starTimeMs));
+            GameManager.client.invokeTickListeners();
         }
     },
     CLIENT_TO_HOST:{
@@ -575,12 +636,16 @@ let GameManager = {
                         GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
                         GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycle.playerOnTrial);
                         GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
+                        GameManager.HOST_TO_CLIENT["INVESTIGATIVE_RESULTS"].send();
 
                         //resend messages
                         player.copyMessagesToUnsentMessages();
                         GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
                         GameManager.HOST_TO_CLIENT["START_PHASE"].send();
-                        //start phase
+                        GameManager.HOST_TO_CLIENT["TIME_LEFT"].send();
+                        
+                        GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].send(player.name);
+                        GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].send(player.name);
 
                     }else{
                         GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, false);
@@ -815,6 +880,14 @@ let GameManager = {
             (contents)=>{
                 if(GameManager.client.playerName !== contents.playerName) return;
                 GameManager.client.roleName = contents.roleName;
+            }
+        ),
+        "INVESTIGATIVE_RESULTS":new MessageType(true,
+            ()=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["INVESTIGATIVE_RESULTS"], {
+                investigativeResults : GameManager.host.investigativeResults,
+            });},
+            (contents)=>{
+                GameManager.client.investigativeResults = contents.investigativeResults;
             }
         ),
         "START_GAME":new MessageType(true, 
@@ -1093,17 +1166,15 @@ let GameManager = {
         ),
         "TIME_LEFT":new MessageType(true,
             ()=>{
-                if(Date.now() - GameManager.host.lastSentTime < 1003) return;
-                GameManager.host.lastSentTime = Date.now();
-                let out = 0;
-                let tl = PhaseStateMachine.getTimeLeft();
-                if(tl) out = Math.ceil(tl/1000);
                 GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["TIME_LEFT"], {
-                    timeLeft : out,
+                    startTimeMs : PhaseStateMachine.phaseStartTime,
+                    maxTimeMs : PHASES[PhaseStateMachine.currentPhase].maxTimeSeconds*1000,
                 });
             },
             (contents)=>{
-            }
+                GameManager.client.starTimeMs = contents.startTimeMs;
+                GameManager.client.maxTimeMs = contents.maxTimeMs;
+            }   
         ),
     },
 };
