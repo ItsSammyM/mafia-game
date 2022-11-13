@@ -179,6 +179,26 @@ export class PlayerState{
             player.addMessages(publicInformation);
         }
     }
+
+    canVoteList(){
+        let canVoteList = [];
+        for(let otherPlayerName in GameManager.host.players){
+            let otherPlayer = GameManager.host.players[otherPlayerName]
+            if(this.canVote(otherPlayer))
+                canVoteList.push(otherPlayerName);
+        }
+        return canVoteList;
+    }
+    canTargetList(){
+        let canTargetList = [];
+        for(let otherPlayerName in GameManager.host.players){
+            let otherPlayer = GameManager.host.players[otherPlayerName];
+
+            if(this.role.getRoleObject().canTargetFunction(this, otherPlayer)) 
+                canTargetList.push(otherPlayerName);
+        }
+        return canTargetList;
+    }
 }
 export class PlayerRole{
     constructor(_roleName){

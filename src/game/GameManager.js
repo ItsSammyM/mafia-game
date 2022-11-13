@@ -324,7 +324,7 @@ let GameManager = {
             GameManager.host.roomCode = generateRandomString(4);
             GameManager.pubNub.subscribe(GameManager.host.roomCode);
 
-            GameManager.pubNub.addHostListener((m)=>{
+            GameManager.pubNub.setHostListener((m)=>{
                 
                 for(const key in GameManager.CLIENT_TO_HOST){        
                     if(GameManager.CLIENT_TO_HOST[key].ID !== m.typeId)
@@ -572,18 +572,19 @@ let GameManager = {
             GameManager.client.playerName = _playerName;
             GameManager.pubNub.subscribe(_roomCode);
 
-            GameManager.pubNub.addClientListener((m)=>{
+            GameManager.pubNub.setClientListener((m)=>{
                 for(const key in GameManager.HOST_TO_CLIENT){
                     if(GameManager.HOST_TO_CLIENT[key].ID !== m.typeId)
                         continue;
                     GameManager.HOST_TO_CLIENT[key].receive(m.contents);
+                    //console.log(key);
                 }
             });
 
             GameManager.CLIENT_TO_HOST["ASK_JOIN"].send(_playerName);
         },
         sendMessage: function(messageType, contents){
-            GameManager.pubNub.createAndPublish(messageType.ID, contents)
+            GameManager.pubNub.createAndPublish(messageType.ID, contents);
         },
         tick : function(){
             //console.log(GameManager.client.cycle.playerOnTrialName + "GameManager.client.cycle.playerOnTrialName");
@@ -597,7 +598,6 @@ let GameManager = {
                 playerName: playerName
             })},
             (contents)=>{
-                
                 contents.playerName = contents.playerName.substring(0, GameManager.MAX_NAME_LENGTH).trim();
                 if(contents.playerName===""||!contents.playerName) return;
 
@@ -612,6 +612,7 @@ let GameManager = {
                 if(!GameManager.host.gameStarted){
                     if(!alreadyJoined)
                         GameManager.host.players[contents.playerName] = (new PlayerState(contents.playerName));
+
                     GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, true);
                 }else{
 
@@ -643,18 +644,13 @@ let GameManager = {
                         GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
                         GameManager.HOST_TO_CLIENT["START_PHASE"].send();
                         GameManager.HOST_TO_CLIENT["TIME_LEFT"].send();
-                        
-                        GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].send(player.name);
-                        GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].send(player.name);
+                        GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].send(player.name, player.canTargetList());
+                        GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].send(player.name, player.canVoteList());
 
                     }else{
                         GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, false);
-                    }
-                     
+                    }    
                 }
-
-                
-                
             }
         ),
         "BUTTON_TARGET":new MessageType(false,
@@ -677,17 +673,10 @@ let GameManager = {
                     targetedPlayer
                 );
 
-                let canTargetList = [];
-                for(let otherPlayerName in GameManager.host.players){
-                    let otherPlayer = GameManager.host.players[otherPlayerName];
-
-                    if(player.role.getRoleObject().canTargetFunction(player, otherPlayer)) canTargetList.push(otherPlayerName);
-                }
-                
                 player.addMessage(new ChatMessageStateClient("Target", "You targeted "+targetedPlayer.name, GameManager.COLOR.GAME_TO_YOU));
                 
                 //GameManager.client.addMessage(new ChatMessageStateClient("Target", "You targeted "+contents.playerTargetedName, GameManager.COLOR.GAME_TO_YOU));
-                GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONSE"].send(contents.playerName, player.role.cycle.targeting.map((p)=>p.name), canTargetList);
+                GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONSE"].send(contents.playerName, player.role.cycle.targeting.map((p)=>p.name), player.canTargetList());
                 GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
             }
         ),
@@ -702,15 +691,9 @@ let GameManager = {
                 if(!player.role.cycle.targeting.length>0) return;
                 player.clearTarget();
 
-                let canTargetList = [];
-                for(let otherPlayerName in GameManager.host.players){
-                    let otherPlayer = GameManager.host.players[otherPlayerName];
-
-                    if(player.role.getRoleObject().canTargetFunction(player, otherPlayer)) canTargetList.push(otherPlayerName);
-                }
                 player.addMessage(new ChatMessageStateClient("Clear Targets", "Your targets have been reset", GameManager.COLOR.GAME_TO_YOU));
 
-                GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].send(contents.playerName, canTargetList);
+                GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].send(contents.playerName, player.canTargetList());
                 GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
             }
         ),
@@ -732,15 +715,12 @@ let GameManager = {
                     player.role.cycle.voting = playerVoted;
                 }
 
-                let canVoteList = [];
                 for(let otherPlayerName in GameManager.host.players){
                     let otherPlayer = GameManager.host.players[otherPlayerName]
                     otherPlayer.addMessage(new ChatMessageStateClient("Vote", contents.playerName+" voted for "+contents.playerVotedName, GameManager.COLOR.CHAT));
-                    if(player.canVote(otherPlayer))
-                        canVoteList.push(otherPlayerName);
                 }
 
-                GameManager.HOST_TO_CLIENT["BUTTON_VOTE_RESPONSE"].send(contents.playerName, contents.playerVotedName, canVoteList);
+                GameManager.HOST_TO_CLIENT["BUTTON_VOTE_RESPONSE"].send(contents.playerName, contents.playerVotedName, player.canVoteList());
                 GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
                 
                 let playerOnTrial = GameManager.host.someoneVoted();
@@ -765,16 +745,12 @@ let GameManager = {
                 let playerVotingName = player.role.cycle.voting.name;
                 player.role.cycle.voting = null;
                 
-
-                let canVoteList = [];
                 for(let otherPlayerName in GameManager.host.players){
                     let otherPlayer = GameManager.host.players[otherPlayerName];
                     otherPlayer.addMessage(new ChatMessageStateClient("Clear Votes", contents.playerName+" stopped voting for "+playerVotingName, GameManager.COLOR.CHAT));
-                    if(player.canVote(otherPlayer))
-                        canVoteList.push(otherPlayerName);
                 }
 
-                GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].send(contents.playerName, canVoteList);
+                GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].send(contents.playerName, player.canVoteList());
                 GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
                                 
             }
