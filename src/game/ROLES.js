@@ -331,7 +331,7 @@ export const ROLES = {
         "Vigilante", "Target a player to shoot them, if you kill a townie, then you will die the next night.", "🔫",
         "You cant shoot the first night. You can only shoot up to a maximum of 3 times. If you shoot and kill a town member, you will shoot youself the next night. \n"+
         "You cant shoot someone else on the night you shoot yourself. It is a good idea to wait untill your sure someone is evil to shoot. Be weary revealing yourself because if there is a Witch in the game, they can control you and force you to shoot a town member.",
-        "-12 > Suicide \n"+
+        "-12 > Suicide, \n"+
         "6 > Kill",
         "Town", "Killing", null,
         "Town", Infinity,

@@ -66,11 +66,11 @@ export class NotePadMenu extends React.Component {
             <TextArea value={this.state.notePadValue} onChange={(e)=>{this.setState({saved:false, notePadValue : e.target.value});}}/><br/>
 
             <div style={{width:"90%", display:"inline-block"}}>
-                <Button width="50%" text="Save" color={this.state.saved?null:GameManager.COLOR.IMPORTANT} onClick={()=>{
-                    this.clickSave();
-                }}/>
                 <Button width="50%" text="Back" onClick={()=>{
                     MainMenu.instance.setRightPanel(<PlayerListMenu/>);
+                }}/>
+                <Button width="50%" text="Save" color={this.state.saved?null:GameManager.COLOR.IMPORTANT} onClick={()=>{
+                    this.clickSave();
                 }}/>
             </div><br/>
 
