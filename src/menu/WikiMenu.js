@@ -54,7 +54,7 @@ export class WikiMenu extends React.Component {
             let roleName = GameManager.client.investigativeResults[i][j];
 
             out.push(<div key={j} style={{width:`${90/(numbRoles)}%`, display:"inline-block"}}>
-                <Button key={roleName} text={roleName}
+                <Button key={roleName} text={roleName} width="100%"
                     onClick={()=>{
                         MainMenu.instance.setRightPanel(<RoleWikiMenu faction={null} alignment={null} exactRole={roleName}/>);
                 }}/>
@@ -63,6 +63,10 @@ export class WikiMenu extends React.Component {
         return(<div key={i}>{out}<br/></div>);
     }
     render() {return (<div className="Main">
+        <br/>
+        <br/>
+        <br/>
+        <br/>
         <div className="Main-header">
             Roles<br/>
         </div>
@@ -79,5 +83,9 @@ export class WikiMenu extends React.Component {
             {this.renderInvestigatorResults()}
 
         </div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
     </div>);}
 }

@@ -34,6 +34,10 @@ export class StartMenu extends React.Component {
         Main.instance.changeMenu(<StartHostMenu roomCode={GameManager.host.roomCode}/>);
     }
     render() {return (<div className="Main">
+        <br/>
+        <br/>
+        <br/>
+        <br/>
         <div className="Main-header">
             Mafia
         </div><br/>

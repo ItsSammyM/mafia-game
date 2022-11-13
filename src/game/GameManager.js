@@ -56,7 +56,7 @@ weird stuff
 let GameManager = {
 
     COLOR : {
-        IMPORTANT : "#cbcb00",  //#fae457
+        IMPORTANT : "#FFFF77",  //#fae457
         GAME_TO_YOU : "#007800",    //light green
         GAME_TO_ALL : "#005000",    //dark green
         CHAT : "#00a0c8",   //dark blue

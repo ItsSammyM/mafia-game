@@ -33,39 +33,52 @@ export class NotePadMenu extends React.Component {
         GameManager.client.clickSaveNotePad(this.state.notePadName, this.state.notePadValue.trim());
     }
     render(){return(<div className="Main">
+        <br/>
+        <br/>
+        <br/>
+        <br/>
         <div className="Main-header">
             {this.state.notePadName}<br/>
         </div>
 
         <div className="Main-body">
-            <div>
-                <div style={{width:"45%", display:"inline-block"}}>
-                    <Button text="Back" onClick={()=>{
-                        MainMenu.instance.setRightPanel(<PlayerListMenu/>);
-                    }}/>
-                </div>
-                <div style={{width:"45%", display:"inline-block"}}>
-                    <Button text="Save" color={this.state.saved?null:GameManager.COLOR.IMPORTANT} onClick={()=>{
-                        this.clickSave();
-                    }}/>
-                </div><br/>
-                <div>
 
-                <div style={{width:"45%", display:"inline-block"}}>
-                    <Button text="Will" onClick={()=>{
-                        this.loadNotePad("Will");
-                    }}/>
-                </div>
-                <div style={{width:"45%", display:"inline-block"}}>
-                    <Button text="Note" onClick={()=>{
-                        this.loadNotePad("Note");
-                    }}/>
-                </div>
+            <div style={{width:"90%", display:"inline-block"}}>
+                <Button width="50%" onClick={()=>{
+                    this.loadNotePad("Will");
+                }}>
+                    <div style={this.state.notePadName==="Will"?{
+                        "-webkit-text-stroke": "3px rgb(20, 20, 20)",
+                        "font-size": "calc(10px + 2.3vmin)"
+                    }:{}}>Will</div>
+                </Button>
+
+                <Button width="50%" onClick={()=>{
+                    this.loadNotePad("Note");
+                }}>
+                    <div style={this.state.notePadName==="Note"?{
+                        "-webkit-text-stroke": "3px rgb(20, 20, 20)",
+                        "font-size": "calc(10px + 2.3vmin)"
+                    }:{}}>Note</div>
+                </Button>
             </div>
-            </div>
+
             <TextArea value={this.state.notePadValue} onChange={(e)=>{this.setState({saved:false, notePadValue : e.target.value});}}/><br/>
-            
+
+            <div style={{width:"90%", display:"inline-block"}}>
+                <Button width="50%" text="Save" color={this.state.saved?null:GameManager.COLOR.IMPORTANT} onClick={()=>{
+                    this.clickSave();
+                }}/>
+                <Button width="50%" text="Back" onClick={()=>{
+                    MainMenu.instance.setRightPanel(<PlayerListMenu/>);
+                }}/>
+            </div><br/>
+
         </div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
     </div>);}
 
 }

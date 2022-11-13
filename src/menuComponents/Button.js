@@ -20,5 +20,6 @@ export function Button(props){
                 }
             }>
                 {props.text}
+                {props.children}
         </button>);
 }

@@ -13,6 +13,10 @@ export class WaitJoinMenu extends React.Component {
     componentWillUnmount() {
     }
     render() {return (<div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
         <div className="Main-header">
             Mafia
         </div><br/>

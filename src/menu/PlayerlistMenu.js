@@ -251,6 +251,10 @@ export class PlayerListMenu extends React.Component {
         }
     }
     render(){return(<div className="Main">
+            <br/>
+            <br/>
+            <br/>
+            <br/>
             <div className="Main-body">
                 Room Code: {this.state.roomCode}<br/>
                 <br/>

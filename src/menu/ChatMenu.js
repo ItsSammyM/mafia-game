@@ -95,12 +95,12 @@ export class ChatMenu extends React.Component {
         {this.state.sendBarHeader}<br/>
         <div>
             <div style={{width:"45%", display:"inline-block"}}>
-                <Button text="Post" onClick={()=>{
+                <Button text="Post" width="100%" onClick={()=>{
                     this.postButton();
                 }}/>
             </div>
             <div style={{width:"45%", display:"inline-block"}}>
-                <Button text="Send" onClick={()=>{
+                <Button text="Send" width="100%" onClick={()=>{
                     this.sendButton();
                 }}/>
             </div>
@@ -118,7 +118,10 @@ export class ChatMenu extends React.Component {
         {/* <div className="Main-header">
             {this.state.title}<br/>
         </div><br/> */}
-
+        <br/>
+        <br/>
+        <br/>
+        <br/>
         <div className="Main-body">
             {
                 this.state.chatMessageList.map(
@@ -142,6 +145,7 @@ export class ChatMenu extends React.Component {
             <br/>
             <br ref={(el) => { this.buttomOfPage = el; }}/>
             {this.renderFixed()}
+            
         </div>
     </div>);}
 }
