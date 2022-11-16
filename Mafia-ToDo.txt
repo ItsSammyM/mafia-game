@@ -1,3 +1,5 @@
+make so it shows wills when lynched
+make so enter roomcode first
 
 redo setPhase and setCycle in host and client because theyre weird and wrong
 THE WORD CYCLE SHOULD BE ENTIRELY REMOVED FROM THE code
