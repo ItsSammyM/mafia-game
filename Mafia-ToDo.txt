@@ -10,6 +10,8 @@ OBJECT STORES THE PROPERTY ITSELF AND WHEN IT SHOULD RESET
 EACH TARGET SHOULD BE AN OBJECT
 TARGET WILL STORE WEATHER IT IS ASTRAL, AN ATTACK, ATTACK POWER, TARGETER, TARGETED
 
+blackmailer cant blackmail
+
 add way to refresh page while waiting
 
 fix mayor -- set non 0 amount of mayors, make mayor work
