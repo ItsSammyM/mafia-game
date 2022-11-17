@@ -1,7 +1,7 @@
 import GameManager from "../game/GameManager";
 import { ROLES } from "../game/ROLES";
 import { ChatMessageState } from "./ChatMessageState";
-import { CycleVariable } from "./CycleVariable";
+import { CycleVariable } from "../game/CycleVariable";
 
 export class PlayerState{
     constructor(_name){
@@ -36,13 +36,13 @@ export class PlayerState{
         this.roleExtra = {};
 
         this.cycleVariables = {
-            votedBy : new CycleVariable('Voting', []),
+            votedBy : new CycleVariable('Voting', ()=>[]),
             voting : new CycleVariable('Voting', null),
 
             judgement : new CycleVariable('Judgement', 0),
 
-            targetedBy : new CycleVariable('Night', []),  
-            targeting : new CycleVariable('Night', []),
+            targetedBy : new CycleVariable('Night', ()=>[]),  
+            targeting : new CycleVariable('Night', ()=>[]),
 
             aliveTonight : new CycleVariable('Night', this.alive),
 
@@ -52,9 +52,9 @@ export class PlayerState{
             isSuspiciousTonight : new CycleVariable('Night', ()=>this.getRoleObject().isSuspicious),
             disguisedAsTonight : new CycleVariable('Night', null),
 
-            attackedBy : new CycleVariable('Night', []),
+            attackedBy : new CycleVariable('Night', ()=>[]),
 
-            extra : new CycleVariable('Night', {
+            extra : new CycleVariable('Night', ()=>{return{
                 //idk this is for weird stuff exclusively
                 healedByDoc : false,
                 attackedTonight : false,
@@ -62,12 +62,12 @@ export class PlayerState{
                 blackmailed : false,
                 //savedByBodyguard : false,
                 //killedTonight : false
-            }),
+            }}),
 
-            nightInformation : new CycleVariable('Night', []),
+            nightInformation : new CycleVariable('Night', ()=>[]),
 
             shownRoleName : new CycleVariable('Night', this.roleName),
-            shownWill : new CycleVariable('Night', this.savedNotePad['Will']),            
+            shownWill : new CycleVariable('Night', ()=>this.savedNotePad['Will']),            
         };
     }
     setUpAvailableButtons(players){
@@ -110,6 +110,7 @@ export class PlayerState{
         ));
     }
     getRoleObject(){
+        if(!ROLES[this.roleName]) console.log("GET ROLE OBJECT FAILED, "+this.name+" "+this.roleName);
         return ROLES[this.roleName];
     }
     doMyRole(priority){
@@ -163,9 +164,9 @@ export class PlayerState{
     canVote(otherPlayer){
         if(
             this.name !== otherPlayer.name &&
-            this.role.persist.alive &&
-            otherPlayer.role.persist.alive &&
-            this.role.cycle.voting !== otherPlayer
+            this.alive &&
+            otherPlayer.alive &&
+            this.cycleVariables.voting.value !== otherPlayer
         ){
             this.availableButtons[otherPlayer.name].vote = true;
         }else{
@@ -211,14 +212,14 @@ export class PlayerState{
 
         this.cycleVariables.extra.attackedTonight.value = true;
         this.cycleVariables.attackedBy.value.push(attacker);
-        if(this.role.cycle.defense >= attackPower){
+        if(this.cycleVariables.defenseTonight.value >= attackPower){
             //safe
-            attacker.role.addNightInformation(new ChatMessageState(null, "Your target had defense and survived", GameManager.COLOR.GAME_TO_YOU), false);
-            this.role.addNightInformation(new ChatMessageState(null, "You were attacked but had defense and survived", GameManager.COLOR.GAME_TO_YOU), false);
+            attacker.addNightInformation(new ChatMessageState(null, "Your target had defense and survived", GameManager.COLOR.GAME_TO_YOU), false);
+            this.addNightInformation(new ChatMessageState(null, "You were attacked but had defense and survived", GameManager.COLOR.GAME_TO_YOU), false);
             
         }else{
             //die
-            this.role.addNightInformation(new ChatMessageState(null, "You were attacked and died", GameManager.COLOR.GAME_TO_YOU), false);
+            this.addNightInformation(new ChatMessageState(null, "You were attacked and died", GameManager.COLOR.GAME_TO_YOU), false);
             this.die();
         }
         
@@ -227,8 +228,8 @@ export class PlayerState{
         //ADD TO DEAD CHAT
         GameManager.host.chatGroups["Dead"].push(this);
 
-        this.role.persist.alive = false;
-        this.role.persist.cycleDied = GameManager.host.cycleNumber;
+        this.alive = false;
+        this.cycleNumberDied = GameManager.host.cycleNumber;
 
         GameManager.host.swapMafioso();
         //GameManager.host.checkEndGame();

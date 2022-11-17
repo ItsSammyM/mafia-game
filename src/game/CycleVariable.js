@@ -26,7 +26,7 @@ export class CycleVariable{
     static objectResetIfPhase(obj, phaseName){
         if(phaseName){
             for(let i in obj)
-                obj[i].reset(phaseName);
+                obj[i].reset();
             return;
         }
 

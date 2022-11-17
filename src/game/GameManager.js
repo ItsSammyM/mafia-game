@@ -10,7 +10,7 @@ import { ChatMessageState } from "../gameStateHost/ChatMessageState";
 import { getRandomRole, TEAMS, Role, ROLES } from "./ROLES";
 import { PhaseStateMachine, PHASES } from "./PHASE";
 import { StartMenu } from "../menu/StartMenu";
-import { CycleVariable } from "../gameStateHost/CycleVariable";
+import { CycleVariable } from "./CycleVariable";
 /*
 weird stuff
 

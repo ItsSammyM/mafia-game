@@ -1,7 +1,7 @@
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
 import GameManager from "./GameManager";
 import { shuffleList } from "./functions";
-import { CycleVariable } from "../gameStateHost/CycleVariable";
+import { CycleVariable } from "./CycleVariable";
 
 class Phase{
     constructor(_maxTimeSeconds, _onStart, _onTimeOut){
@@ -95,7 +95,7 @@ export const PHASES = {
                     //set visitedBy and visiting
                     if(priority===0){
                         for(let t = 0; t < player.cycleVariables.targeting.value.length; t++){
-                            let targetedPlayer = player.cycleVariables.targeting[t].value;
+                            let targetedPlayer = player.cycleVariables.targeting.value[t];
 
                             let isAstral = false;
                             let astralVisitsList = player.getRoleObject().astralVisitsList;
@@ -156,7 +156,6 @@ export const PHASES = {
             standardStartPhase();
         },
         ()=>{
-            GameManager.host.setCycle();
             GameManager.host.cycleNumber++;
 
             PhaseStateMachine.startPhase("Discussion");
@@ -202,7 +201,7 @@ export const PHASES = {
     ),
     "Voting":new Phase(1,
         ()=>{
-            GameManager.host.cycleVariables.numVotesNeeded.value = Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.role.persist.alive}).length / 2) + 1;
+            GameManager.host.cycleVariables.numVotesNeeded.value = Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.alive}).length / 2) + 1;
             GameManager.host.cycleVariables.playerOnTrial.value = null;
 
             let informationListMessage = [];
