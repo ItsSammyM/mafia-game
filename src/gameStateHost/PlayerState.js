@@ -1,51 +1,54 @@
 import GameManager from "../game/GameManager";
 import { ROLES } from "../game/ROLES";
 import { ChatMessageState } from "./ChatMessageState";
+import { CycleVariable } from "./CycleVariable";
 
 export class PlayerState{
     constructor(name){
         this.name = name;
+
         this.chatMessageList = [];
-        this.unsentMessageStream = [];
-        this.unsentMessageStreamBufferLength = 10;
+        this.unsentChatMessageStream = [];
+        this.unsentChatMessageStreamBufferLength = 10;
 
         this.chatGroupSendList = [];
 
-        this.role = null;
-
-        this.savedNotePad = {};
-
-        this.availableButtons = {};
         /*
             {
-                "Name":{target:false,whisper:false,vote:false}
+                "otherPlayerName":{target:false,whisper:false,vote:false}
+            }
+        */
+        this.availableButtons = {};
+        
+        /*
+            {
+                "otherPlayerName":["Dead", "Mayor"]
             }
         */
         this.suffixes = {};//what i see other players as
-        /*
-        {
-            "otherPlayerName":["Dead", "Mayor"]
-        }
-        */
-    }
-    addMessage(m){
-        this.chatMessageList.push(m);
-        this.unsentMessageStream.push(m)
-    }
-    addMessages(m){
-        for(let i in m){
-            this.addMessage(m[i]);
-        }
-    }
-    copyMessagesToUnsentMessages(){
-        for(let i in this.chatMessageList){
-            this.unsentMessageStream.push(this.chatMessageList[i]);
-        }
-    }
-    getUnsentMessages(){
-        return this.unsentMessageStream.splice(0,this.unsentMessageStreamBufferLength);
-    }
 
+
+        this.role = null;
+        this.savedNotePad = {};
+
+        // this.cycleVariables = {
+        //     votedBy : new CycleVariable('Voting', []),
+        //     voting : new CycleVariable('Voting', null),
+
+        //     judgement : new CycleVariable('Judgement', 0),
+
+        //     targetedBy : new CycleVariable('Night', []),
+        //     targeting : new CycleVariable('Night', []),
+
+        //     roleblockedTonight : new CycleVariable('Night', false),
+        //     aliveTonight : new CycleVariable('Night', this.persist.alive),
+
+        //     defenseTonight : new CycleVariable('Night', this.getRoleObject().defense),
+        //     attackTonight : new CycleVariable('Night', this.getRoleObject().attack),
+        //     isSuspiciousTonight : new CycleVariable('Night', this.getRoleObject().isSuspicious),
+        //     disguisedAsTonight : new CycleVariable('Night', null),
+        // };
+    }
     setUpAvailableButtons(players){
         for(let playerName in players){
             this.availableButtons[playerName] = {target:false, whisper: false, vote:false};
@@ -53,14 +56,35 @@ export class PlayerState{
         }
     }
 
+    //#region ChatMessages
+    addChatMessage(m){
+        this.chatMessageList.push(m);
+        this.unsentChatMessageStream.push(m)
+    }
+    addChatMessages(m){
+        for(let i in m){
+            this.addChatMessage(m[i]);
+        }
+    }
+    copyChatMessagesToUnsentMessages(){
+        for(let i in this.chatMessageList){
+            this.unsentChatMessageStream.push(this.chatMessageList[i]);
+        }
+    }
+    getUnsentChatMessages(){
+        return this.unsentChatMessageStream.splice(0,this.unsentChatMessageStreamBufferLength);
+    }
+    //#endregion
+
     addSuffix(playerWithSuffix, suffix){
         if(!this.suffixes[playerWithSuffix].includes(suffix))
             this.suffixes[playerWithSuffix].push(suffix);
     }
 
+    //#region Role
     createPlayerRole(exact){
         this.role = new PlayerRole(exact);
-        this.addMessage(
+        this.addChatMessage(
             new ChatMessageState(
                 this.role.getRoleObject().faction+" "+this.role.getRoleObject().alignment+", "+this.role.persist.roleName, 
                 this.role.getRoleObject().basicDescription, 
@@ -72,6 +96,8 @@ export class PlayerState{
         if(!this.role) return;
         this.role.doMyRole(priority, this);
     }
+    //#endregion
+    //#region Target
     /**
      * Adds new player to end of targeting list only if role allows
      * if canTargetFunction returns true then push to list
@@ -82,6 +108,26 @@ export class PlayerState{
         if(!this.role.getRoleObject().canTargetFunction(this, otherPlayer)) return;
         this.role.cycle.targeting.push(otherPlayer);
     }
+    /**
+     * Makes it so the player is targeting nobody
+     * sets targeting to = []
+     * returns true if there were people targeted in the first place
+     */
+    clearTarget(){
+        this.role.cycle.targeting = [];
+    }
+    canTargetList(){
+        let canTargetList = [];
+        for(let otherPlayerName in GameManager.host.players){
+            let otherPlayer = GameManager.host.players[otherPlayerName];
+
+            if(this.role.getRoleObject().canTargetFunction(this, otherPlayer)) 
+                canTargetList.push(otherPlayerName);
+        }
+        return canTargetList;
+    }
+    //#endregion
+    //#region Vote
     canVote(otherPlayer){
         if(
             this.name !== otherPlayer.name &&
@@ -96,16 +142,19 @@ export class PlayerState{
             
         return this.availableButtons[otherPlayer.name].vote;
     }
-    /**
-     * Makes it so the player is targeting nobody
-     * sets targeting to = []
-     * returns true if there were people targeted in the first place
-     */
-    clearTarget(){
-        this.role.cycle.targeting = [];
+    canVoteList(){
+        let canVoteList = [];
+        for(let otherPlayerName in GameManager.host.players){
+            let otherPlayer = GameManager.host.players[otherPlayerName]
+            if(this.canVote(otherPlayer))
+                canVoteList.push(otherPlayerName);
+        }
+        return canVoteList;
     }
+    //#endregion
 
 
+    //#region Helper functions
     roleblock(){
         this.role.cycle.roleblocked = true;
         if(!this.role.getRoleObject().roleblockable)
@@ -179,30 +228,10 @@ export class PlayerState{
             player.addMessages(publicInformation);
         }
     }
-
-    canVoteList(){
-        let canVoteList = [];
-        for(let otherPlayerName in GameManager.host.players){
-            let otherPlayer = GameManager.host.players[otherPlayerName]
-            if(this.canVote(otherPlayer))
-                canVoteList.push(otherPlayerName);
-        }
-        return canVoteList;
-    }
-    canTargetList(){
-        let canTargetList = [];
-        for(let otherPlayerName in GameManager.host.players){
-            let otherPlayer = GameManager.host.players[otherPlayerName];
-
-            if(this.role.getRoleObject().canTargetFunction(this, otherPlayer)) 
-                canTargetList.push(otherPlayerName);
-        }
-        return canTargetList;
-    }
+    //#endregion    
 }
 export class PlayerRole{
     constructor(_roleName){
-        
         this.setPersist(_roleName);
         this.setCycle();
     }
@@ -263,7 +292,6 @@ export class PlayerRole{
             shownRoleName : this.persist.roleName,
             shownWill : "",
             shownNote : "",
-
 
             nightInformation : [],
 

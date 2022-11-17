@@ -66,7 +66,7 @@ export const PHASES = {
                     player.availableButtons[otherPlayerName].vote = false;
                     player.availableButtons[otherPlayerName].whisper = false;
                 }
-                player.addMessages(informationListMessage);
+                player.addChatMessages(informationListMessage);
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
@@ -147,9 +147,9 @@ export const PHASES = {
                     //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
                 }
                 
-                player.addMessages(informationListMessage);
+                player.addChatMessages(informationListMessage);
                 shuffleList(player.role.cycle.nightInformation);
-                player.addMessages(player.role.cycle.nightInformation.map((l)=>{return l[0]}));
+                player.addChatMessages(player.role.cycle.nightInformation.map((l)=>{return l[0]}));
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
@@ -198,8 +198,7 @@ export const PHASES = {
                     //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
                 }
                 
-                player.addMessages(informationListMessage);
-                //player.addMessages(playerIndividualMessage[playerName].informationList);
+                player.addChatMessages(informationListMessage);
                 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
@@ -246,7 +245,7 @@ export const PHASES = {
                     //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
                 }
 
-                player.addMessages(informationListMessage);
+                player.addChatMessages(informationListMessage);
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
@@ -287,7 +286,7 @@ export const PHASES = {
                     //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
                 }
 
-                player.addMessages(informationListMessage);
+                player.addChatMessages(informationListMessage);
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
@@ -327,8 +326,7 @@ export const PHASES = {
                     //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
                 }
 
-                player.addMessages(informationListMessage);
-                //player.addMessages(playerIndividualMessage[playerName].informationList);
+                player.addChatMessages(informationListMessage);
 
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
@@ -371,7 +369,7 @@ export const PHASES = {
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
-                player.addMessages(whoVotedMessages);
+                player.addChatMessages(whoVotedMessages);
             }
 
             if(totalJudgement < 0){
@@ -414,7 +412,7 @@ export const PHASES = {
                     //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
                 }
 
-                player.addMessages(informationListMessage);
+                player.addChatMessages(informationListMessage);
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];

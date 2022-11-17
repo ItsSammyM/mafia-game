@@ -36,8 +36,6 @@ export class PubNubWrapper{
         };
         this.listeners = {};
         this.pubnub.addListener(this.realListener);
-        
-        this.pubnub.addListener({message: ()=>console.log("HI")});
     }
     static createMessage(_typeId, _contents){
         return(
