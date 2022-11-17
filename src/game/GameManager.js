@@ -10,6 +10,7 @@ import { ChatMessageState } from "../gameStateHost/ChatMessageState";
 import { getRandomRole, TEAMS, Role, ROLES } from "./ROLES";
 import { PhaseStateMachine, PHASES } from "./PHASE";
 import { StartMenu } from "../menu/StartMenu";
+import { CycleVariable } from "../gameStateHost/CycleVariable";
 /*
 weird stuff
 
@@ -93,18 +94,12 @@ let GameManager = {
         },
 
         cycleNumber : 1, //game starts with day 1, then goes into night 1, //increments on morning timeout
-        cycle : {
-            trialsLeftToday : 0, //how many trials are allowed left today
-            numVotesNeeded : 9999,
-            playerOnTrial : null,
-        },
-        setCycle(){ //called on start of morning
-            GameManager.host.cycle.trialsLeftToday = 3;
-            GameManager.host.cycle.numVotesNeeded = Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.alive}).length / 2) + 1;
-            GameManager.host.cycle.playerOnTrial = null;
+        cycleVariables : {
+            trialsLeftToday : new CycleVariable('Morning', 3), //how many trials are allowed left today
+            numVotesNeeded : new CycleVariable('Voting', ()=>Math.floor(GameManager.host.getPlayersWithFilter((p)=>p.alive).length / 2) + 1),  //more than half
+            playerOnTrial : new CycleVariable('Morning', null),
         },
         /**
-         * 
          * @param {Function} func - function that takes PlayerState as parameter and returns boolean 
          * @returns {Array} players who run through the function and returned true
          */
@@ -148,7 +143,7 @@ let GameManager = {
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
-                if(GameManager.host.cycle.numVotesNeeded <= player.cycleVariables.votedBy.value.length){
+                if(GameManager.host.cycleVariables.numVotesNeeded.value <= player.cycleVariables.votedBy.value.length){
                     playerVoted = player;
                     break;
                 }
@@ -302,7 +297,7 @@ let GameManager = {
             //Send game state and stuff.
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
-                player.resetCycleVariables(null, true);
+                player.resetCycleVariables(true);
                 GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.roleName);
             }
             GameManager.HOST_TO_CLIENT["ROLE_LIST_AND_PLAYERS"].send(
@@ -637,7 +632,7 @@ let GameManager = {
                         GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.roleName);
                         GameManager.HOST_TO_CLIENT["AVAILABLE_BUTTONS"].send(player.name);
                         GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
-                        GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycle.playerOnTrial);
+                        GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycleVariables.playerOnTrial.value);
                         GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
                         GameManager.HOST_TO_CLIENT["INVESTIGATIVE_RESULTS"].send();
 
@@ -729,7 +724,7 @@ let GameManager = {
 
                 
                 if(playerOnTrial){
-                    GameManager.host.cycle.playerOnTrial = playerOnTrial;
+                    GameManager.host.cycleVariables.playerOnTrial.value = playerOnTrial;
                     PhaseStateMachine.startPhase("Testimony");
                 }
             },

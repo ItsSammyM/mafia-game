@@ -58,8 +58,8 @@ export class Role{
             let otherInMyTeam = Role.onSameTeam(myPlayer, otherPlayer);
             return (
                 myPlayer.name!==otherPlayer.name && //Not targeting myself
-                otherPlayer.role.persist.alive && //theyre alive
-                myPlayer.role.persist.alive && //im alive
+                otherPlayer.alive && //theyre alive
+                myPlayer.alive && //im alive
                 !otherInMyTeam && //not on same team
                 myPlayer.role.cycle.targeting.length < 1    //havent already targeted at least 1 person
             );
@@ -289,14 +289,14 @@ export const ROLES = {
                 if(player.role.cycle.targeting.length < 1) return;
                 let myTarget = player.role.cycle.targeting[0];
 
-                if(player !== myTarget && player.role.persist.roleExtra.alertsLeft <= 0) return;
+                if(player !== myTarget && player.roleExtra.alertsLeft <= 0) return;
 
-                player.role.persist.roleExtra.alertsLeft--;
+                player.roleExtra.alertsLeft--;
                 player.role.cycle.extra.isVeteranOnAlert = true;
 
                 player.role.addNightInformation(new ChatMessageState(
                     null,
-                    "You went on alert tonight, you now have "+player.role.persist.roleExtra.alertsLeft+" alerts left",
+                    "You went on alert tonight, you now have "+player.roleExtra.alertsLeft+" alerts left",
                     GameManager.COLOR.GAME_TO_YOU
                 ), true);
 
@@ -319,10 +319,10 @@ export const ROLES = {
         },
         (myPlayer, otherPlayer)=>{
             return (
-                myPlayer.role.persist.alive && //im alive
+                myPlayer.alive && //im alive
                 myPlayer.role.cycle.targeting.length < 1 && //im targeting nobody already
                 myPlayer.name === otherPlayer.name && //targeting self
-                myPlayer.role.persist.roleExtra.alertsLeft > 0
+                myPlayer.roleExtra.alertsLeft > 0
             );
         },
         [true]
@@ -342,7 +342,7 @@ export const ROLES = {
             if(!player.role.cycle.aliveNow) return;
 
             if(priority === -12){
-                if(!player.role.persist.roleExtra.didShootTownie) return;
+                if(!player.roleExtra.didShootTownie) return;
                 
                 player.tryNightKill(player, 3);
 
@@ -354,27 +354,27 @@ export const ROLES = {
 
             }else if(priority === 6){
                 if(GameManager.host.cycleNumber <= 1) return;
-                if(player.role.persist.roleExtra.didShootTownie) return;
+                if(player.roleExtra.didShootTownie) return;
                 if(player.role.cycle.targeting.length < 1) return;
                 let myTarget = player.role.cycle.targeting[0];
 
-                if(player === myTarget || player.role.persist.roleExtra.bulletsLeft <= 0) return;
-                player.role.persist.roleExtra.bulletsLeft--;
+                if(player === myTarget || player.roleExtra.bulletsLeft <= 0) return;
+                player.roleExtra.bulletsLeft--;
 
                 myTarget.tryNightKill(player, player.role.cycle.attack);
                 if(!myTarget.role.persist.alive && myTarget.role.getRoleObject().faction === "Town")
-                    player.role.persist.roleExtra.didShootTownie = true;
+                    player.roleExtra.didShootTownie = true;
             }
         },
         (myPlayer, otherPlayer)=>{
             return (
                 myPlayer.name!==otherPlayer.name && //Not targeting myself
-                otherPlayer.role.persist.alive && //theyre alive
-                myPlayer.role.persist.alive && //im alive
+                otherPlayer.alive && //theyre alive
+                myPlayer.alive && //im alive
                 myPlayer.role.cycle.targeting.length < 1 &&   //havent already targeted at least 1 person
                 GameManager.host.cycleNumber > 1 &&   //its not night 1
-                myPlayer.role.persist.roleExtra.bulletsLeft > 0 && //still has bullets left
-                !myPlayer.role.persist.roleExtra.didShootTownie
+                myPlayer.roleExtra.bulletsLeft > 0 && //still has bullets left
+                !myPlayer.roleExtra.didShootTownie
             );
         },
         null
@@ -397,10 +397,10 @@ export const ROLES = {
             let myTarget = player.role.cycle.targeting[0];
             if(!myTarget.role.cycle.aliveNow) return;
 
-            if(player.role.persist.roleExtra.selfHealed && player === myTarget) return; //if already self healed and trying it again
+            if(player.roleExtra.selfHealed && player === myTarget) return; //if already self healed and trying it again
 
             if(priority === 2){
-                if(player === myTarget) player.role.persist.roleExtra.selfHealed=true;
+                if(player === myTarget) player.roleExtra.selfHealed=true;
 
                 if(myTarget.role.cycle.defense < 2){
                     myTarget.role.cycle.defense=2;
@@ -422,11 +422,11 @@ export const ROLES = {
         (myPlayer, otherPlayer)=>{
             
             return (
-                otherPlayer.role.persist.alive && //theyre alive
-                myPlayer.role.persist.alive && //im alive
+                otherPlayer.alive && //theyre alive
+                myPlayer.alive && //im alive
                 myPlayer.role.cycle.targeting.length < 1 && //im targeting nobody already
                 (
-                    (myPlayer.name===otherPlayer.name && !myPlayer.role.persist.roleExtra.selfHealed) || //self healing
+                    (myPlayer.name===otherPlayer.name && !myPlayer.roleExtra.selfHealed) || //self healing
                     myPlayer.name!==otherPlayer.name //healing someone else
                 ) 
             );
@@ -528,8 +528,8 @@ export const ROLES = {
         (myPlayer, otherPlayer)=>{
 
             return (
-                otherPlayer.role.persist.alive && //theyre alive
-                myPlayer.role.persist.alive && //im alive
+                otherPlayer.alive && //theyre alive
+                myPlayer.alive && //im alive
                 myPlayer.role.cycle.targeting.length < 2 &&   //havent already targeted at least 2 person
                 (myPlayer.role.cycle.targeting[0] !== otherPlayer)
             );
@@ -701,8 +701,8 @@ export const ROLES = {
         },
         (myPlayer, otherPlayer)=>{
             return (
-                otherPlayer.role.persist.alive && //theyre alive
-                myPlayer.role.persist.alive && //im alive
+                otherPlayer.alive && //theyre alive
+                myPlayer.alive && //im alive
                 myPlayer.role.cycle.targeting.length < 2 &&   //i havent already targeted at least 2 people
                 (myPlayer.role.cycle.targeting[0] !== otherPlayer)  //cant target same person twice
             );
@@ -722,25 +722,25 @@ export const ROLES = {
             if(priority !== 8) return;
             if(player.role.cycle.targeting.length < 1) return;
             if(!player.role.cycle.aliveNow) return;
-            if(player.role.persist.roleExtra.cleansLeft <= 0) return;
+            if(player.roleExtra.cleansLeft <= 0) return;
 
             let myTarget = player.role.cycle.targeting[0];
             if(!myTarget.role.cycle.aliveNow) return;
 
-            player.role.persist.roleExtra.cleansLeft--;
+            player.roleExtra.cleansLeft--;
 
             
             myTarget.role.cycle.shownRoleName = "Cleaned";
             myTarget.role.cycle.shownWill = "Cleaned";
-            if(!myTarget.role.persist.alive){
+            if(!myTarget.alive){
                 player.role.addNightInformation(new ChatMessageState(
                     null,
-                    "Your targets role was "+myTarget.role.persist.roleName,
+                    "Your targets role was "+myTarget.roleName,
                     GameManager.COLOR.GAME_TO_YOU
                 ), true);
                 player.role.addNightInformation(new ChatMessageState(
                     null,
-                    "Your targets will was :"+myTarget.role.persist.will,
+                    "Your targets will was :"+myTarget.savedNotePad['Will'],
                     GameManager.COLOR.GAME_TO_YOU
                 ), true);
             }
@@ -844,8 +844,8 @@ export const ROLES = {
         {},
         (priority, player)=>{
             if(priority===-12) return;
-            if(player.role.persist.alive) return;
-            if(player.role.persist.cycleDied !== GameManager.host.cycleNumber)  return;
+            if(player.alive) return;
+            if(player.cycleNumberDied !== GameManager.host.cycleNumber)  return;
             if(player.role.cycle.targeting.length < 1) return;
             let myTarget = player.role.cycle.targeting[0];
 
@@ -857,9 +857,9 @@ export const ROLES = {
         (myPlayer, otherPlayer)=>{
             return(
                 otherPlayer.role.cycle.judgement <= 0 && //voted guilty
-                !myPlayer.role.persist.alive &&    //im dead
-                myPlayer.role.persist.cycleDied === GameManager.host.cycleNumber &&   // i just died
-                otherPlayer.role.persist.alive &&//other person is alive
+                !myPlayer.alive &&    //im dead
+                myPlayer.cycleNumberDied === GameManager.host.cycleNumber &&   // i just died
+                otherPlayer.alive &&//other person is alive
                 myPlayer.role.cycle.targeting.length < 1    //i didnt already target someone
             );
         },
@@ -879,7 +879,7 @@ export const ROLES = {
         (priority, player)=>{
             if(priority === -8){
                 //give witch sheild
-                if(player.role.cycle.defense < 1 && player.role.persist.roleExtra.hasSheild)
+                if(player.role.cycle.defense < 1 && player.roleExtra.hasSheild)
                     player.role.cycle.defense = 1;
             
                 if(player.role.cycle.targeting.length < 2) return;
@@ -938,14 +938,14 @@ export const ROLES = {
                 
                 //remove sheild
                 if(player.role.cycle.extra.attackedTonight)
-                    player.role.persist.roleExtra.hasSheild = false;
+                    player.roleExtra.hasSheild = false;
             }
 
         },
         (myPlayer, otherPlayer)=>{
             return (
-                otherPlayer.role.persist.alive && //theyre alive
-                myPlayer.role.persist.alive && //im alive
+                otherPlayer.alive && //theyre alive
+                myPlayer.alive && //im alive
                 myPlayer.role.cycle.targeting.length < 2 &&   //havent already targeted at least 2 person
                 (
                     (myPlayer.role.cycle.targeting.length === 0 && myPlayer !== otherPlayer) ||
@@ -973,14 +973,14 @@ export const ROLES = {
             if(priority === -12){   //clean gas
                 
                 if(player.role.cycle.targeting.length > 0) return;
-                if(player.role.persist.extra.doused)
+                if(player.extra.doused)
                     player.role.addNightInformation(new ChatMessageState(
                         null,
                         "You cleaned the gas off yourself",
                         GameManager.COLOR.GAME_TO_YOU),
                         true
                     );
-                player.role.persist.extra.doused = false;
+                player.extra.doused = false;
             }
             if(priority === 2){ //douse
 
@@ -1020,7 +1020,7 @@ export const ROLES = {
 
                 for(let playerName in GameManager.host.players){
                     let dousedPlayer = GameManager.host.players[playerName];
-                    if(dousedPlayer.role.persist.extra.doused)
+                    if(dousedPlayer.extra.doused)
                         dousedPlayer.tryNightKill(player, player.role.cycle.attack);
                 }
             }
@@ -1029,8 +1029,8 @@ export const ROLES = {
         (myPlayer, otherPlayer)=>{
             return (
                 //myPlayer.name!==otherPlayer.name && //Not targeting myself
-                otherPlayer.role.persist.alive && //theyre alive
-                myPlayer.role.persist.alive && //im alive
+                otherPlayer.alive && //theyre alive
+                myPlayer.alive && //im alive
                 //!otherInMyTeam && //not on same team
                 myPlayer.role.cycle.targeting.length < 1    //havent already targeted at least 1 person
             );

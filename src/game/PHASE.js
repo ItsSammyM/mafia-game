@@ -1,6 +1,7 @@
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
 import GameManager from "./GameManager";
 import { shuffleList } from "./functions";
+import { CycleVariable } from "../gameStateHost/CycleVariable";
 
 class Phase{
     constructor(_maxTimeSeconds, _onStart, _onTimeOut){
@@ -34,6 +35,9 @@ export let PhaseStateMachine = {
     }
 }
 let standardStartPhase = function(){
+
+    CycleVariable.objectResetIfPhase(GameManager.host.cycleVariables, PhaseStateMachine.currentPhase);
+
     for(let playerName in GameManager.host.players){
         let player = GameManager.host.players[playerName];
 
@@ -49,7 +53,7 @@ let standardStartPhase = function(){
 export const PHASES = {
     "Night":new Phase(1, 
         ()=>{
-            GameManager.host.cycle.playerOnTrial = null;
+            //GameManager.host.cycleVariables.playerOnTrial.value = null;
             
             let informationListMessage = [];
 
@@ -72,9 +76,9 @@ export const PHASES = {
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(player.role.getRoleObject().team && player.role.persist.alive)
-                    player.chatGroupSendList.push(player.role.getRoleObject().team);
-                if(!player.role.persist.alive)
+                if(player.getRoleObject().team && player.alive)
+                    player.chatGroupSendList.push(player.getRoleObject().team);
+                if(!player.alive)
                     player.chatGroupSendList.push("Dead");
             }
             
@@ -189,7 +193,7 @@ export const PHASES = {
             standardStartPhase();
         },
         ()=>{
-            if(GameManager.host.cycle.trialsLeftToday > 0){
+            if(GameManager.host.cycleVariables.trialsLeftToday.value > 0){
                 PhaseStateMachine.startPhase("Voting");
             }else{
                 PhaseStateMachine.startPhase("Night");
@@ -198,14 +202,14 @@ export const PHASES = {
     ),
     "Voting":new Phase(1,
         ()=>{
-            GameManager.host.cycle.numVotesNeeded = Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.role.persist.alive}).length / 2) + 1;
-            GameManager.host.cycle.playerOnTrial = null;
+            GameManager.host.cycleVariables.numVotesNeeded.value = Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.role.persist.alive}).length / 2) + 1;
+            GameManager.host.cycleVariables.playerOnTrial.value = null;
 
             let informationListMessage = [];
 
             informationListMessage.push(new ChatMessageState(
                 "Voting "+GameManager.host.cycleNumber,
-                "You need at least "+GameManager.host.cycle.numVotesNeeded+" votes to trial someone.",
+                "You need at least "+GameManager.host.cycleVariables.numVotesNeeded.value+" votes to trial someone.",
                 GameManager.COLOR.GAME_TO_ALL
             ));
 
@@ -223,9 +227,9 @@ export const PHASES = {
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(player.role.persist.alive && !player.role.cycle.extra.blackmailed)
+                if(player.alive && !player.cycleVariables.extra.value.blackmailed)
                     player.chatGroupSendList.push("All");
-                if(!player.role.persist.alive)
+                if(!player.alive)
                     player.chatGroupSendList.push("Dead");
             }
 
@@ -239,13 +243,13 @@ export const PHASES = {
     "Testimony":new Phase(1,
         ()=>{
             
-            GameManager.host.cycle.trialsLeftToday--;
+            GameManager.host.cycleVariables.trialsLeftToday.value--;
 
             let informationListMessage = [];
 
             informationListMessage.push(new ChatMessageState(
                 "Testimony "+GameManager.host.cycleNumber,
-                GameManager.host.cycle.playerOnTrial.name+" is on trial.", 
+                GameManager.host.cycleVariables.playerOnTrial.value.name+" is on trial.", 
                 GameManager.COLOR.GAME_TO_ALL
             ));
 
@@ -264,11 +268,11 @@ export const PHASES = {
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(!player.role.persist.alive)
+                if(!player.alive)
                     player.chatGroupSendList.push("Dead");
             }
 
-            GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycle.playerOnTrial.name);
+            GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycleVariables.playerOnTrial.value.name);
             standardStartPhase();
 
         },
@@ -282,7 +286,7 @@ export const PHASES = {
 
             informationListMessage.push(new ChatMessageState(
                 "Judgement "+GameManager.host.cycleNumber,
-                GameManager.host.cycle.playerOnTrial.name+" is on trial.", 
+                GameManager.host.cycleVariables.playerOnTrial.value.name+" is on trial.", 
                 GameManager.COLOR.GAME_TO_ALL
             ));
 
@@ -318,9 +322,9 @@ export const PHASES = {
                 let player = GameManager.host.players[playerName];
 
                 if(!player.alive) continue;
-                if(player === GameManager.host.cycle.playerOnTrial) continue;
+                if(player === GameManager.host.cycleVariables.playerOnTrial.value) continue;
 
-                totalJudgement += player.role.cycle.judgement;
+                totalJudgement += player.cycleVariables.judgement.value;
 
                 let out = "";
                 if(player.cycleVariables.judgement.value<0){
@@ -346,7 +350,7 @@ export const PHASES = {
             if(totalJudgement < 0){
                 //guilty
                 PhaseStateMachine.startPhase("Final Words");
-            }else if(GameManager.host.cycle.trialsLeftToday > 0){
+            }else if(GameManager.host.cycleVariables.trialsLeftToday.value > 0){
                 //innocent && more trials
                 PhaseStateMachine.startPhase("Voting");
             }else{
@@ -395,10 +399,10 @@ export const PHASES = {
         },
         ()=>{
             
-            if(GameManager.host.cycle.playerOnTrial){
-                GameManager.host.cycle.playerOnTrial.die();
-                GameManager.host.cycle.playerOnTrial.showDied();
-                GameManager.host.cycle.playerOnTrial.chatGroupSendList.push("Dead");
+            if(GameManager.host.cycleVariables.playerOnTrial.value){
+                GameManager.host.cycleVariables.playerOnTrial.value.die();
+                GameManager.host.cycleVariables.playerOnTrial.value.showDied();
+                GameManager.host.cycleVariables.playerOnTrial.value.chatGroupSendList.push("Dead");
             }   
             
             

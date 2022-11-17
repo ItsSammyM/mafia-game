@@ -1,6 +1,5 @@
 export class CycleVariable{
     /**
-     * 
      * @param _phaseNameReset - string or array of strings -- Name of phases to reset this variable at the start of
      * @param _valueReset - any - value to set value to when reset is called
      */
@@ -8,7 +7,6 @@ export class CycleVariable{
         this.phaseNameReset = _phaseNameReset;
         this.valueReset = _valueReset;
         this.value = undefined;
-        //this.reset();
     }
     resetIfPhase(currentPhaseName){
         if(this.phaseNameReset.includes(currentPhaseName))  //this works for both a single value or an array of vales
@@ -21,8 +19,12 @@ export class CycleVariable{
             this.value = this.valueReset;
         }
     }
-    static objectResetIfPhase(obj, phaseName, force=false){
-        if(force){
+    /**
+     * @param obj - dictionary/object/array of values to reset 
+     * @param phaseName - string of phase to reset at start of. If true then it will reset regardless
+     */
+    static objectResetIfPhase(obj, phaseName){
+        if(phaseName){
             for(let i in obj)
                 obj[i].reset(phaseName);
             return;

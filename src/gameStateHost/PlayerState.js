@@ -88,14 +88,12 @@ export class PlayerState{
         this.unsentChatMessageStream.push(m)
     }
     addChatMessages(m){
-        for(let i in m){
+        for(let i in m)
             this.addChatMessage(m[i]);
-        }
     }
     copyChatMessagesToUnsentMessages(){
-        for(let i in this.chatMessageList){
+        for(let i in this.chatMessageList)
             this.unsentChatMessageStream.push(this.chatMessageList[i]);
-        }
     }
     getUnsentChatMessages(){
         return this.unsentChatMessageStream.splice(0,this.unsentChatMessageStreamBufferLength);
@@ -120,8 +118,8 @@ export class PlayerState{
         if(this.cycleVariables.roleblockedTonight.value && this.getRoleObject().roleblockable) return; //if your roleblocked---this needs to be moved so INCOMPLETE
         this.getRoleObject().doRole(priority, this);
     }
-    resetCycleVariables(phaseName, force=false){
-        CycleVariable.objectResetIfPhase(this.cycleVariables, phaseName, force);
+    resetCycleVariables(phaseName){
+        CycleVariable.objectResetIfPhase(this.cycleVariables, phaseName);
     }
     setRoleExtra(){
         if(!this.getRoleObject()) console.log(this.roleName + " doesnt seem to exist");
@@ -139,8 +137,8 @@ export class PlayerState{
      * @returns Null
      */
     addTarget(otherPlayer){
-        if(!this.role.getRoleObject().canTargetFunction(this, otherPlayer)) return;
-        this.role.cycle.targeting.push(otherPlayer);
+        if(!this.getRoleObject().canTargetFunction(this, otherPlayer)) return;
+        this.cycleVariables.targeting.value.push(otherPlayer);
     }
     /**
      * Makes it so the player is targeting nobody
@@ -148,14 +146,14 @@ export class PlayerState{
      * returns true if there were people targeted in the first place
      */
     clearTarget(){
-        this.role.cycle.targeting = [];
+        this.cycleVariables.targeting.value = [];
     }
     canTargetList(){
         let canTargetList = [];
         for(let otherPlayerName in GameManager.host.players){
             let otherPlayer = GameManager.host.players[otherPlayerName];
 
-            if(this.role.getRoleObject().canTargetFunction(this, otherPlayer)) 
+            if(this.getRoleObject().canTargetFunction(this, otherPlayer)) 
                 canTargetList.push(otherPlayerName);
         }
         return canTargetList;
