@@ -28,26 +28,48 @@ export class PlayerState{
         this.suffixes = {};//what i see other players as
 
 
-        this.role = null;
         this.savedNotePad = {};
 
-        // this.cycleVariables = {
-        //     votedBy : new CycleVariable('Voting', []),
-        //     voting : new CycleVariable('Voting', null),
+        this.roleName = null;
+        this.alive = true;
 
-        //     judgement : new CycleVariable('Judgement', 0),
+        this.cycleVariables = {
+            votedBy : new CycleVariable('Voting', []),
+            voting : new CycleVariable('Voting', null),
 
-        //     targetedBy : new CycleVariable('Night', []),
-        //     targeting : new CycleVariable('Night', []),
+            judgement : new CycleVariable('Judgement', 0),
 
-        //     roleblockedTonight : new CycleVariable('Night', false),
-        //     aliveTonight : new CycleVariable('Night', this.persist.alive),
+            targetedBy : new CycleVariable('Night', []),
+            targeting : new CycleVariable('Night', []),
 
-        //     defenseTonight : new CycleVariable('Night', this.getRoleObject().defense),
-        //     attackTonight : new CycleVariable('Night', this.getRoleObject().attack),
-        //     isSuspiciousTonight : new CycleVariable('Night', this.getRoleObject().isSuspicious),
-        //     disguisedAsTonight : new CycleVariable('Night', null),
-        // };
+            aliveTonight : new CycleVariable('Night', this.alive),
+
+            roleblockedTonight : new CycleVariable('Night', false),
+            defenseTonight : new CycleVariable('Night', this.getRoleObject().defense),
+            attackTonight : new CycleVariable('Night', this.getRoleObject().attack),
+            isSuspiciousTonight : new CycleVariable('Night', this.getRoleObject().isSuspicious),
+            disguisedAsTonight : new CycleVariable('Night', null),
+
+            extra : new CycleVariable('Night', {
+                //idk this is for weird stuff exclusively
+                healedByDoc : false,
+                attackedTonight : false,
+                isVeteranOnAlert : false,
+                blackmailed : false,
+                //savedByBodyguard : false,
+                //killedTonight : false
+            }),
+
+            nightInformation : new CycleVariable('Night', []),
+
+            shownRoleName : new CycleVariable('Night', this.persist.roleName),
+            shownWill : new CycleVariable('Night', this.savedNotePad['Will']),
+
+
+            attackedBy : [],
+
+            
+        };
     }
     setUpAvailableButtons(players){
         for(let playerName in players){
@@ -82,19 +104,25 @@ export class PlayerState{
     }
 
     //#region Role
-    createPlayerRole(exact){
-        this.role = new PlayerRole(exact);
-        this.addChatMessage(
-            new ChatMessageState(
-                this.role.getRoleObject().faction+" "+this.role.getRoleObject().alignment+", "+this.role.persist.roleName, 
-                this.role.getRoleObject().basicDescription, 
-                GameManager.COLOR.GAME_TO_YOU
-            )
-        );
+    createPlayerRole(roleName){
+        this.roleName = roleName;   //SET PERSIST STUFF SO INCOMPLETE
+        this.addChatMessage(new ChatMessageState(
+            this.getRoleObject().faction+" "+this.getRoleObject().alignment+", "+this.roleName, 
+            this.getRoleObject().basicDescription, 
+            GameManager.COLOR.GAME_TO_YOU
+        ));
+    }
+    getRoleObject(){
+        return ROLES[this.roleName];
     }
     doMyRole(priority){
-        if(!this.role) return;
-        this.role.doMyRole(priority, this);
+        if(!this.roleName) return;
+        if(priority === null) return;
+        if(this.cycle.roleblocked && this.getRoleObject().roleblockable) return; //if your roleblocked---this needs to be moved so INCOMPLETE
+        this.getRoleObject().doRole(priority, this);
+    }
+    resetCycleVariables(phaseName){
+        CycleVariable.objectResetIfPhase(this.cycleVariables, phaseName);
     }
     //#endregion
     //#region Target
@@ -156,9 +184,9 @@ export class PlayerState{
 
     //#region Helper functions
     roleblock(){
-        this.role.cycle.roleblocked = true;
-        if(!this.role.getRoleObject().roleblockable)
-            this.role.addNightInformation(
+        this.cycleVariables.roleblocked.value = true;
+        if(!this.getRoleObject().roleblockable)
+            this.addNightInformation(
                 new ChatMessageState(null, "Someone attempted to roleblock you but you were immune", GameManager.COLOR.GAME_TO_YOU), false
             );
         else 
@@ -227,6 +255,16 @@ export class PlayerState{
             player.addSuffix(this.name, this.role.cycle.shownRoleName);
             player.addMessages(publicInformation);
         }
+    }
+
+    //[ChatMessageState, boolean]
+    //Information, roleSpecific
+    addNightInformation(chatMessageState, roleSpecific){
+        this.cycleVariables.nightInformation.value.push(   [chatMessageState, roleSpecific]    );
+    }
+    addNightInformationList(nightInformationList){
+        for(let i in nightInformationList)
+            this.cycleVariables.nightInformation.value.push(  nightInformationList[i]    );
     }
     //#endregion    
 }
