@@ -67,8 +67,8 @@ export class Role{
         this.astralVisitsList = _astralVisitsList;
     }
     static onSameTeam(playerA, playerB){
-        return playerA.role.getRoleObject().team === playerB.role.getRoleObject().team && //same team
-        playerA.role.getRoleObject().team!==null;  //not null
+        return playerA.getRoleObject().team === playerB.getRoleObject().team && //same team
+        playerA.getRoleObject().team!==null;  //not null
     }
 }
 class TEAM{

@@ -35,7 +35,9 @@ export let PhaseStateMachine = {
 }
 let standardStartPhase = function(){
     for(let playerName in GameManager.host.players){
-        //let player = GameManager.host.players[playerName];
+        let player = GameManager.host.players[playerName];
+
+        player.resetCycleVariables(PhaseStateMachine.currentPhase);
         GameManager.HOST_TO_CLIENT["AVAILABLE_BUTTONS"].send(playerName);
     }
     GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
@@ -62,7 +64,7 @@ export const PHASES = {
                     let otherPlayer = GameManager.host.players[otherPlayerName];
 
                     // player.availableButtons[otherPlayer.name] = {target:false,whisper:false,vote:false};
-                    player.availableButtons[otherPlayerName].target = player.role.getRoleObject().canTargetFunction(player, otherPlayer);
+                    player.availableButtons[otherPlayerName].target = player.getRoleObject().canTargetFunction(player, otherPlayer);
                     player.availableButtons[otherPlayerName].vote = false;
                     player.availableButtons[otherPlayerName].whisper = false;
                 }
@@ -80,51 +82,32 @@ export const PHASES = {
             standardStartPhase();
         }, 
         ()=>{
-            //set loop first
-            for(let playerName in GameManager.host.players){
-                let player = GameManager.host.players[playerName];
-
-                player.role.cycle.aliveNow = player.role.persist.alive;
-                if(player.savedNotePad["Will"])
-                    player.role.cycle.shownWill = player.savedNotePad["Will"];
-                if(player.savedNotePad["Note"])
-                    player.role.cycle.shownNote = player.savedNotePad["Note"];
-
-                player.role.cycle.disguisedAs = player;
-            }
-
             //main loop 
             for(let priority = -12; priority <= 12; priority++){
-                //this loops through priorities
-
                 for(let playerName in GameManager.host.players){
-                    //loops through each player 
+
                     let player = GameManager.host.players[playerName];
-                    
-                    //set targetedBy
+
+                    //set visitedBy and visiting
                     if(priority===0){
-                        for(let t = 0; t < player.role.cycle.targeting.length; t++){
-                            let targeted = player.role.cycle.targeting[t];
+                        for(let t = 0; t < player.cycleVariables.targeting.value.length; t++){
+                            let targetedPlayer = player.cycleVariables.targeting[t].value;
 
                             let isAstral = false;
-                            let astralVisitsList = player.role.getRoleObject().astralVisitsList;
+                            let astralVisitsList = player.getRoleObject().astralVisitsList;
                             if(astralVisitsList && astralVisitsList.length >= t)
-                                isAstral = player.role.getRoleObject().astralVisitsList[t];
+                                isAstral = player.getRoleObject().astralVisitsList[t];
+
                             if(isAstral) continue;
+                            if(player.cycleVariables.roleblockedTonight.value && player.getRoleObject().roleblockable) continue;
 
-                            if(player.role.cycle.roleblocked && player.role.getRoleObject().roleblockable) continue;
-
-                            targeted.role.cycle.targetedBy.push(player);
+                            targetedPlayer.cycleVariables.targetedBy.value.push(player);
                         }
                     }
                     
                     player.doMyRole(priority);
                 }
             }
-            //reset loop after
-            // for(let playerName in GameManager.host.players){
-            //     let player = GameManager.host.players[playerName];
-            // }
 
             PhaseStateMachine.startPhase("Morning");
         }
@@ -148,12 +131,12 @@ export const PHASES = {
                 }
                 
                 player.addChatMessages(informationListMessage);
-                shuffleList(player.role.cycle.nightInformation);
-                player.addChatMessages(player.role.cycle.nightInformation.map((l)=>{return l[0]}));
+                shuffleList(player.cycleVariables.nightInformation.value);
+                player.addChatMessages(player.cycleVariables.nightInformation.value.map((l)=>{return l[0]}));
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(!player.role.persist.alive)
+                if(!player.alive)
                     player.chatGroupSendList.push("Dead");
             }
 
@@ -162,19 +145,13 @@ export const PHASES = {
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
-                if(!player.role.cycle.aliveNow || player.role.persist.alive)
-                    continue;
-
+                if(!player.cycleVariables.attackTonight.value || player.alive) continue;
                 player.showDied();
             }
 
             standardStartPhase();
         },
         ()=>{
-            for(let playerName in GameManager.host.players){
-                let player = GameManager.host.players[playerName];
-                player.role.setCycle();
-            }
             GameManager.host.setCycle();
             GameManager.host.cycleNumber++;
 
@@ -202,9 +179,9 @@ export const PHASES = {
                 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(player.role.persist.alive && !player.role.cycle.extra.blackmailed)
+                if(player.alive && !player.cycleVariables.extra.value.blackmailed)
                     player.chatGroupSendList.push("All");
-                if(!player.role.persist.alive)
+                if(!player.alive)
                     player.chatGroupSendList.push("Dead");
             }
 
@@ -239,10 +216,7 @@ export const PHASES = {
                     let otherPlayer = GameManager.host.players[otherPlayerName];
 
                     player.availableButtons[otherPlayerName].target = false;
-                    player.role.cycle.voting = null;
                     player.canVote(otherPlayer);
-                    //player.availableButtons[otherPlayerName].vote = true;
-                    //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
                 }
 
                 player.addChatMessages(informationListMessage);
@@ -293,9 +267,6 @@ export const PHASES = {
                 if(!player.role.persist.alive)
                     player.chatGroupSendList.push("Dead");
             }
-            //player on trial needs to be able to talk
-            if(!GameManager.host.cycle.playerOnTrial.role.cycle.extra.blackmailed)
-                GameManager.host.cycle.playerOnTrial.chatGroupSendList.push("All");
 
             GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycle.playerOnTrial.name);
             standardStartPhase();
@@ -331,9 +302,9 @@ export const PHASES = {
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(player.role.persist.alive && !player.role.cycle.extra.blackmailed)
+                if(player.alive && !player.cycleVariables.extra.value.blackmailed)
                     player.chatGroupSendList.push("All");
-                if(!player.role.persist.alive)
+                if(!player.alive)
                     player.chatGroupSendList.push("Dead");
             }
 
@@ -342,25 +313,25 @@ export const PHASES = {
         ()=>{
             let whoVotedMessages = [];
             let totalJudgement = 0;
+
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
-                if(!player.role.persist.alive) continue;
+                if(!player.alive) continue;
                 if(player === GameManager.host.cycle.playerOnTrial) continue;
 
                 totalJudgement += player.role.cycle.judgement;
 
                 let out = "";
-                if(player.role.cycle.judgement<0){
+                if(player.cycleVariables.judgement.value<0){
                     out+=" voted guilty";
-                }else if(player.role.cycle.judgement>0){
+                }else if(player.cycleVariables.judgement.value>0){
                     out+=" voted innocent";
                 }else{
                     out+=" abstained";
                 }
 
-                whoVotedMessages.push(
-                new ChatMessageState(
+                whoVotedMessages.push(new ChatMessageState(
                     null,
                     player.name+out, 
                     GameManager.COLOR.GAME_TO_ALL
@@ -374,8 +345,6 @@ export const PHASES = {
 
             if(totalJudgement < 0){
                 //guilty
-               
-
                 PhaseStateMachine.startPhase("Final Words");
             }else if(GameManager.host.cycle.trialsLeftToday > 0){
                 //innocent && more trials
@@ -416,9 +385,9 @@ export const PHASES = {
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
-                if(player.role.persist.alive && !player.role.cycle.extra.blackmailed)
+                if(player.alive && !player.cycleVariables.extra.value.blackmailed)
                     player.chatGroupSendList.push("All");
-                if(!player.role.persist.alive)
+                if(!player.alive)
                     player.chatGroupSendList.push("Dead");
             }
 

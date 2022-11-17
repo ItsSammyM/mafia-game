@@ -1,6 +1,6 @@
 import { PubNubWrapper } from "./PubNubWrapper"
 import { generateRandomString, shuffleList, mergeSort} from "./functions"
-import { PlayerRole, PlayerState } from "../gameStateHost/PlayerState";
+import { PlayerState } from "../gameStateHost/PlayerState";
 import { PlayerStateClient } from "../gameStateClient/PlayerStateClient";
 import { Main } from "../Main"
 import { WaitJoinMenu } from "../menu/WaitJoinMenu";
@@ -100,7 +100,7 @@ let GameManager = {
         },
         setCycle(){ //called on start of morning
             GameManager.host.cycle.trialsLeftToday = 3;
-            GameManager.host.cycle.numVotesNeeded = Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.role.persist.alive}).length / 2) + 1;
+            GameManager.host.cycle.numVotesNeeded = Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.alive}).length / 2) + 1;
             GameManager.host.cycle.playerOnTrial = null;
         },
         /**
@@ -132,14 +132,14 @@ let GameManager = {
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
-                player.role.cycle.votedBy = [];
+                player.cycleVariables.votedBy.value = [];
             }
             //set votedBy
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
-                if(player.role.cycle.voting){
-                    player.role.cycle.voting.role.cycle.votedBy.push(player);
+                if(player.cycleVariables.voting.value){
+                    player.cycleVariables.voting.value.cycleVariables.votedBy.value.push(player);
                 }
 
                 
@@ -148,7 +148,7 @@ let GameManager = {
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
-                if(GameManager.host.cycle.numVotesNeeded <= player.role.cycle.votedBy.length){
+                if(GameManager.host.cycle.numVotesNeeded <= player.cycleVariables.votedBy.value.length){
                     playerVoted = player;
                     break;
                 }
@@ -215,7 +215,7 @@ let GameManager = {
 
                 //tell players whats going on
                 playerIndividual[playerName] = {
-                    roleName : player.role.persist.roleName,
+                    roleName : player.roleName,
                 };
                 player.addChatMessages(informationList);
                 index++;
@@ -224,7 +224,7 @@ let GameManager = {
             GameManager.host.roleList = mergeSort(roleList, (a,b)=>{
 
                 if(a[2]) return 10000;
-                if(b[2]) return 10000;
+                if(b[2]) return -10000;
 
                 if(a[0] !== b[0]){
                     if(a[0] === null)  return -1000;
@@ -281,27 +281,29 @@ let GameManager = {
                 //ALL
                 GameManager.host.chatGroups["All"].push(player);
                 //TEAMS
-                if(player.role.getRoleObject().team)
-                    GameManager.host.chatGroups[player.role.getRoleObject().team].push(player);
+                if(player.getRoleObject().team)
+                    GameManager.host.chatGroups[player.getRoleObject().team].push(player);
             }
 
 
             //SUFFIXES
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
-                player.addSuffix(player.name, player.role.persist.roleName);    //suffix yourself
+                player.addSuffix(player.name, player.roleName);    //suffix yourself
 
                 for(let otherPlayerName in GameManager.host.players){
                     let otherPlayer = GameManager.host.players[otherPlayerName];
     
-                    if(Role.onSameTeam(player, otherPlayer) && TEAMS[player.role.getRoleObject().team].showFactionMembers)
-                        player.addSuffix(otherPlayer.name, otherPlayer.role.persist.roleName);  //suffix for same team members
+                    if(Role.onSameTeam(player, otherPlayer) && TEAMS[player.getRoleObject().team].showFactionMembers)
+                        player.addSuffix(otherPlayer.name, otherPlayer.roleName);  //suffix for same team members
                 }
             }
 
             //Send game state and stuff.
             for(let playerName in GameManager.host.players){
-                GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(playerName, GameManager.host.players[playerName].role.persist.roleName);
+                let player = GameManager.host.players[playerName];
+                player.resetCycleVariables(null, true);
+                GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.roleName);
             }
             GameManager.HOST_TO_CLIENT["ROLE_LIST_AND_PLAYERS"].send(
                 GameManager.host.roleList, 
@@ -343,9 +345,9 @@ let GameManager = {
             let livingRoleNamesList = [];
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
-                if(!player.role.persist.alive) continue;
+                if(!player.alive) continue;
 
-                livingRoleNamesList.push(player.role.persist.roleName);
+                livingRoleNamesList.push(player.roleName);
             }
 
             //If only 1 victoryGroup Remains
@@ -379,7 +381,7 @@ let GameManager = {
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
-                if(player.role.persist.alive && (player.role.persist.roleName === "Mafioso" || player.role.persist.roleName === "Godfather")){
+                if(player.alive && (player.roleName === "Mafioso" || player.roleName === "Godfather")){
                     gameHasMafiosoOrGodfather = true;
                     break;
                 }
@@ -388,15 +390,15 @@ let GameManager = {
 
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
-                if(player.role.persist.alive && player.role.getRoleObject().faction === "Mafia"){
+                if(player.alive && player.getRoleObject().faction === "Mafia"){
                     GameManager.host.changePlayerRole(player, "Mafioso");
                     break;
                 }
             }
         },
         changePlayerRole(player, newRoleName){
-            player.role = new PlayerRole(newRoleName);
-            GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.role.persist.roleName);
+            player.createPlayerRole(newRoleName);
+            GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.roleName);
         },
         rolePossibleToExist(roleName){
             let roleObject = ROLES[roleName];
@@ -632,7 +634,7 @@ let GameManager = {
                             })()) 
                         );
                         
-                        GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.role.persist.roleName);
+                        GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.roleName);
                         GameManager.HOST_TO_CLIENT["AVAILABLE_BUTTONS"].send(player.name);
                         GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
                         GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycle.playerOnTrial);
@@ -676,7 +678,7 @@ let GameManager = {
                 player.addChatMessage(new ChatMessageStateClient("Target", "You targeted "+targetedPlayer.name, GameManager.COLOR.GAME_TO_YOU));
                 
                 //GameManager.client.addMessage(new ChatMessageStateClient("Target", "You targeted "+contents.playerTargetedName, GameManager.COLOR.GAME_TO_YOU));
-                GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONSE"].send(contents.playerName, player.role.cycle.targeting.map((p)=>p.name), player.canTargetList());
+                GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONSE"].send(contents.playerName, player.cycleVariables.targeting.value.map((p)=>p.name), player.canTargetList());
                 GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
             }
         ),
@@ -688,7 +690,7 @@ let GameManager = {
                 if(PhaseStateMachine.currentPhase !== "Night") return;
                 
                 let player = GameManager.host.players[contents.playerName];
-                if(!player.role.cycle.targeting.length>0) return;
+                if(!player.cycleVariables.targeting.value.length>0) return;
                 player.clearTarget();
 
                 player.addChatMessage(new ChatMessageStateClient("Clear Targets", "Your targets have been reset", GameManager.COLOR.GAME_TO_YOU));
@@ -709,10 +711,10 @@ let GameManager = {
                 let player = GameManager.host.players[contents.playerName];
                 let playerVoted = GameManager.host.players[contents.playerVotedName];
                 
-                if(player.role.cycle.voting === playerVoted) return;
+                if(player.cycleVariables.voting.value === playerVoted) return;
 
-                if(player.role.persist.alive && playerVoted.role.persist.alive && player !== playerVoted){
-                    player.role.cycle.voting = playerVoted;
+                if(player.alive && playerVoted.alive && player !== playerVoted){
+                    player.cycleVariables.voting.value = playerVoted;
                 }
 
                 for(let otherPlayerName in GameManager.host.players){
@@ -740,10 +742,10 @@ let GameManager = {
                 if(PhaseStateMachine.currentPhase !== "Voting") return;
                 let player = GameManager.host.players[contents.playerName];
 
-                if(player.role.cycle.voting == null || !player.role.persist.alive) return;
+                if(player.cycleVariables.voting.value == null || !player.alive) return;
 
-                let playerVotingName = player.role.cycle.voting.name;
-                player.role.cycle.voting = null;
+                let playerVotingName = player.cycleVariables.voting.value.name;
+                player.cycleVariables.voting.value = null;
                 
                 for(let otherPlayerName in GameManager.host.players){
                     let otherPlayer = GameManager.host.players[otherPlayerName];
@@ -764,9 +766,9 @@ let GameManager = {
                 if(PhaseStateMachine.currentPhase !== "Judgement") return;
                 let player = GameManager.host.players[contents.playerName];
 
-                if(!player.role.persist.alive) return;
+                if(!player.alive) return;
                 GameManager.HOST_TO_CLIENT["BUTTON_JUDGEMENT_RESPONSE"].send(contents.playerName, contents.judgement);
-                player.role.cycle.judgement = contents.judgement;
+                player.cycleVariables.judgement.value = contents.judgement;
             }
         ),
         "SEND_MESSAGE":new MessageType(false,
@@ -951,7 +953,7 @@ let GameManager = {
 
                         playersObject[playerName][otherPlayerName] = {
                             suffixes : player.suffixes[otherPlayerName],
-                            alive : otherPlayer.role.persist.alive
+                            alive : otherPlayer.alive
                         }
                     }
                 }
@@ -1124,7 +1126,7 @@ let GameManager = {
                     let player = GameManager.host.players[playerName];
 
                     playerIndividual[playerName] = {
-                        seeSelfAlive : player.role.persist.alive,
+                        seeSelfAlive : player.alive,
                         chatGroupSendList : player.chatGroupSendList,
                         savedNotePad : player.savedNotePad,
                     };
