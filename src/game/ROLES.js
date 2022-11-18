@@ -656,6 +656,12 @@ export const ROLES = {
                         GameManager.host.players[mafiosoName].cycleVariables.targeting.value = [myTarget];
                             //clear myself
                         player.cycleVariables.targeting.value=[];
+                            //tell godfather what they have done
+                        player.addNightInformation(new ChatMessageState(
+                            null,
+                            "You forced a mafioso to target your target",
+                            GameManager.COLOR.GAME_TO_YOU
+                        ), true);
                     }
                         
                 }
@@ -925,11 +931,11 @@ export const ROLES = {
     //#region Neutral
     "Jester":new Role(
         "Jester", "Your goal is to be lynched. If you are lynched, you may kill one player after the fact", "🤡",
-        "You have no night ability untill you are lynched. Then you can kill anybody who voted you guilty with an unstoppable(3) attack. Try to look like a mafia pretending to be a townie. \n"+
-        "If you just say your mafia then it will be obvious you are the jester.",
-        "-12 > Kill",
+        "You have no night ability untill you are lynched. Then you can kill anybody who voted you guilty with an unstoppable(3) attack. \n"+
+        "Try to look like an evil role who is pretending to be a townie, but if you just say your mafia then it will be obvious you are the Jester.",
+        "-12 > Kill,",
         "Neutral", "Evil", null,
-        0, Infinity,
+        null, Infinity,
         0, 3, 
         true, true, false,
         {},
@@ -957,6 +963,28 @@ export const ROLES = {
                 myPlayer.cycleVariables.targeting.value.length < 1    //i didnt already target someone
             );
         },
+        null
+    ),
+    "Executioner":new Role(
+        "Executioner", "Your goal is to get your target lynched, If your target dies by other means. You will become a Jester.", "🪓",
+        "You have no night ability. Your target will always be a town member, but never a mayor. If your target is lynched, you win, and get to stay in the game.",
+        "8 > Convert to jester when target died",
+        "Neutral", "Evil", null,
+        null, Infinity,
+        1, 0,
+        true, true, false,
+        {executionerTarget : null},
+        (priority, player)=>{
+            if(priority!==8) return;
+            if(
+                (player.roleExtra.executionerTarget!==null &&
+                !player.roleExtra.executionerTarget.alive &&
+                player.roleExtra.executionerTarget.cycleVariables.diedTonight.value) ||
+                player.roleExtra.executionerTarget === null
+                )
+                GameManager.host.changePlayerRole(player, "Jester");
+        },
+        (myPlayer, otherPlayer)=>false,
         null
     ),
     "Witch":new Role(
@@ -1132,6 +1160,31 @@ export const ROLES = {
         },
         null
     ),
+    "Werewolf":new Role(
+        "Werewolf", "Target a player to rampage at their house, attacking them and everyone who visits them. If you target youself, you will rampage your own house. This doesnt work nights 1 and 3.", "🐺",
+        "I dont feel like writing an in depth description right now because i have a headache. Someone tell me to fix it when you see this.",
+        "2 > make self suspicious, \n"+
+        "6 > attack and rampage,",
+        "Neutral", "Killing", null,
+        "Werewolf", 1,
+        1, 2,
+        false, true, false, //fix roleblock stuff later
+        {},
+        (priority, player)=>{
+
+        },
+        (myPlayer, otherPlayer)=>{
+            return (
+                !(GameManager.host.cycleNumber === 1 || GameManager.host.cycleNumber === 3) &&   //its not night 1 or 3
+                //myPlayer.name!==otherPlayer.name && //Not targeting myself
+                otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
+                myPlayer.cycleVariables.aliveTonight.value && //im alive
+                //!otherInMyTeam && //not on same team
+                myPlayer.cycleVariables.targeting.value.length < 1    //havent already targeted at least 1 person
+            );
+        },
+        null
+    )
     //#endregion
 }
 
@@ -1146,7 +1199,7 @@ Everyones target is set first
 -4 Godfather(Swap mafioso target and clear self)
 -2 bodyguard(swap)
  0: visits happen here
-+2: Doctor(Heal), Blackmailer(Decide), Crusader(Heal), Arsonist(Douse), Framer, Disguiser
++2: Doctor(Heal), Blackmailer(Decide), Crusader(Heal), Arsonist(Douse), Framer, Disguiser Werewolf(innos themself)
 +4: Sheriff, Invest, Consig, Lookout, Tracker, Arsonist(Find who visited)
 +6: Mafioso/Godfather, SerialKiller, Werewolf, Veteran, Vampire, Arsonist, Crusader, Bodyguard, Vigilante (All kill)
 +8: Amnesiac(Convert) Vampire(Convert) Forger(Change info), Janitor(Clean & info), Doctor(Notify) Bodyguard(Notify)

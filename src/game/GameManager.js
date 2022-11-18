@@ -1,5 +1,5 @@
 import { PubNubWrapper } from "./PubNubWrapper"
-import { generateRandomString, shuffleList, mergeSort} from "./functions"
+import { generateRandomString, shuffleList, shuffledList, mergeSort} from "./functions"
 import { PlayerState } from "../gameStateHost/PlayerState";
 import { PlayerStateClient } from "../gameStateClient/PlayerStateClient";
 import { Main } from "../Main"
@@ -53,7 +53,6 @@ weird stuff
         }
     }
 }
-
 let GameManager = {
 
     COLOR : {
@@ -163,6 +162,8 @@ let GameManager = {
                 for(let j = 0; j < GameManager.host.investigativeResults[i].length; j++){
 
                     let roleName = GameManager.host.investigativeResults[i][j];
+
+                    if(roleName === "Jester") continue;   //never remove jesters
 
                     if(!GameManager.host.rolePossibleToExist(roleName)){
                         GameManager.host.investigativeResults[i].splice(j, 1);
@@ -279,6 +280,34 @@ let GameManager = {
                 //TEAMS
                 if(player.getRoleObject().team)
                     GameManager.host.chatGroups[player.getRoleObject().team].push(player);
+
+
+                //also while were here give exe their target
+                if(player.getRoleObject().name === "Executioner"){
+                    player.roleExtra.executionerTarget = ((player)=>{
+                        //get random townie who isnt mayor or jailor cuz that would just be straight up unfair
+                        
+                        //get list of all townies
+                        let allTownies = [];
+                        for(let playerName in GameManager.host.players){
+                            let player = GameManager.host.players[playerName];
+            
+                            if(player.getRoleObject().faction === "Town" && (
+                                player.getRoleObject().name !== "Mayor" || player.getRoleObject().name !== "Veteran"
+                                ))
+                                allTownies.push(player);
+                        }
+            
+                        if(allTownies.length === 0) return null;
+                        let exeTarget = shuffledList(allTownies)[0];
+            
+                        player.addChatMessage(new ChatMessageState(
+                            null,
+                            "Your target is "+exeTarget.name,
+                            GameManager.COLOR.GAME_TO_YOU
+                        ));
+                    })(player);
+                }
             }
 
 

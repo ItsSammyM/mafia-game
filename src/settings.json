@@ -90,18 +90,20 @@
             [
                 [null, null, "Godfather"],
                 [null, null, "Veteran"],
-                [null, null, "Mayor"]
+                ["Neutral", "Killing", null]
             ],
             [
                 [null, null, "Godfather"],
+
+                ["Neutral", "Killing", null],
+
                 [null, null, "Veteran"],
-                [null, null, "Mayor"],
                 [null, null, "Transporter"]
             ],
             [
                 [null, null, "Godfather"],
-                ["Mafia", "Deception", null],
 
+                [null, null, "Medium"],
                 ["Town", "Investigative", null],
                 ["Town", null, null],
                 ["Town", null, null]
@@ -184,10 +186,10 @@
                 ["Mafia", null, null],
 
                 ["Town", "Investigative", null],
-                ["Town", "Investigative", null],
                 ["Town", "Protective", null],
                 ["Town", "Support", null],
                 ["Town", "Killing", null],
+                ["Town", null, null],
                 ["Town", null, null],
                 ["Town", null, null],
                 

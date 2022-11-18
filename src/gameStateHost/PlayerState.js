@@ -129,7 +129,17 @@ export class PlayerState{
         if(!this.getRoleObject()) console.log("trying to set roleExtra but "+this.roleName + " doesnt seem to exist");
 
         for(let key in this.getRoleObject().extraPersist){
-            this.roleExtra[key] = this.getRoleObject().extraPersist[key];
+
+            //if extraPersist[key] is a function then get its return value instead.
+            //pass this player into function
+            if('function' === (typeof this.getRoleObject().extraPersist[key])){
+
+                this.roleExtra[key] = this.getRoleObject().extraPersist[key](this);
+            }else{
+                this.roleExtra[key] = this.getRoleObject().extraPersist[key];
+            }
+            
+            //this.roleExtra[key] = this.getRoleObject().extraPersist[key];
         }
     }
     //#endregion
