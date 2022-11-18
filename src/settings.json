@@ -181,7 +181,7 @@
                 [null, null, "Godfather"],
                 ["Mafia", "Killing", null],
                 ["Mafia", "Support", null],
-                ["Mafia", "Deception", null],
+                ["Mafia", null, null],
 
                 ["Town", "Investigative", null],
                 ["Town", "Investigative", null],
@@ -197,7 +197,7 @@
                 [null, null, "Godfather"],
                 ["Mafia", "Killing", null],
                 ["Mafia", "Support", null],
-                ["Mafia", "Deception", null],
+                ["Mafia", null, null],
                 
                 ["Town", "Investigative", null],
                 ["Town", "Investigative", null],
@@ -214,7 +214,7 @@
                 [null, null, "Godfather"],
                 ["Mafia", "Killing", null],
                 ["Mafia", "Support", null],
-                ["Mafia", "Deception", null],
+                ["Mafia", null, null],
                 
                 ["Town", "Investigative", null],
                 ["Town", "Investigative", null],
@@ -232,7 +232,7 @@
                 [null, null, "Godfather"],
                 ["Mafia", "Killing", null],
                 ["Mafia", "Support", null],
-                ["Mafia", "Deception", null],
+                ["Mafia", null, null],
                 
                 ["Town", "Investigative", null],
                 ["Town", "Investigative", null],
@@ -251,7 +251,7 @@
                 [null, null, "Godfather"],
                 ["Mafia", "Killing", null],
                 ["Mafia", "Support", null],
-                ["Mafia", "Deception", null],
+                ["Mafia", null, null],
                 
                 ["Town", "Investigative", null],
                 ["Town", "Investigative", null],

@@ -381,7 +381,7 @@ export const ROLES = {
     ),
     "Doctor":new Role(
         "Doctor", "Target a player to save them from an attack, you can save yourself once", "💉",
-        "Targeting a player will grant them powerfull defense (2). You will know if they were attacked, but they wont know they've been healed unless theyre attacked.\n"+
+        "Targeting a player will grant them powerfull(2) defense. You will know if they were attacked, but they wont know they've been healed unless theyre attacked.\n"+
         "It is usually a good idea to try to keep yourself hidden becuase you can only save yourself 1 time. Obviously you should try to pick those who would be targets for the mafia",
         "2 > Grant defense,\n"+
         "8 > Tell both players if the doctor saved them",
@@ -407,7 +407,7 @@ export const ROLES = {
                 }
                 myTarget.cycleVariables.extra.value.healedByDoc = true;
             }
-            if(priority === 8){
+            else if(priority === 8){
                 if(myTarget.cycleVariables.extra.value.healedByDoc && myTarget.cycleVariables.extra.value.attackedTonight){
                     player.addNightInformation(new ChatMessageState(
                         null,
@@ -417,10 +417,8 @@ export const ROLES = {
                     myTarget.addNightInformation(new ChatMessageState(null, "You were healed by a Doctor", GameManager.COLOR.GAME_TO_YOU), false);
                 }
             }
-            
         },
         (myPlayer, otherPlayer)=>{
-            
             return (
                 otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
                 myPlayer.cycleVariables.aliveTonight.value && //im alive
@@ -434,17 +432,80 @@ export const ROLES = {
         null
     ),
     "Bodyguard":new Role(
-        "Bodyguard", "Target a player to redirect attacks from them to you, you can sheild yourself once", "👮🏿",
-        "This redirects killing roles. Every role that is called 'killing' will be redirected towards you.",
+        "Bodyguard", "Target a player to redirect attacks from them to you and attack them back, you can sheild yourself once", "👮🏿",
+        "This redirects killing roles. Every role that has 'Killing' alignment will be redirected towards you and you will attack them. When you use your self sheild. You will be granted powerfull(2) defense. You can't protect another bodyguard.",
         "-2 > redirect killer,\n"+
         "2 > grant self vest,\n"+
-        "8 > tell both players if a bodyguard redirected,",
+        "8 > tell both players that an attack was redirected,",
         "Town", "Protective", null,
         "Town", Infinity,
-        0, 0,   //should have attack
+        0, 2,   //should have attack
         true, true, false,
+        {vestsLeft : 1},
+        (priority, player)=>{
+            if(player.cycleVariables.targeting.value.length < 1) return;
+            if(!player.cycleVariables.aliveTonight.value) return;
 
-    )
+            let myTarget = player.cycleVariables.targeting.value[0];
+            if(!myTarget.cycleVariables.aliveTonight.value) return;
+
+            if(player.roleExtra.vestsLeft <= 0 && player === myTarget) return; //if already self healed and trying it again
+
+            if(priority===-2){
+                if(player===myTarget) return;
+                if(myTarget.getRoleObject().name === "Bodyguard") return;
+                
+                for(let attackerName in GameManager.host.players){
+                    let attacker = GameManager.host.players[attackerName];
+                    if(attacker.getRoleObject().alignment!=="Killing") continue;
+
+                    let attackRedirected = false;
+
+                    for(let i in attacker.cycleVariables.targeting.value){
+                        let attackersTarget = attacker.cycleVariables.targeting.value[i];
+                        if(attackersTarget === myTarget){
+                            myTarget.cycleVariables.extra.value.protectedByBodyguard = true;
+                            attackRedirected = true;
+                            attacker.cycleVariables.targeting.value[i] = player;
+                        }
+                    }
+
+                    if(attackRedirected)
+                        attacker.tryNightKill(player, player.cycleVariables.attackTonight.value);
+                }
+                
+            }else if(priority===2){
+                if(player!==myTarget) return;
+
+                player.roleExtra.vestsLeft--;
+
+                if(player.cycleVariables.defenseTonight.value < 2){
+                    player.cycleVariables.defenseTonight.value = 2;
+                }
+            }else if(priority===8){
+                if(!myTarget.cycleVariables.extra.value.protectedByBodyguard) return;
+
+                player.addNightInformation(new ChatMessageState(
+                    null,
+                    "You redirected an attack from your target",
+                    GameManager.COLOR.GAME_TO_YOU
+                ), true);
+                myTarget.addNightInformation(new ChatMessageState(null, "A Bodyguard redirected an attack off you.", GameManager.COLOR.GAME_TO_YOU), false);
+            }
+        },
+        (myPlayer, otherPlayer)=>{
+            return (
+                otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
+                myPlayer.cycleVariables.aliveTonight.value && //im alive
+                myPlayer.cycleVariables.targeting.value.length < 1 && //im targeting nobody already
+                (
+                    (myPlayer.name===otherPlayer.name && myPlayer.roleExtra.vestsLeft > 0) || //self healing
+                    myPlayer.name!==otherPlayer.name //healing someone else
+                ) 
+            );
+        },
+        null,
+    ),
     "Mayor":new Role(
         "Mayor", "Reveal any time during the day, from that moment forward you will get 3 times the voting power", "🏛️",
         "You can't do anyhting during night, but revealing will confirm to everyone what your role is without question.",
@@ -454,6 +515,24 @@ export const ROLES = {
         0, 0,
         true, true, false,
         {revealed : false},
+        (priority, player)=>{
+
+        },
+        (myPlayer, otherPlayer)=>{
+            return false;
+        },
+        null
+    ),
+    "Medium":new Role(
+        "Medium", "You can talk with the dead during the night. After you die, you can seance one living person.", "🔮",
+        "You can only speak with the dead during the night so try to get as much information as possible during the night. After you die, you can use your seance ability one time to chat with a lviing player during the night. \n"+
+        "Its good to write down quotes from dead players so you can use them when trying to proove your innocence. Remember your simply a medium for the dead to speak with the living.",
+        "No night ability. Exept seance.",
+        "Town", "Support", null,
+        "Town", Infinity,
+        0, 0,
+        true, true, false,
+        {seancesLeft : 1},
         (priority, player)=>{
 
         },
@@ -485,7 +564,7 @@ export const ROLES = {
         null
     ),
     "Transporter":new Role(
-        "Transporter", "Target 2 players to swap them. Everyone that wants to target one person will instead target the other", "🔄",
+        "Transporter", "Target 2 players to swap them. Everyone that wants to target one person will instead target the other", "🚕",
         "People will know if they were transported and the order of your targets doesn't matter. The ability will only work if you targeted 2 people.\n"+
         " Try to swap people who might be killed tonight with people you think are evil. This way the killers will accidentally kill themselves.",
         "-10 > Swap",
@@ -590,7 +669,7 @@ export const ROLES = {
     "Mafioso":new Role(
         "Mafioso", "Target a player to kill them, the godfathers choice could override yours", "🌹",
         "You do the killing. Whoever you pick will die. If theres a godfather, they can force you to kill a different person.\n"+
-        "If your target has defense and they are not killed. They are likely to be a neutral role, you should tell the mafia this and decide what to do. However they could also have been protected by a doctor or other.",
+        "If your target has defense and they are not killed. They are likely to be a neutral role, you should tell the mafia this and decide what to do. However they could also have been protected by a protective role.",
         "6 > Kill",
         "Mafia", "Killing", "Mafia", 
         "Mafia", 1,
@@ -1151,8 +1230,9 @@ export function getRoleList(faction, alignment, alreadyPickedRolesList){
     let allRoles = [];
     for(let roleName in ROLES){
         let r = ROLES[roleName];
+        //choose a role
 
-        //how many of this role is already picked
+        //find how many are already in the game
         let alreadyPickedCount = 0;
         for(let i in alreadyPickedRolesList){
             if(roleName === alreadyPickedRolesList[i]){
@@ -1161,9 +1241,9 @@ export function getRoleList(faction, alignment, alreadyPickedRolesList){
         }
 
         if(
-            !allRoles.includes(r.name) && 
-            alreadyPickedCount < r.maximumCount &&
-            r.faction === faction && r.alignment === alignment
+            !allRoles.includes(r.name) &&   // add it if its not already in the list
+            alreadyPickedCount < r.maximumCount &&  //add it if we have less than the maximum number
+            r.faction === faction && r.alignment === alignment  //add it if its the correct faction and the correct alignment
         ) 
         allRoles.push(r.name);
     }

@@ -58,6 +58,7 @@ export class PlayerState{
             extra : new CycleVariable('Night', ()=>{return{
                 //idk this is for weird stuff exclusively
                 healedByDoc : false,
+                protectedByBodyguard: false,
                 attackedTonight : false,
                 isVeteranOnAlert : false,
                 blackmailed : false,
@@ -125,7 +126,7 @@ export class PlayerState{
         CycleVariable.objectResetIfPhase(this.cycleVariables, phaseName);
     }
     setRoleExtra(){
-        if(!this.getRoleObject()) console.log(this.roleName + " doesnt seem to exist");
+        if(!this.getRoleObject()) console.log("trying to set roleExtra but "+this.roleName + " doesnt seem to exist");
 
         for(let key in this.getRoleObject().extraPersist){
             this.roleExtra[key] = this.getRoleObject().extraPersist[key];

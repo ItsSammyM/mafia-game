@@ -80,8 +80,13 @@ export const PHASES = {
                 player.chatGroupSendList = [];
                 if(player.getRoleObject().team && player.alive)
                     player.chatGroupSendList.push(player.getRoleObject().team);
-                if(!player.alive)
+                if(!player.alive || player.getRoleObject().name === "Medium")
                     player.chatGroupSendList.push("Dead");
+
+                //if theyre a medium let them read dead chat
+                if(player.getRoleObject().name === "Medium" && player.cycleVariables.aliveTonight.value){
+                    GameManager.host.chatGroups["Dead"].push(player);
+                }
             }
             
             GameManager.host.swapMafioso();
@@ -150,13 +155,18 @@ export const PHASES = {
                 player.chatGroupSendList = [];
                 if(!player.alive)
                     player.chatGroupSendList.push("Dead");
+
+                //if theyre a living medium stop them from reading dead chat
+                if(player.getRoleObject().name === "Medium" && player.alive && GameManager.host.chatGroups["Dead"].indexOf(player)!==-1){
+                    GameManager.host.chatGroups["Dead"].splice(GameManager.host.chatGroups["Dead"].indexOf(player), 1);
+                }
             }
 
             //ADD dead messages
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
-                if(player.cycleVariables.diedTonight.value) continue;
+                if(!player.cycleVariables.diedTonight.value) continue;
                 player.showDied();
             }
 
