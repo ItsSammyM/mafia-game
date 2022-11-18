@@ -328,7 +328,7 @@ export const ROLES = {
         [true]
     ),
     "Vigilante":new Role(
-        "Vigilante", "Target a player to shoot them, if you kill a townie, then you will die the next night.", "🔫",
+        "Vigilante", "Target a player to shoot them, if you kill a townie, then you will die the next night. You can't shoot night 1, because why would you?", "🔫",
         "You cant shoot the first night. You can only shoot up to a maximum of 3 times. If you shoot and kill a town member, you will shoot youself the next night. \n"+
         "You cant shoot someone else on the night you shoot yourself. It is a good idea to wait untill your sure someone is evil to shoot. Be weary revealing yourself because if there is a Witch in the game, they can control you and force you to shoot a town member.",
         "-12 > Suicide, \n"+
@@ -1162,7 +1162,7 @@ export const ROLES = {
     ),
     "Werewolf":new Role(
         "Werewolf", "Target a player to rampage at their house, attacking them and everyone who visits them. If you target youself, you will rampage your own house. This doesnt work nights 1 and 3.", "🐺",
-        "I dont feel like writing an in depth description right now because i have a headache. Someone tell me to fix it when you see this.",
+        "You look innocent, however, if you attack someone, you will look suspicious.",
         "2 > make self suspicious, \n"+
         "6 > attack and rampage,",
         "Neutral", "Killing", null,
@@ -1171,7 +1171,30 @@ export const ROLES = {
         false, true, false, //fix roleblock stuff later
         {},
         (priority, player)=>{
+            if(!player.cycleVariables.aliveTonight.value) return;
 
+            if(priority === 2){ //make suspicious
+
+                if(player.cycleVariables.targeting.value.length < 1) return;
+                player.cycleVariables.isSuspiciousTonight.value = true;
+
+            }
+            else if(priority === 6){    //attack and rampage
+                if(player.cycleVariables.targeting.value.length < 1) return;
+                let myTarget = player.cycleVariables.targeting.value[0];
+
+                //kill target
+                if(myTarget !== player){
+                    myTarget.tryNightKill(player, player.cycleVariables.attackTonight.value);
+                }
+
+                //kill all visitors
+                for(let i in myTarget.cycleVariables.targetedBy.value){
+                    //exept yourself 
+                    if(player === myTarget.cycleVariables.targetedBy.value[i]) continue;
+                    myTarget.cycleVariables.targetedBy.value[i].tryNightKill(player, player.cycleVariables.attackTonight.value);
+                }
+            }
         },
         (myPlayer, otherPlayer)=>{
             return (

@@ -51,6 +51,8 @@ export const PHASES = {
     "Night":new Phase(1, 
         ()=>{
             //GameManager.host.cycleVariables.playerOnTrial.value = null;
+            GameManager.host.swapMafioso();
+            
             CycleVariable.objectResetIfPhase(GameManager.host.cycleVariables, PhaseStateMachine.currentPhase);
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
@@ -89,7 +91,6 @@ export const PHASES = {
                 }
             }
             
-            GameManager.host.swapMafioso();
             standardStartPhase();
         }, 
         ()=>{

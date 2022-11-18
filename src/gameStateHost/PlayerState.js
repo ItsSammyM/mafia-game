@@ -261,9 +261,11 @@ export class PlayerState{
         }
         if(killedByString.length > 2) killedByString = killedByString.substring(0, killedByString.length-2);
 
-        publicInformation.push(new ChatMessageState(this.name+" died", "They were killed by "+killedByString, GameManager.COLOR.GAME_TO_ALL));
-        publicInformation.push(new ChatMessageState(this.name+" died", "Their role was "+this.cycleVariables.shownRoleName.value, GameManager.COLOR.GAME_TO_ALL));
-        publicInformation.push(new ChatMessageState(this.name+" died", "Their final will: "+this.cycleVariables.shownWill.value, GameManager.COLOR.GAME_TO_ALL));
+        publicInformation.push(new ChatMessageState(this.name+" died", 
+        "They were killed by "+killedByString+
+        ". Their role was "+this.cycleVariables.shownRoleName.value+
+        ". Their final states: "+this.cycleVariables.shownWill.value,
+        GameManager.COLOR.GAME_TO_ALL));
 
         for(let playerName in GameManager.host.players){
             let player = GameManager.host.players[playerName];
