@@ -58,8 +58,8 @@ export class Role{
             let otherInMyTeam = Role.onSameTeam(myPlayer, otherPlayer);
             return (
                 myPlayer.name!==otherPlayer.name && //Not targeting myself
-                otherPlayer.alive && //theyre alive
-                myPlayer.alive && //im alive
+                otherPlayer.cycleVariables.aliveTonight.value && //theyre alives
+                myPlayer.cycleVariables.aliveTonight.value && //im alive
                 !otherInMyTeam && //not on same team
                 myPlayer.cycleVariables.targeting.value.length < 1    //havent already targeted at least 1 person
             );
@@ -231,7 +231,7 @@ export const ROLES = {
                 for(let i in eachPlayer.cycleVariables.targetedBy.value){
                     let visitor = eachPlayer.cycleVariables.targetedBy.value[i];
 
-                    if(visitor.role.getRoleObject().faction === "Mafia"){
+                    if(visitor.getRoleObject().faction === "Mafia"){
                         outString+=eachPlayer.name+", "; mafiaVisitedSomeone=true;
                     }
                 }
@@ -319,7 +319,7 @@ export const ROLES = {
         },
         (myPlayer, otherPlayer)=>{
             return (
-                myPlayer.alive && //im alive
+                myPlayer.cycleVariables.aliveTonight.value && //im alive
                 myPlayer.cycleVariables.targeting.value.length < 1 && //im targeting nobody already
                 myPlayer.name === otherPlayer.name && //targeting self
                 myPlayer.roleExtra.alertsLeft > 0
@@ -362,19 +362,19 @@ export const ROLES = {
                 player.roleExtra.bulletsLeft--;
 
                 myTarget.tryNightKill(player, player.cycleVariables.attackTonight.value);
-                if(!myTarget.alive && myTarget.role.getRoleObject().faction === "Town")
+                if(!myTarget.alive && myTarget.getRoleObject().faction === "Town")
                     player.roleExtra.didShootTownie = true;
             }
         },
         (myPlayer, otherPlayer)=>{
             return (
                 myPlayer.name!==otherPlayer.name && //Not targeting myself
-                otherPlayer.alive && //theyre alive
-                myPlayer.alive && //im alive
-                myPlayer.cycleVariables.targeting.value.length < 1 &&   //havent already targeted at least 1 person
+                otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
+                myPlayer.cycleVariables.aliveTonight.value && //im alive
+                myPlayer.cycleVariables.targeting.value.length < 1 &&   //i havent already targeted at least 1 person
                 GameManager.host.cycleNumber > 1 &&   //its not night 1
                 myPlayer.roleExtra.bulletsLeft > 0 && //still has bullets left
-                !myPlayer.roleExtra.didShootTownie
+                !myPlayer.roleExtra.didShootTownie  //didnt shoot a townie
             );
         },
         null
@@ -422,8 +422,8 @@ export const ROLES = {
         (myPlayer, otherPlayer)=>{
             
             return (
-                otherPlayer.alive && //theyre alive
-                myPlayer.alive && //im alive
+                otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
+                myPlayer.cycleVariables.aliveTonight.value && //im alive
                 myPlayer.cycleVariables.targeting.value.length < 1 && //im targeting nobody already
                 (
                     (myPlayer.name===otherPlayer.name && !myPlayer.roleExtra.selfHealed) || //self healing
@@ -433,6 +433,18 @@ export const ROLES = {
         },
         null
     ),
+    "Bodyguard":new Role(
+        "Bodyguard", "Target a player to redirect attacks from them to you, you can sheild yourself once", "👮🏿",
+        "This redirects killing roles. Every role that is called 'killing' will be redirected towards you.",
+        "-2 > redirect killer,\n"+
+        "2 > grant self vest,\n"+
+        "8 > tell both players if a bodyguard redirected,",
+        "Town", "Protective", null,
+        "Town", Infinity,
+        0, 0,   //should have attack
+        true, true, false,
+
+    )
     "Mayor":new Role(
         "Mayor", "Reveal any time during the day, from that moment forward you will get 3 times the voting power", "🏛️",
         "You can't do anyhting during night, but revealing will confirm to everyone what your role is without question.",
@@ -528,8 +540,8 @@ export const ROLES = {
         (myPlayer, otherPlayer)=>{
 
             return (
-                otherPlayer.alive && //theyre alive
-                myPlayer.alive && //im alive
+                otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
+                myPlayer.cycleVariables.aliveTonight.value && //im alive
                 myPlayer.cycleVariables.targeting.value.length < 2 &&   //havent already targeted at least 2 person
                 (myPlayer.cycleVariables.targeting.value[0] !== otherPlayer)
             );
@@ -701,8 +713,8 @@ export const ROLES = {
         },
         (myPlayer, otherPlayer)=>{
             return (
-                otherPlayer.alive && //theyre alive
-                myPlayer.alive && //im alive
+                otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
+                myPlayer.cycleVariables.aliveTonight.value && //im alive
                 myPlayer.cycleVariables.targeting.value.length < 2 &&   //i havent already targeted at least 2 people
                 (myPlayer.cycleVariables.targeting.value[0] !== otherPlayer)  //cant target same person twice
             );
@@ -749,8 +761,8 @@ export const ROLES = {
             let otherInMyTeam = Role.onSameTeam(myPlayer, otherPlayer);
             return(
                 myPlayer.name!==otherPlayer.name && //Not targeting myself
-                otherPlayer.alive && //theyre alive
-                myPlayer.alive && //im alive
+                otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
+                myPlayer.cycleVariables.aliveTonight.value && //im alive
                 !otherInMyTeam && //not on same team
                 myPlayer.cycleVariables.targeting.value.length < 1 &&   //havent already targeted at least 1 person
                 myPlayer.roleExtra.cleansLeft > 0  //has cleans left
@@ -821,8 +833,8 @@ export const ROLES = {
             let otherInMyTeam = Role.onSameTeam(myPlayer, otherPlayer);
             return(
                 myPlayer.name!==otherPlayer.name && //Not targeting myself
-                otherPlayer.alive && //theyre alive
-                myPlayer.alive && //im alive
+                otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
+                myPlayer.cycleVariables.aliveTonight.value && //im alive
                 !otherInMyTeam && //not on same team
                 myPlayer.cycleVariables.targeting.value.length < 1 &&   //havent already targeted at least 1 person
                 myPlayer.roleExtra.forgesLeft > 0  //has forges left
@@ -844,22 +856,25 @@ export const ROLES = {
         {},
         (priority, player)=>{
             if(priority===-12) return;
-            if(player.alive) return;
+            if(player.cycleVariables.aliveTonight.value) return;
+
             if(player.cycleNumberDied !== GameManager.host.cycleNumber)  return;
+            if(GameManager.host.cycleVariables.playerOnTrial.value !== player) return;
+
             if(player.cycleVariables.targeting.value.length < 1) return;
             let myTarget = player.cycleVariables.targeting.value[0];
 
-            if(myTarget.cycleVariables.judgement.value>0) return;
-            if(!myTarget.alive) return;
+            if(myTarget.cycleVariables.judgement.value > 0) return;
+            if(!myTarget.cycleVariables.aliveTonight.value) return;
             
             myTarget.tryNightKill(player, 3);
         },
         (myPlayer, otherPlayer)=>{
             return(
                 otherPlayer.cycleVariables.judgement.value <= 0 && //voted guilty
-                !myPlayer.alive &&    //im dead
+                !myPlayer.cycleVariables.aliveTonight.value &&    //im dead
                 myPlayer.cycleNumberDied === GameManager.host.cycleNumber &&   // i just died
-                otherPlayer.alive &&//other person is alive
+                otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
                 myPlayer.cycleVariables.targeting.value.length < 1    //i didnt already target someone
             );
         },
@@ -870,7 +885,7 @@ export const ROLES = {
         "The first persons target will be changed to be your second target. Your ability wont work if the first target is witch immune. Your second target is an astral visit.\n"+
         " You have a sheild that grants you basic defense(1), this sheild dissapears after you were attacked, even if you were saved by a protective role. Because you win with any team that isnt town, You should try your best to find out who else is evil and get them to work with you.",
         "-8 > Controll target and tell show that they were controlled,\n"+
-        "12 > steal their information",
+        "12 > steal their information and loose sheid after attacked,",
         "Neutral", "Evil", null,
         null, Infinity,
         0, 0,
@@ -891,7 +906,7 @@ export const ROLES = {
                 if(!myTarget1.cycleVariables.aliveTonight.value) return;
                 if(!myTarget2.cycleVariables.aliveTonight.value) return;
 
-                if(!myTarget1.role.getRoleObject().witchable){
+                if(!myTarget1.getRoleObject().witchable){
 
                     player.addNightInformation(new ChatMessageState(
                         null,
@@ -921,31 +936,32 @@ export const ROLES = {
                 );
             }
             else if(priority === 12){
-                if(player.cycleVariables.targeting.value.length < 2) return;
-                let myTarget1 = player.cycleVariables.targeting.value[0];
-                
-                //steal information
-                for(let i in myTarget1.cycleVariables.nightInformation.value){
-                    player.addNightInformation(
-                        new ChatMessageState(
-                            myTarget1.cycleVariables.nightInformation.value[i][0].title,
-                            "Targets message: "+myTarget1.cycleVariables.nightInformation.value[i][0].text,
-                            GameManager.COLOR.GAME_TO_YOU
-                        ),
-                        myTarget1.cycleVariables.nightInformation.value[i][1]
-                    );
+                //if targeting someone
+                if(player.cycleVariables.targeting.value.length < 2){;
+                    let myTarget1 = player.cycleVariables.targeting.value[0];
+                    
+                    //steal information
+                    for(let i in myTarget1.cycleVariables.nightInformation.value){
+                        player.addNightInformation(
+                            new ChatMessageState(
+                                myTarget1.cycleVariables.nightInformation.value[i][0].title,
+                                "Targets message: "+myTarget1.cycleVariables.nightInformation.value[i][0].text,
+                                GameManager.COLOR.GAME_TO_YOU
+                            ),
+                            myTarget1.cycleVariables.nightInformation.value[i][1]
+                        );
+                    }
                 }
                 
                 //remove sheild
                 if(player.cycleVariables.extra.value.attackedTonight)
                     player.roleExtra.hasSheild = false;
             }
-
         },
         (myPlayer, otherPlayer)=>{
             return (
-                otherPlayer.alive && //theyre alive
-                myPlayer.alive && //im alive
+                otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
+                myPlayer.cycleVariables.aliveTonight.value && //im alive
                 myPlayer.cycleVariables.targeting.value.length < 2 &&   //havent already targeted at least 2 person
                 (
                     (myPlayer.cycleVariables.targeting.value.length === 0 && myPlayer !== otherPlayer) ||
@@ -1029,8 +1045,8 @@ export const ROLES = {
         (myPlayer, otherPlayer)=>{
             return (
                 //myPlayer.name!==otherPlayer.name && //Not targeting myself
-                otherPlayer.alive && //theyre alive
-                myPlayer.alive && //im alive
+                otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
+                myPlayer.cycleVariables.aliveTonight.value && //im alive
                 //!otherInMyTeam && //not on same team
                 myPlayer.cycleVariables.targeting.value.length < 1    //havent already targeted at least 1 person
             );
@@ -1054,10 +1070,10 @@ Everyones target is set first
 +2: Doctor(Heal), Blackmailer(Decide), Crusader(Heal), Arsonist(Douse), Framer, Disguiser
 +4: Sheriff, Invest, Consig, Lookout, Tracker, Arsonist(Find who visited)
 +6: Mafioso/Godfather, SerialKiller, Werewolf, Veteran, Vampire, Arsonist, Crusader, Bodyguard, Vigilante (All kill)
-+8: Amnesiac(Convert) Vampire(Convert) Forger(Change info), Janitor(Clean & info), Doctor(Notify)
++8: Amnesiac(Convert) Vampire(Convert) Forger(Change info), Janitor(Clean & info), Doctor(Notify) Bodyguard(Notify)
 +10 Spy(Collect info)
-+12 Witch(Steal info & Remove sheild)
-
++12 Witch(Steal info & Remove sheild
+    
 --------
 */
 

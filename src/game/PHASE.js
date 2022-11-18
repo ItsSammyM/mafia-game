@@ -36,12 +36,9 @@ export let PhaseStateMachine = {
 }
 let standardStartPhase = function(){
 
-    CycleVariable.objectResetIfPhase(GameManager.host.cycleVariables, PhaseStateMachine.currentPhase);
-
     for(let playerName in GameManager.host.players){
-        let player = GameManager.host.players[playerName];
-
-        player.resetCycleVariables(PhaseStateMachine.currentPhase);
+        //let player = GameManager.host.players[playerName];
+        
         GameManager.HOST_TO_CLIENT["AVAILABLE_BUTTONS"].send(playerName);
     }
     GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
@@ -54,7 +51,12 @@ export const PHASES = {
     "Night":new Phase(1, 
         ()=>{
             //GameManager.host.cycleVariables.playerOnTrial.value = null;
-            
+            CycleVariable.objectResetIfPhase(GameManager.host.cycleVariables, PhaseStateMachine.currentPhase);
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+                player.resetCycleVariables(PhaseStateMachine.currentPhase);
+            }
+
             let informationListMessage = [];
 
             informationListMessage.push(new ChatMessageState("Night "+GameManager.host.cycleNumber, null, GameManager.COLOR.GAME_TO_ALL));
@@ -118,6 +120,12 @@ export const PHASES = {
     ),
     "Morning":new Phase(1,
         ()=>{
+            CycleVariable.objectResetIfPhase(GameManager.host.cycleVariables, PhaseStateMachine.currentPhase);
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+                player.resetCycleVariables(PhaseStateMachine.currentPhase);
+            }
+
             let informationListMessage = [];
 
             informationListMessage.push(new ChatMessageState("Morning "+GameManager.host.cycleNumber, null, GameManager.COLOR.GAME_TO_ALL));
@@ -136,7 +144,7 @@ export const PHASES = {
                 
                 player.addChatMessages(informationListMessage);
                 shuffleList(player.cycleVariables.nightInformation.value);
-                player.addChatMessages(player.cycleVariables.nightInformation.value.map((l)=>{return l[0]}));
+                player.addChatMessages(player.cycleVariables.nightInformation.value.map((l)=> l[0]));
 
                 //WHAT CHAT SHOULDS PEOPLE SEND IN?
                 player.chatGroupSendList = [];
@@ -144,12 +152,11 @@ export const PHASES = {
                     player.chatGroupSendList.push("Dead");
             }
 
-
             //ADD dead messages
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
-                if(!player.cycleVariables.attackTonight.value || player.alive) continue;
+                if(player.cycleVariables.diedTonight.value) continue;
                 player.showDied();
             }
 
@@ -163,6 +170,11 @@ export const PHASES = {
     ),
     "Discussion":new Phase(1,
         ()=>{
+            CycleVariable.objectResetIfPhase(GameManager.host.cycleVariables, PhaseStateMachine.currentPhase);
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+                player.resetCycleVariables(PhaseStateMachine.currentPhase);
+            }
             let informationListMessage = [];
 
             informationListMessage.push(new ChatMessageState("Discussion "+GameManager.host.cycleNumber, null, GameManager.COLOR.GAME_TO_ALL));
@@ -201,6 +213,12 @@ export const PHASES = {
     ),
     "Voting":new Phase(1,
         ()=>{
+            CycleVariable.objectResetIfPhase(GameManager.host.cycleVariables, PhaseStateMachine.currentPhase);
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+                player.resetCycleVariables(PhaseStateMachine.currentPhase);
+            }
+
             GameManager.host.cycleVariables.numVotesNeeded.value = Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.alive}).length / 2) + 1;
             GameManager.host.cycleVariables.playerOnTrial.value = null;
 
@@ -241,7 +259,12 @@ export const PHASES = {
     ),
     "Testimony":new Phase(1,
         ()=>{
-            
+            CycleVariable.objectResetIfPhase(GameManager.host.cycleVariables, PhaseStateMachine.currentPhase);
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+                player.resetCycleVariables(PhaseStateMachine.currentPhase);
+            }
+
             GameManager.host.cycleVariables.trialsLeftToday.value--;
 
             let informationListMessage = [];
@@ -281,6 +304,12 @@ export const PHASES = {
     ),
     "Judgement":new Phase(1, 
         ()=>{
+            CycleVariable.objectResetIfPhase(GameManager.host.cycleVariables, PhaseStateMachine.currentPhase);
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+                player.resetCycleVariables(PhaseStateMachine.currentPhase);
+            }
+
             let informationListMessage = [];
 
             informationListMessage.push(new ChatMessageState(
@@ -365,6 +394,12 @@ export const PHASES = {
     ),
     "Final Words":new Phase(1,
         ()=>{
+            CycleVariable.objectResetIfPhase(GameManager.host.cycleVariables, PhaseStateMachine.currentPhase);
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+                player.resetCycleVariables(PhaseStateMachine.currentPhase);
+            }
+
             let informationListMessage = [];
 
             informationListMessage.push(new ChatMessageState(
@@ -399,6 +434,9 @@ export const PHASES = {
         ()=>{
             
             if(GameManager.host.cycleVariables.playerOnTrial.value){
+                GameManager.host.cycleVariables.playerOnTrial.value.cycleVariables.shownRoleName.value = this.roleName?this.roleName:"No Role";
+                GameManager.host.cycleVariables.playerOnTrial.value.cycleVariables.shownWill.value = this.savedNotePad['Will']?this.savedNotePad['Will']:"No Will";
+
                 GameManager.host.cycleVariables.playerOnTrial.value.die();
                 GameManager.host.cycleVariables.playerOnTrial.value.showDied();
                 GameManager.host.cycleVariables.playerOnTrial.value.chatGroupSendList.push("Dead");

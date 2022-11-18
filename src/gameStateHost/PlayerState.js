@@ -44,15 +44,16 @@ export class PlayerState{
             targetedBy : new CycleVariable('Night', ()=>[]),  
             targeting : new CycleVariable('Night', ()=>[]),
 
-            aliveTonight : new CycleVariable('Night', this.alive),
+            aliveTonight : new CycleVariable('Night', ()=>this.alive),
 
             roleblockedTonight : new CycleVariable('Night', false),
             defenseTonight : new CycleVariable('Night', ()=>this.getRoleObject().defense),
             attackTonight : new CycleVariable('Night', ()=>this.getRoleObject().attack),
             isSuspiciousTonight : new CycleVariable('Night', ()=>this.getRoleObject().isSuspicious),
-            disguisedAsTonight : new CycleVariable('Night', null),
+            disguisedAsTonight : new CycleVariable('Night', ()=>this),
 
             attackedBy : new CycleVariable('Night', ()=>[]),
+            diedTonight : new CycleVariable('Night', false),
 
             extra : new CycleVariable('Night', ()=>{return{
                 //idk this is for weird stuff exclusively
@@ -66,8 +67,8 @@ export class PlayerState{
 
             nightInformation : new CycleVariable('Night', ()=>[]),
 
-            shownRoleName : new CycleVariable('Night', this.roleName),
-            shownWill : new CycleVariable('Night', ()=>this.savedNotePad['Will']),            
+            shownRoleName : new CycleVariable('Night', ()=>this.roleName?this.roleName:"No Role"),
+            shownWill : new CycleVariable('Night', ()=>this.savedNotePad['Will']?this.savedNotePad['Will']:"No Will"),
         };
     }
     setUpAvailableButtons(players){
@@ -103,6 +104,7 @@ export class PlayerState{
     //#region Role
     createPlayerRole(roleName){
         this.roleName = roleName;   //SET PERSIST STUFF SO INCOMPLETE
+        this.setRoleExtra();
         this.addChatMessage(new ChatMessageState(
             this.getRoleObject().faction+" "+this.getRoleObject().alignment+", "+this.roleName, 
             this.getRoleObject().basicDescription, 
@@ -188,7 +190,7 @@ export class PlayerState{
 
     //#region Game Helper functions
     roleblock(){
-        this.cycleVariables.roleblocked.value = true;
+        this.cycleVariables.roleblockedTonight.value = true;
         if(!this.getRoleObject().roleblockable)
             this.addNightInformation(
                 new ChatMessageState(null, "Someone attempted to roleblock you but you were immune", GameManager.COLOR.GAME_TO_YOU), false
@@ -210,7 +212,7 @@ export class PlayerState{
         defense always wins over attack.. If == then no kill
         */
 
-        this.cycleVariables.extra.attackedTonight.value = true;
+        this.cycleVariables.extra.value.attackedTonight = true;
         this.cycleVariables.attackedBy.value.push(attacker);
         if(this.cycleVariables.defenseTonight.value >= attackPower){
             //safe
@@ -220,6 +222,7 @@ export class PlayerState{
         }else{
             //die
             this.addNightInformation(new ChatMessageState(null, "You were attacked and died", GameManager.COLOR.GAME_TO_YOU), false);
+            this.cycleVariables.diedTonight.value = true;
             this.die();
         }
         
@@ -257,7 +260,7 @@ export class PlayerState{
             //all other players ... should see on me,,,, that i died
             player.addSuffix(this.name, "Died");
             player.addSuffix(this.name, this.cycleVariables.shownRoleName.value);
-            player.addMessages(publicInformation);
+            player.addChatMessages(publicInformation);
         }
     }
 

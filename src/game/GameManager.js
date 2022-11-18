@@ -71,7 +71,8 @@ let GameManager = {
         
         this.pubNub.tick();
         if(GameManager.host) GameManager.host.tick();
-        if(GameManager.client) GameManager.client.tick()
+        if(GameManager.client) GameManager.client.tick();
+        
         setTimeout(()=>{
             GameManager.tick();
         },20)

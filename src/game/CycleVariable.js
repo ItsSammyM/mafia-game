@@ -24,7 +24,7 @@ export class CycleVariable{
      * @param phaseName - string of phase to reset at start of. If true then it will reset regardless
      */
     static objectResetIfPhase(obj, phaseName){
-        if(phaseName){
+        if(phaseName===true){
             for(let i in obj)
                 obj[i].reset();
             return;
