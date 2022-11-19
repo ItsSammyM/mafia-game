@@ -25,17 +25,15 @@
             ["Veteran", "Retributionist", "Werewolf", "Ambusher"]
         ],
         "Sammy":[
-            ["Doctor", "Veteran", "Arsonist"],
-            ["Bodyguard", "Disguiser", "Serial Killer"],
-            ["Vigilante", "Forger", "Witch"],
-            ["Sheriff", "Consigliere", "Ambusher", "Pestilence"],
-            ["Investigator", "Blackmailer", "Executioner"],
-            ["Medium", "Lookout", "Mafioso"],
-            ["Escort", "Janitor", "Witch", "Hypnotist"],
-            ["Transporter", "Retributionist", "Godfather"],
-            ["Spy", "Jester", "Consort"],
-            ["Framer", "Amnesiac", "Vampire", "Jailor"],
-            ["Mayor"]
+            ["Doctor", "Escort", "Blackmailer", "Pestilence"],
+            ["Bodyguard", "Veteran", "Janitor", "Werewolf"],
+            ["Sheriff", "Transporter", "Forger", "Serial Killer"],
+            ["Medium", "Disguiser", "Arsonist", "Amnesiac"],
+            ["Vigilante", "Lookout", "Witch", "Ambusher", "Hypnotist"],
+            ["Retributionist", "Godfather", "Vampire"],
+            ["Investigator", "Mafioso", "Executioner"],
+            ["Spy", "Consigliere", "Consort"],
+            ["Mayor", "Jailor", "Framer", "Jester"]
         ]
     },
     "defaultPhaseTimes":{
