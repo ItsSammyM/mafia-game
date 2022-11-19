@@ -48,8 +48,8 @@ export class NotePadMenu extends React.Component {
                     this.loadNotePad("Will");
                 }}>
                     <div style={this.state.notePadName==="Will"?{
-                        "-webkit-text-stroke": "3px rgb(20, 20, 20)",
-                        "font-size": "calc(10px + 2.3vmin)"
+                        "WebkitTextStroke": "3px rgb(20, 20, 20)",
+                        "fontSize": "calc(10px + 2.3vmin)"
                     }:{}}>Will</div>
                 </Button>
 
@@ -57,8 +57,8 @@ export class NotePadMenu extends React.Component {
                     this.loadNotePad("Note");
                 }}>
                     <div style={this.state.notePadName==="Note"?{
-                        "-webkit-text-stroke": "3px rgb(20, 20, 20)",
-                        "font-size": "calc(10px + 2.3vmin)"
+                        "WebkitTextStroke": "3px rgb(20, 20, 20)",
+                        "fontSize": "calc(10px + 2.3vmin)"
                     }:{}}>Note</div>
                 </Button>
             </div>
