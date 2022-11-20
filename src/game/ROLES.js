@@ -173,7 +173,9 @@ export const ROLES = {
             for(let investigativeResultIndex in GameManager.host.investigativeResults){
                 let investigativeResult = GameManager.host.investigativeResults[investigativeResultIndex];
 
-                if(investigativeResult.includes(myTarget.cycleVariables.disguisedAsTonight.value.roleName)){
+                if(investigativeResult.includes(
+                    myTarget.cycleVariables.disguisedAsTonight.
+                    value.cycleVariables.investigativeResultTonight.value)){
                     //found result
                     
                     //now loop through result and add them to list
@@ -764,11 +766,66 @@ export const ROLES = {
 
             player.addNightInformation(new ChatMessageState(
                 null,
-                "Your targets role was "+myTarget.roleName,
+                "Your targets role was "+myTarget.cycleVariables.investigativeResultTonight.value,
                 GameManager.COLOR.GAME_TO_YOU
             ), true);
         },
         null,
+        null
+    ),
+    "Framer":new Role(
+        "Framer", "Target a player to frame them. They will look suspicious to certain investigative roles. If you target yourself instead, you will frame everyone who visits you.", "🖼️",
+        "Advanced later",
+        "2 > Frame,",
+        "Mafia", "Deception", "Mafia",
+        "Mafia", Infinity,
+        0, 0,
+        true, true, true,
+        {},
+        (priority, player)=>{
+            if(priority!==2) return;
+            if(!player.cycleVariables.aliveTonight.value) return;
+
+            if(player.cycleVariables.targeting.value.length !== 1) return;
+            let myTarget = player.cycleVariables.targeting.value[0];
+
+            if(!myTarget.cycleVariables.aliveTonight.value) return;
+
+            if(player===myTarget){
+                //frame all visitors
+                let outString = "";
+                for(let i in player.cycleVariables.targetedBy.value){
+                    let visitor = player.cycleVariables.targetedBy.value[i];
+
+                    visitor.extra.framed = true;
+                    visitor.cycleVariables.isSuspiciousTonight.value = true;
+                    visitor.cycleVariables.investigativeResultTonight.value = "Framer";
+
+                    outString+=visitor.name+", ";
+                }
+                outString = outString.substring(0, outString.length-2);
+
+                player.addNightInformation(new ChatMessageState(null,
+                    "You framed these visitors: "+outString, GameManager.COLOR.GAME_TO_YOU), true);
+
+                
+            }else{
+                //frame player
+                myTarget.extra.framed = true;
+                myTarget.cycleVariables.isSuspiciousTonight.value = true;
+                myTarget.cycleVariables.investigativeResultTonight.value = "Framer";
+            }
+        },
+        (myPlayer, otherPlayer)=>{
+            let otherInMyTeam = Role.onSameTeam(myPlayer, otherPlayer);
+            return (
+                //myPlayer.name!==otherPlayer.name && //Not targeting myself
+                otherPlayer.cycleVariables.aliveTonight.value && //theyre alives
+                myPlayer.cycleVariables.aliveTonight.value && //im alive
+                !otherInMyTeam && //not on same team
+                myPlayer.cycleVariables.targeting.value.length < 1    //havent already targeted at least 1 person
+            );
+        },
         null
     ),
     "Disguiser":new Role(
@@ -1129,6 +1186,8 @@ export const ROLES = {
                     ), true);
                     
                     player.cycleVariables.targetedBy.value[i].extra.doused = true;
+                    player.cycleVariables.targetedBy.value[i].cycleVariables.isSuspiciousTonight.value = false;
+                    player.cycleVariables.targetedBy.value[i].cycleVariables.investigativeResultTonight.value = "Arsonist";
                 }
 
                 //regular douse
@@ -1139,6 +1198,8 @@ export const ROLES = {
                 if(!myTarget.cycleVariables.aliveTonight.value) return;
 
                 myTarget.extra.doused = true;
+                myTarget.cycleVariables.isSuspiciousTonight.value = false;
+                myTarget.cycleVariables.investigativeResultTonight.value = "Arsonist";
 
                 player.addNightInformation(new ChatMessageState(
                     null,

@@ -27,11 +27,7 @@ export class PlayerState{
         this.cycleNumberDied = null;
         this.extra = {
             doused : false,
-            // framed : false,
-            // revealed : false,
-
-            // selfHealed : false,
-            // diedOnCycle : 2
+            framed : false,
         };
         this.roleExtra = {};
 
@@ -49,7 +45,8 @@ export class PlayerState{
             roleblockedTonight : new CycleVariable('Night', false),
             defenseTonight : new CycleVariable('Night', ()=>this.getRoleObject().defense),
             attackTonight : new CycleVariable('Night', ()=>this.getRoleObject().attack),
-            isSuspiciousTonight : new CycleVariable('Night', ()=>this.getRoleObject().isSuspicious),
+            isSuspiciousTonight : new CycleVariable('Night', ()=>this.getRoleObject().isSuspicious||this.extra.framed),
+            investigativeResultTonight : new CycleVariable('Night', ()=>this.extra.framed?"Framer":this.extra.doused?"Arsonist":this.getRoleObject().name),
             disguisedAsTonight : new CycleVariable('Night', ()=>this),
 
             attackedBy : new CycleVariable('Night', ()=>[]),

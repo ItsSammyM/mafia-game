@@ -1,7 +1,9 @@
-Kick people from lobby
+
 Suffixes arent intuitive
 
 make so enter roomcode first
+make it so when entered wrong room code, it tells you
+show players joined to non hosts
 
 redo setPhase and setCycle in client because theyre weird and wrong
 
@@ -11,11 +13,11 @@ TARGET WILL STORE WEATHER IT IS ASTRAL, AN ATTACK, ATTACK POWER, TARGETER, TARGE
 add way to refresh page while waiting
 
 fix mayor -- set non 0 amount of mayors, make mayor work
+--- add medium seance
 
 skip phase button
 
-make it so when entered wrong room code, it tells you
-show players joined to non hosts
+
 
 Graveyard
 

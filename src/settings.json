@@ -37,24 +37,6 @@
         ]
     },
     "defaultPhaseTimes":{
-        "Long":{
-            "Night":90,
-            "Morning":15,
-            "Discussion":240,
-            "Voting":30,
-            "Testimony":30,
-            "Judgement":30,
-            "Final Words":10
-        },
-        "Short":{
-            "Night":60,
-            "Morning":15,
-            "Discussion":120,
-            "Voting":20,
-            "Testimony":20,
-            "Judgement":30,
-            "Final Words":10
-        },
         "Classic":{
             "Night":37,
             "Morning":15,
@@ -63,6 +45,24 @@
             "Testimony":20,
             "Judgement":20,
             "Final Words":7
+        },
+        "Short":{
+            "Night":96,
+            "Morning":20,
+            "Discussion":120,
+            "Voting":80,
+            "Testimony":30,
+            "Judgement":30,
+            "Final Words":10
+        },
+        "Long":{
+            "Night":90,
+            "Morning":15,
+            "Discussion":240,
+            "Voting":30,
+            "Testimony":30,
+            "Judgement":30,
+            "Final Words":13
         },
 
         "Test":{
