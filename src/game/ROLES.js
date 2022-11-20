@@ -99,7 +99,7 @@ export const ROLES = {
         (priority, player)=>{
             if(priority !== 4) return;
 
-            if(player.cycleVariables.targeting.value.length < 1) return;
+            if(player.cycleVariables.targeting.value.length !== 1) return;
             if(!player.cycleVariables.aliveTonight.value) return;
 
             let myTarget = player.cycleVariables.targeting.value[0];
@@ -126,7 +126,7 @@ export const ROLES = {
         (priority, player)=>{
             if(priority !== 4) return;
 
-            if(player.cycleVariables.targeting.value.length < 1) return;
+            if(player.cycleVariables.targeting.value.length !== 1) return;
             if(!player.cycleVariables.aliveTonight.value) return;
 
             let myTarget = player.cycleVariables.targeting.value[0];
@@ -161,7 +161,7 @@ export const ROLES = {
         (priority, player)=>{
             if(priority !== 4) return;
 
-            if(player.cycleVariables.targeting.value.length < 1) return;
+            if(player.cycleVariables.targeting.value.length !== 1) return;
             if(!player.cycleVariables.aliveTonight.value) return;
 
             let myTarget = player.cycleVariables.targeting.value[0];
@@ -251,7 +251,7 @@ export const ROLES = {
 
 
             //bug
-            if(player.cycleVariables.targeting.value.length < 1) return;
+            if(player.cycleVariables.targeting.value.length !== 1) return;
 
             let myTarget = player.cycleVariables.targeting.value[0];
             if(!myTarget.cycleVariables.aliveTonight.value) return;
@@ -286,7 +286,7 @@ export const ROLES = {
 
             if(priority === -12){
 
-                if(player.cycleVariables.targeting.value.length < 1) return;
+                if(player.cycleVariables.targeting.value.length !== 1) return;
                 let myTarget = player.cycleVariables.targeting.value[0];
 
                 if(player !== myTarget && player.roleExtra.alertsLeft <= 0) return;
@@ -355,7 +355,7 @@ export const ROLES = {
             }else if(priority === 6){
                 if(GameManager.host.cycleNumber <= 1) return;
                 if(player.roleExtra.didShootTownie) return;
-                if(player.cycleVariables.targeting.value.length < 1) return;
+                if(player.cycleVariables.targeting.value.length !== 1) return;
                 let myTarget = player.cycleVariables.targeting.value[0];
 
                 if(player === myTarget || player.roleExtra.bulletsLeft <= 0) return;
@@ -391,7 +391,7 @@ export const ROLES = {
         true, true, false,
         {selfHealed : false},
         (priority, player)=>{
-            if(player.cycleVariables.targeting.value.length < 1) return;
+            if(player.cycleVariables.targeting.value.length !== 1) return;
             if(!player.cycleVariables.aliveTonight.value) return;
 
             let myTarget = player.cycleVariables.targeting.value[0];
@@ -443,7 +443,7 @@ export const ROLES = {
         true, true, false,
         {vestsLeft : 1},
         (priority, player)=>{
-            if(player.cycleVariables.targeting.value.length < 1) return;
+            if(player.cycleVariables.targeting.value.length !== 1) return;
             if(!player.cycleVariables.aliveTonight.value) return;
 
             let myTarget = player.cycleVariables.targeting.value[0];
@@ -552,7 +552,7 @@ export const ROLES = {
         {},
         (priority, player)=>{
             if(priority !== -6) return;
-            if(player.cycleVariables.targeting.value.length < 1) return;
+            if(player.cycleVariables.targeting.value.length !== 1) return;
             if(!player.cycleVariables.aliveTonight.value) return;
 
             let myTarget = player.cycleVariables.targeting.value[0];
@@ -575,7 +575,7 @@ export const ROLES = {
         {},
         (priority, player)=>{
             if(priority !== -10) return;
-            if(player.cycleVariables.targeting.value.length < 2) return;
+            if(player.cycleVariables.targeting.value.length !== 2) return;
             if(!player.cycleVariables.aliveTonight.value) return;
 
             let myTarget1 = player.cycleVariables.targeting.value[0];
@@ -641,7 +641,7 @@ export const ROLES = {
         true, true, false,
         {},
         (priority, player)=>{
-            if(player.cycleVariables.targeting.value.length < 1) return;
+            if(player.cycleVariables.targeting.value.length !== 1) return;
             if(!player.cycleVariables.aliveTonight.value) return;
 
             let myTarget = player.cycleVariables.targeting.value[0];
@@ -684,7 +684,7 @@ export const ROLES = {
         {},
         (priority, player)=>{
             if(priority !== 6) return;
-            if(player.cycleVariables.targeting.value.length < 1) return;
+            if(player.cycleVariables.targeting.value.length !== 1) return;
             if(!player.cycleVariables.aliveTonight.value) return;
 
             let myTarget = player.cycleVariables.targeting.value[0];
@@ -707,7 +707,7 @@ export const ROLES = {
         {},
         (priority, player)=>{
             if(priority !== -6) return;
-            if(player.cycleVariables.targeting.value.length < 1) return;
+            if(player.cycleVariables.targeting.value.length !== 1) return;
             if(!player.cycleVariables.aliveTonight.value) return;
 
             let myTarget = player.cycleVariables.targeting.value[0];
@@ -729,7 +729,7 @@ export const ROLES = {
         {},
         (priority, player)=>{
             if(priority!==2) return;
-            if(player.cycleVariables.targeting.value.length < 1) return;
+            if(player.cycleVariables.targeting.value.length !== 1) return;
             if(!player.cycleVariables.aliveTonight.value) return;
 
             let myTarget = player.cycleVariables.targeting.value[0];
@@ -756,7 +756,7 @@ export const ROLES = {
         {},
         (priority, player)=>{
             if(priority!==4) return;
-            if(player.cycleVariables.targeting.value.length < 1) return;
+            if(player.cycleVariables.targeting.value.length !== 1) return;
             if(!player.cycleVariables.aliveTonight.value) return;
 
             let myTarget = player.cycleVariables.targeting.value[0];
@@ -784,7 +784,7 @@ export const ROLES = {
         (priority, player)=>{
             if(priority!==2) return;
             
-            if(player.cycleVariables.targeting.value.length < 2) return;
+            if(player.cycleVariables.targeting.value.length !== 2) return;
             if(!player.cycleVariables.aliveTonight.value) return;
 
             let myTarget1 = player.cycleVariables.targeting.value[0];
@@ -817,7 +817,7 @@ export const ROLES = {
         {cleansLeft : 3},
         (priority, player)=>{
             if(priority !== 8) return;
-            if(player.cycleVariables.targeting.value.length < 1) return;
+            if(player.cycleVariables.targeting.value.length !== 1) return;
             if(!player.cycleVariables.aliveTonight.value) return;
             if(player.roleExtra.cleansLeft <= 0) return;
 
@@ -867,7 +867,7 @@ export const ROLES = {
         {forgesLeft : 2},
         (priority, player)=>{
             if(priority !== 8) return;
-            if(player.cycleVariables.targeting.value.length < 1) return;
+            if(player.cycleVariables.targeting.value.length !== 1) return;
             if(!player.cycleVariables.aliveTonight.value) return;
             if(player.roleExtra.forgesLeft <= 0) return;
 
@@ -946,7 +946,7 @@ export const ROLES = {
             if(player.cycleNumberDied !== GameManager.host.cycleNumber)  return;
             if(GameManager.host.cycleVariables.playerOnTrial.value !== player) return;
 
-            if(player.cycleVariables.targeting.value.length < 1) return;
+            if(player.cycleVariables.targeting.value.length !== 1) return;
             let myTarget = player.cycleVariables.targeting.value[0];
 
             if(myTarget.cycleVariables.judgement.value > 0) return;
@@ -991,7 +991,7 @@ export const ROLES = {
         "Witch", "Target 2 players, the first one will be forced to target the second one", "🧙‍♀️",
         "The first persons target will be changed to be your second target. Your ability wont work if the first target is witch immune. Your second target is an astral visit.\n"+
         " You have a sheild that grants you basic defense(1), this sheild dissapears after you were attacked, even if you were saved by a protective role. Because you win with any team that isnt town, You should try your best to find out who else is evil and get them to work with you.",
-        "-8 > Controll target and tell show that they were controlled,\n"+
+        "-8 > Controll target, tell show that they were controlled, and give self sheild,\n"+
         "12 > steal their information and loose sheid after attacked,",
         "Neutral", "Evil", null,
         null, Infinity,
@@ -1000,11 +1000,13 @@ export const ROLES = {
         {hasSheild : true},
         (priority, player)=>{
             if(priority === -8){
+
                 //give witch sheild
                 if(player.cycleVariables.defenseTonight.value < 1 && player.roleExtra.hasSheild)
                     player.cycleVariables.defenseTonight.value = 1;
             
-                if(player.cycleVariables.targeting.value.length < 2) return;
+                //then normal stuff
+                if(player.cycleVariables.targeting.value.length !== 2) return;
                 if(!player.cycleVariables.aliveTonight.value) return;
 
                 let myTarget1 = player.cycleVariables.targeting.value[0];
@@ -1043,26 +1045,35 @@ export const ROLES = {
                 );
             }
             else if(priority === 12){
-                //if targeting someone
-                if(player.cycleVariables.targeting.value.length < 2){;
-                    let myTarget1 = player.cycleVariables.targeting.value[0];
-                    
-                    //steal information
-                    for(let i in myTarget1.cycleVariables.nightInformation.value){
-                        player.addNightInformation(
-                            new ChatMessageState(
-                                myTarget1.cycleVariables.nightInformation.value[i][0].title,
-                                "Targets message: "+myTarget1.cycleVariables.nightInformation.value[i][0].text,
-                                GameManager.COLOR.GAME_TO_YOU
-                            ),
-                            myTarget1.cycleVariables.nightInformation.value[i][1]
-                        );
-                    }
-                }
-                
+
                 //remove sheild
                 if(player.cycleVariables.extra.value.attackedTonight)
                     player.roleExtra.hasSheild = false;
+
+                
+                //if targeting someone
+                if(player.cycleVariables.targeting.value.length !== 2) return;
+                if(!player.cycleVariables.aliveTonight.value) return;
+
+                let myTarget1 = player.cycleVariables.targeting.value[0];                
+                let myTarget2 = player.cycleVariables.targeting.value[1];
+
+                if(!myTarget1.cycleVariables.aliveTonight.value) return;
+                if(!myTarget2.cycleVariables.aliveTonight.value) return;
+
+                if(!myTarget1.getRoleObject().witchable) return;
+                
+                //steal information
+                for(let i in myTarget1.cycleVariables.nightInformation.value){
+                    player.addNightInformation(
+                        new ChatMessageState(
+                            myTarget1.cycleVariables.nightInformation.value[i][0].title,
+                            "Targets message: "+myTarget1.cycleVariables.nightInformation.value[i][0].text,
+                            GameManager.COLOR.GAME_TO_YOU
+                        ),
+                        myTarget1.cycleVariables.nightInformation.value[i][1]
+                    );
+                }
             }
         },
         (myPlayer, otherPlayer)=>{
@@ -1095,7 +1106,7 @@ export const ROLES = {
             
             if(priority === -12){   //clean gas
                 
-                if(player.cycleVariables.targeting.value.length > 0) return;
+                if(player.cycleVariables.targeting.value.length !== 0) return;
                 if(player.extra.doused)
                     player.addNightInformation(new ChatMessageState(
                         null,
@@ -1121,7 +1132,7 @@ export const ROLES = {
                 }
 
                 //regular douse
-                if(player.cycleVariables.targeting.value.length < 1) return;
+                if(player.cycleVariables.targeting.value.length !== 1) return;
                 let myTarget = player.cycleVariables.targeting.value[0];
 
                 if(player.cycleVariables.targeting.value[0] === player) return;
@@ -1136,7 +1147,7 @@ export const ROLES = {
                 ), true);
             }
             else if(priority === 6){    //ignite
-                if(player.cycleVariables.targeting.value.length < 1) return;
+                if(player.cycleVariables.targeting.value.length !== 1) return;
                 let myTarget = player.cycleVariables.targeting.value[0];
 
                 if(myTarget !== player) return;
@@ -1175,12 +1186,12 @@ export const ROLES = {
 
             if(priority === 2){ //make suspicious
 
-                if(player.cycleVariables.targeting.value.length < 1) return;
+                if(player.cycleVariables.targeting.value.length !== 1) return;
                 player.cycleVariables.isSuspiciousTonight.value = true;
 
             }
             else if(priority === 6){    //attack and rampage
-                if(player.cycleVariables.targeting.value.length < 1) return;
+                if(player.cycleVariables.targeting.value.length !== 1) return;
                 let myTarget = player.cycleVariables.targeting.value[0];
 
                 //kill target

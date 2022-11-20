@@ -442,6 +442,11 @@ let GameManager = {
             }
             return false;
             
+        },
+
+        kickPlayer(playerName){
+            delete GameManager.host.players[playerName];
+            GameManager.HOST_TO_CLIENT["KICK"].send(playerName);
         }
     },
     client : {
@@ -604,17 +609,22 @@ let GameManager = {
                     if(GameManager.HOST_TO_CLIENT[key].ID !== m.typeId)
                         continue;
                     GameManager.HOST_TO_CLIENT[key].receive(m.contents);
-                    //console.log(key);
                 }
             });
 
             GameManager.CLIENT_TO_HOST["ASK_JOIN"].send(_playerName);
         },
+        dispose: function(){
+            GameManager.pubNub.unsubscribe();
+            GameManager.client.roomCode = "";
+            GameManager.client.playerName = "";
+
+            GameManager.pubNub.setClientListener((m)=>{});
+        },
         sendMessage: function(messageType, contents){
             GameManager.pubNub.createAndPublish(messageType.ID, contents);
         },
         tick : function(){
-            //console.log(GameManager.client.cycle.playerOnTrialName + "GameManager.client.cycle.playerOnTrialName");
             GameManager.client.timeLeftMs = Math.max(GameManager.client.maxTimeMs - (Date.now() - GameManager.client.starTimeMs));
             GameManager.client.invokeTickListeners();
         }
@@ -642,8 +652,6 @@ let GameManager = {
 
                     GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, true);
                 }else{
-
-                
                     // LATE JOINING IMPLEment LAteR
                     if(alreadyJoined){
                         let player = GameManager.host.players[contents.playerName];
@@ -660,7 +668,7 @@ let GameManager = {
                         );
                         
                         GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.roleName);
-                        GameManager.HOST_TO_CLIENT["AVAILABLE_BUTTONS"].send(player.name);
+                        GameManager.HOST_TO_CLIENT["AVAILABLE_BUTTONS"].send(player.name);  //This didnt work once. giving people who rejoin vote buttons that didnt work anyway
                         GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
                         GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycleVariables.playerOnTrial.value);
                         GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
@@ -848,6 +856,7 @@ let GameManager = {
                 sendToMain : sendToMain,
             })},
             (contents)=>{
+                if(GameManager.client.playerName!==contents.playerName) return;
                 if(GameManager.host.isHost) return;
                 if(contents.success){
 
@@ -858,7 +867,18 @@ let GameManager = {
                     }
                 }else{
                     Main.instance.changeMenu(<StartMenu/>);
+                    GameManager.client.dispose();
                 }
+            }
+        ),
+        "KICK":new MessageType(true, 
+            (playerName)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["KICK"], {
+                playerName: playerName,
+            })},
+            (contents)=>{
+                if(contents.playerName !== GameManager.client.playerName) return;
+                Main.instance.changeMenu(<StartMenu/>);
+                GameManager.client.dispose();
             }
         ),
         "ROLE_LIST_AND_PLAYERS":new MessageType(true,

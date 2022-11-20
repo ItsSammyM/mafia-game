@@ -1,4 +1,5 @@
 import React from "react";
+import GameManager from "../game/GameManager";
 import "../styles/Main.css"
 
 export class WaitJoinMenu extends React.Component {
@@ -21,7 +22,13 @@ export class WaitJoinMenu extends React.Component {
             Mafia
         </div><br/>
         <div className="Main-body">
-            Waiting for host to start the game...
+            Waiting for host to start the game...<br/>
+            <br/>
+            You entered the name:<br/>
+            {GameManager.client.playerName}<br/>
+            <br/>
+            You entered the room code:<br/>
+            {GameManager.client.roomCode}<br/>
         </div>
     </div>);}
 }

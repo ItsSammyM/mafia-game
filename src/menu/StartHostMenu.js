@@ -32,8 +32,10 @@ export class StartHostMenu extends React.Component {
         };
     }
     componentDidMount() {
-        if(GameManager.host.isHost)
+        if(GameManager.host.isHost){
             GameManager.CLIENT_TO_HOST["ASK_JOIN"].addReceiveListener(this.updatePlayers);
+            GameManager.HOST_TO_CLIENT["KICK"].addReceiveListener(this.updatePlayers);
+        }
 
         for(let phaseTimesDefault in settings.defaultPhaseTimes){
             this.setDefaultPhaseTimes(phaseTimesDefault);
@@ -45,6 +47,7 @@ export class StartHostMenu extends React.Component {
     }
     componentWillUnmount() {
         GameManager.CLIENT_TO_HOST["ASK_JOIN"].removeReceiveListener(this.updatePlayers);
+        GameManager.HOST_TO_CLIENT["KICK"].removeReceiveListener(this.updatePlayers);
     }
 
     startButton(){
@@ -92,7 +95,7 @@ export class StartHostMenu extends React.Component {
     renderPlayers(players){
         let out = [];
         for(let playerName in players){
-            out.push(<div key={playerName}>{playerName}</div>);
+            out.push(<div key={playerName}>{playerName}     <Button text="Kick" width="15%" onClick={()=>GameManager.host.kickPlayer(playerName)}></Button></div>);
         }
         return out;
     }

@@ -94,6 +94,15 @@ export const PHASES = {
             standardStartPhase();
         }, 
         ()=>{
+        
+            //set loop
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+
+                player.cycleVariables.shownWill.reset();
+                player.cycleVariables.shownRoleName.reset();
+            }
+            
             //main loop 
             for(let priority = -12; priority <= 12; priority++){
                 for(let playerName in GameManager.host.players){
@@ -303,6 +312,8 @@ export const PHASES = {
                 player.chatGroupSendList = [];
                 if(!player.alive)
                     player.chatGroupSendList.push("Dead");
+                if(GameManager.host.cycleVariables.playerOnTrial.value === player)
+                    player.chatGroupSendList.push("All");
             }
 
             GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycleVariables.playerOnTrial.value.name);
@@ -443,10 +454,13 @@ export const PHASES = {
             standardStartPhase();
         },
         ()=>{
-            
             if(GameManager.host.cycleVariables.playerOnTrial.value){
-                GameManager.host.cycleVariables.playerOnTrial.value.cycleVariables.shownRoleName.value = this.roleName?this.roleName:"No Role";
-                GameManager.host.cycleVariables.playerOnTrial.value.cycleVariables.shownWill.value = this.savedNotePad['Will']?this.savedNotePad['Will']:"No Will";
+                GameManager.host.cycleVariables.playerOnTrial.value.
+                    cycleVariables.shownRoleName.reset();
+                GameManager.host.cycleVariables.playerOnTrial.value.
+                    cycleVariables.shownWill.reset();
+                GameManager.host.cycleVariables.playerOnTrial.value.
+                    cycleVariables.attackedBy.value.push("Lynching");
 
                 GameManager.host.cycleVariables.playerOnTrial.value.die();
                 GameManager.host.cycleVariables.playerOnTrial.value.showDied();

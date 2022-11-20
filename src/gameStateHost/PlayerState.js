@@ -68,8 +68,8 @@ export class PlayerState{
 
             nightInformation : new CycleVariable('Night', ()=>[]),
 
-            shownRoleName : new CycleVariable('Night', ()=>this.roleName?this.roleName:"No Role"),
-            shownWill : new CycleVariable('Night', ()=>this.savedNotePad['Will']?this.savedNotePad['Will']:"No Will"),
+            shownRoleName : new CycleVariable('Morning', ()=>this.roleName?this.roleName:"No Role"),
+            shownWill : new CycleVariable('Morning', ()=>this.savedNotePad['Will']?this.savedNotePad['Will']:"No Will"),
         };
     }
     setUpAvailableButtons(players){
@@ -224,7 +224,6 @@ export class PlayerState{
         */
 
         this.cycleVariables.extra.value.attackedTonight = true;
-        this.cycleVariables.attackedBy.value.push(attacker);
         if(this.cycleVariables.defenseTonight.value >= attackPower){
             //safe
             attacker.addNightInformation(new ChatMessageState(null, "Your target had defense and survived", GameManager.COLOR.GAME_TO_YOU), false);
@@ -232,6 +231,8 @@ export class PlayerState{
             
         }else{
             //die
+            this.cycleVariables.attackedBy.value.push(attacker);
+
             this.addNightInformation(new ChatMessageState(null, "You were attacked and died", GameManager.COLOR.GAME_TO_YOU), false);
             this.cycleVariables.diedTonight.value = true;
             this.die();
@@ -251,9 +252,13 @@ export class PlayerState{
     showDied(){
         let publicInformation = [];
         let killedByString = "";
+
         for(let i in this.cycleVariables.attackedBy.value){
             let attacker = this.cycleVariables.attackedBy.value[i];
-            if(attacker.getRoleObject().team){
+            if("string" === (typeof attacker)){
+                killedByString+=attacker+", ";
+            }
+            else if(attacker.getRoleObject().team){
                 killedByString+=attacker.getRoleObject().team+", ";
             }else{
                 killedByString+=attacker.roleName+", ";

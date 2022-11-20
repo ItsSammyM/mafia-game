@@ -1,16 +1,12 @@
-make so it shows wills when lynched
+Kick people from lobby
+Suffixes arent intuitive
+
 make so enter roomcode first
 
-redo setPhase and setCycle in host and client because theyre weird and wrong
-THE WORD CYCLE SHOULD BE ENTIRELY REMOVED FROM THE code
-
-EACH PROPERTY FOR A PLAYER SHOULD BE CHANGED WITH AN OBJECT
-OBJECT STORES THE PROPERTY ITSELF AND WHEN IT SHOULD RESET
+redo setPhase and setCycle in client because theyre weird and wrong
 
 EACH TARGET SHOULD BE AN OBJECT
 TARGET WILL STORE WEATHER IT IS ASTRAL, AN ATTACK, ATTACK POWER, TARGETER, TARGETED
-
-blackmailer cant blackmail
 
 add way to refresh page while waiting
 
@@ -25,10 +21,14 @@ Graveyard
 
 WIN CONDITIONS
 
-Entire wikipedia for game including priorities
 drop down for what role you think someone is on player list - The tyler thing
 
 text shows up weird on tefts phone. Font is weird
+
+
+
+
+--- SUGGESTIONS
 
 on the first night. Mafia gets no kills. but they get to know 3 roles that arent in the game.
 
@@ -50,6 +50,12 @@ Thomas thing
 // --Hides what everyone is voting for and gives themself 3x vote
 //Jounralist
 //KIRBY -- you pick someone and you swap roles. you litterally cannot win with this role. Obviously neutral chaos
+
+
+
+
+
+
 
 Tracker 👣
 
