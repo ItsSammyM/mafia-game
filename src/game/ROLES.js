@@ -629,6 +629,72 @@ export const ROLES = {
         },
         null
     ),
+    "Retributionist":new Role(
+        "Retributionist", "Raise a player from the dead and use their ability. One use per player", "🧟",
+        "When you use their ability, you are visiting, but you dont become their role. You can only use people whos roles are witchable.",
+        "-7 > Choose who your using, Then their priority takes over.",
+        "Town", "Support", null,
+        "Town", 1,
+        0, 0,
+        false, false, false,
+        {
+            playersUsed : [],
+            lastPlayerUsed : null,
+        },
+        (priority, player)=>{
+            if(priority === -7){
+                //remove lastPlayerUsed at start of night
+                player.roleExtra.lastPlayerUsed = null;
+
+                //then normal stuff
+                if(player.cycleVariables.targeting.value.length !== 2) return;  //if i didnt target 2 people then no
+                if(!player.cycleVariables.aliveTonight.value) return;   //if im dead then no
+
+                let myTarget1 = player.cycleVariables.targeting.value[0];
+                let myTarget2 = player.cycleVariables.targeting.value[1];
+
+                if(myTarget1.cycleVariables.aliveTonight.value) return; //if first target is alive then no
+                if(!myTarget2.cycleVariables.aliveTonight.value) return;    //if second target is dead then no
+
+                if(player.roleExtra.playersUsed.includes(myTarget1)) return; //if first target was used then no
+
+                if(!myTarget1.getRoleObject().witchable){
+                    player.addNightInformation(new ChatMessageState(
+                        null,
+                        "Your targets role could not be used.",
+                        GameManager.COLOR.GAME_TO_YOU
+                    ), true);
+                }else{
+                    player.cycleVariables.targeting.value = [];
+                    player.cycleVariables.targeting.value.push(myTarget2);
+                    player.roleExtra.lastPlayerUsed = myTarget1;
+                    player.roleExtra.playersUsed.push(myTarget1);
+                }
+            }
+            
+            
+            if(player.roleExtra.lastPlayerUsed){
+                player.roleExtra.lastPlayerUsed.getRoleObject().doRole(priority, player);
+                console.log(player.roleExtra.lastPlayerUsed.getRoleObject().name+' '+priority);
+            console.log(player.cycleVariables.targeting.value);
+            }
+        },
+        (myPlayer, otherPlayer)=>{
+            return(
+                myPlayer.cycleVariables.aliveTonight.value && //im alive
+                ((
+                    !otherPlayer.cycleVariables.aliveTonight.value && //theyre dead
+                    myPlayer.cycleVariables.targeting.value.length === 0 &&  //targeting 0 people so far
+                    !myPlayer.roleExtra.playersUsed.includes(otherPlayer)   //didnt already use them
+                ) 
+                ||
+                (
+                    otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
+                    myPlayer.cycleVariables.targeting.value.length === 1  //targeting 1 person so far
+                ))
+            )
+        }
+    ),
     //#endregion
     //#region Mafia
     "Godfather":new Role(
@@ -652,20 +718,20 @@ export const ROLES = {
             if(priority === -4){
                 //find mafisoso (or more if there are for some reason)
                 for(let mafiosoName in GameManager.host.players){
-                    if(GameManager.host.players[mafiosoName].roleName === "Mafioso"){
+                    let mafioso = GameManager.host.players[mafiosoName];
 
-                            //change mafioso target
-                        GameManager.host.players[mafiosoName].cycleVariables.targeting.value = [myTarget];
-                            //clear myself
-                        player.cycleVariables.targeting.value=[];
-                            //tell godfather what they have done
-                        player.addNightInformation(new ChatMessageState(
-                            null,
-                            "You forced a mafioso to target your target",
-                            GameManager.COLOR.GAME_TO_YOU
-                        ), true);
-                    }
-                        
+                    if(!(mafioso.roleName === "Mafioso" && mafioso.cycleVariables.aliveTonight.value && !mafioso.cycleVariables.roleblockedTonight.value)) return;
+                        //change mafioso target
+                    mafioso.cycleVariables.targeting.value = [];
+                    mafioso.cycleVariables.targeting.value.push(myTarget);
+                        //clear myself
+                    player.cycleVariables.targeting.value=[];
+                        //tell godfather what they have done
+                    player.addNightInformation(new ChatMessageState(
+                        null,
+                        "You forced a mafioso to target your target",
+                        GameManager.COLOR.GAME_TO_YOU
+                    ), true);   
                 }
             }else if(priority === 6){
                 myTarget.tryNightKill(player, player.cycleVariables.attackTonight.value);
@@ -1244,6 +1310,7 @@ export const ROLES = {
         {},
         (priority, player)=>{
             if(!player.cycleVariables.aliveTonight.value) return;
+            if((GameManager.host.cycleNumber === 1 || GameManager.host.cycleNumber === 3)) return;  //doesnt work on wrong nights
 
             if(priority === 2){ //make suspicious
 
@@ -1290,6 +1357,7 @@ Everyones target is set first
 -12: Veteran(Decides Alert) Vigilante(Suicide) Jester(Kill) Arsonist(Clean self)
 -10: Transporter(Swaps)
 -8: Witch(Swaps, Activate sheild)
+    -7: Retributionist(Choose to revive)
 -6: Escort / Consort(Roleblock)
 -4 Godfather(Swap mafioso target and clear self)
 -2 bodyguard(swap)
