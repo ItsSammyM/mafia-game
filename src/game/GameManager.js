@@ -57,10 +57,15 @@ let GameManager = {
 
     COLOR : {
         IMPORTANT : "#FFFF77",  //#fae457
+
         GAME_TO_YOU : "#007800",    //light green
         GAME_TO_ALL : "#005000",    //dark green
-        CHAT : "#00a0c8",   //dark blue
+
         MY_CHAT : "#00a0c0",    //light blue
+        CHAT : "#00a0c8",   //dark blue
+
+        DEAD_CHAT : "#7a0078", //dark purple
+        WHISPER_CHAT: "#ff00fb"   //magenta
     },
     MAX_NAME_LENGTH : 20,
     MAX_MESSAGE_LENGTH : 300,
@@ -269,12 +274,15 @@ let GameManager = {
                 GameManager.host.chatGroups[teamName] = [];
             }
 
+            //find all blackmailers
+            let blackmailers = GameManager.host.getPlayersWithFilter((p)=>p.getRoleObject().name==="Blackmailer");
             //after roleList is picked, create extra chat groups
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
                 //WHISPER
-                GameManager.host.chatGroups[playerName] = [player]; //also add blackmailer
+                GameManager.host.chatGroups[playerName] = [];
+                GameManager.host.chatGroups[playerName].push(player);//.concat(blackmailers); //also add blackmailers
                 //ALL
                 GameManager.host.chatGroups["All"].push(player);
                 //TEAMS
@@ -282,6 +290,8 @@ let GameManager = {
                     GameManager.host.chatGroups[player.getRoleObject().team].push(player);
 
 
+
+                
                 //also while were here give exe their target
                 if(player.getRoleObject().name === "Executioner"){
                     player.roleExtra.executionerTarget = ((player)=>{
@@ -582,12 +592,17 @@ let GameManager = {
         clickSendMessage : function(message){
             if(this.spamPreventer()) return;
 
+
             GameManager.CLIENT_TO_HOST["SEND_MESSAGE"].send(
                 GameManager.client.playerName, GameManager.client.chatGroupSendList, 
                 new ChatMessageStateClient(
                     GameManager.client.playerName,
                     message,
-                    GameManager.COLOR.CHAT
+                    (
+                        GameManager.client.chatGroupSendList.includes("All")?GameManager.COLOR.CHAT:
+                        GameManager.client.chatGroupSendList.includes("Dead")?GameManager.COLOR.DEAD_CHAT:
+                        GameManager.COLOR.WHISPER_CHAT
+                    )
                 ));
         },
         clickSaveNotePad : function(notePadName, notePadValue){
@@ -595,7 +610,7 @@ let GameManager = {
             GameManager.CLIENT_TO_HOST["SEND_NOTEPAD"].send(GameManager.client.playerName, notePadName);
         },
         clickWhisper : function(name){
-
+            GameManager.CLIENT_TO_HOST["BUTTON_WHISPER"].send(GameManager.client.playerName, name);
         },
 
 
@@ -686,6 +701,17 @@ let GameManager = {
                         GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, false);
                     }    
                 }
+            }
+        ),
+        "BUTTON_WHISPER":new MessageType(false, 
+            (playerName, whisperingToPlayerName)=>{GameManager.client.sendMessage(GameManager.CLIENT_TO_HOST["BUTTON_WHISPER"], {
+                playerName : playerName,
+                whisperingToPlayerName: whisperingToPlayerName,
+            })},
+            (contents)=>{
+                if(PhaseStateMachine.currentPhase==="Night") return;    //cant click this at night
+                GameManager.host.players[contents.playerName].clickWhisper(contents.whisperingToPlayerName);
+                GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
             }
         ),
         "BUTTON_TARGET":new MessageType(false,
@@ -820,18 +846,29 @@ let GameManager = {
                     let playerList = GameManager.host.chatGroups[chatGroup];
 
                     if(!contents.chatGroups.includes(chatGroup)) continue;
-                    if(!GameManager.host.players[contents.playerName].chatGroupSendList.includes(chatGroup)) continue;
+                    if(!GameManager.host.players[contents.playerName].chatGroupSendList.includes(chatGroup) && !GameManager.host.players[contents.playerName].cycleVariables.isWhispering.value) continue;
+
+                    //if this is a whisper chat then also send a message saying a whisper happened
+                    //if chatGroup === name of any player, then it is a whisper chat
+                    if(GameManager.host.getAllPlayerNames().includes(chatGroup)){
+                        //if its a whisper chat then loop through players and tell them whats happened
+                        for(let playerName in GameManager.host.players){
+                            let player = GameManager.host.players[playerName];
+                            player.addChatMessage(new ChatMessageState(null, contents.playerName+" is whispering to "+chatGroup, GameManager.COLOR.GAME_TO_ALL));
+                        }
+                    }
 
                     for(let playerName in GameManager.host.players){
                         let player = GameManager.host.players[playerName];
 
                         if(playersWhoGotMessageAlready.includes(player)) continue;
-                        if( !playerList.includes(player) && player!==GameManager.host.players[contents.playerName]   ) continue;
+                        if( !   (playerList.includes(player) || player===GameManager.host.players[contents.playerName])   ) continue;
 
                         player.addChatMessage(new ChatMessageState(contents.chatMessage.title, contents.chatMessage.text, contents.chatMessage.color));
                         playersWhoGotMessageAlready.push(player);
                     }
                 }
+
                 GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
             }
         ),
@@ -1172,7 +1209,7 @@ let GameManager = {
 
                     playerIndividual[playerName] = {
                         seeSelfAlive : player.alive,
-                        chatGroupSendList : player.chatGroupSendList,
+                        chatGroupSendList : player.cycleVariables.isWhispering.value?[player.cycleVariables.isWhispering.value]:player.chatGroupSendList,
                         savedNotePad : player.savedNotePad,
                     };
                 }

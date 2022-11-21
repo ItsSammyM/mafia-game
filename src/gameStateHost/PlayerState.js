@@ -37,7 +37,7 @@ export class PlayerState{
 
             judgement : new CycleVariable('Judgement', 0),
 
-            targetedBy : new CycleVariable('Night', ()=>[]),  
+            targetedBy : new CycleVariable('Night', ()=>[]),
             targeting : new CycleVariable('Night', ()=>[]),
 
             aliveTonight : new CycleVariable('Night', ()=>this.alive),
@@ -67,12 +67,26 @@ export class PlayerState{
 
             shownRoleName : new CycleVariable('Morning', ()=>this.roleName?this.roleName:"No Role"),
             shownWill : new CycleVariable('Morning', ()=>this.savedNotePad['Will']?this.savedNotePad['Will']:"No Will"),
+
+            isWhispering : new CycleVariable('Night', null),    //string of name of player whispering to
         };
     }
     setUpAvailableButtons(players){
         for(let playerName in players){
             this.availableButtons[playerName] = {target:false, whisper: false, vote:false};
             this.suffixes[playerName] = [];
+        }
+    }
+    clickWhisper(playerName){
+        if(!this.alive){
+            this.cycleVariables.isWhispering.value = null;
+            return;
+        }
+
+        if(this.cycleVariables.isWhispering.value === playerName){
+            this.cycleVariables.isWhispering.value = null;
+        }else{
+            this.cycleVariables.isWhispering.value = playerName;
         }
     }
 
@@ -242,6 +256,7 @@ export class PlayerState{
 
         this.alive = false;
         this.cycleNumberDied = GameManager.host.cycleNumber;
+        this.cycleVariables.isWhispering.value = null;
 
         GameManager.host.swapMafioso();
         //GameManager.host.checkEndGame();

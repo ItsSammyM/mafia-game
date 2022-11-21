@@ -150,11 +150,11 @@ export const PHASES = {
                 let player = GameManager.host.players[playerName];
 
                 for(let otherPlayerName in GameManager.host.players){
-                    //let otherPlayer = GameManager.host.players[otherPlayerName];
+                    let otherPlayer = GameManager.host.players[otherPlayerName];
 
                     player.availableButtons[otherPlayerName].target = false;
                     player.availableButtons[otherPlayerName].vote = false;
-                    //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
+                    if(playerName !== otherPlayerName && player.alive && otherPlayer.alive) player.availableButtons[otherPlayerName].whisper = true;
                 }
                 
                 player.addChatMessages(informationListMessage);
@@ -203,11 +203,11 @@ export const PHASES = {
                 let player = GameManager.host.players[playerName];
 
                 for(let otherPlayerName in GameManager.host.players){
-                    //let otherPlayer = GameManager.host.players[otherPlayerName];
+                    let otherPlayer = GameManager.host.players[otherPlayerName];
 
                     player.availableButtons[otherPlayerName].target = false;
                     player.availableButtons[otherPlayerName].vote = false;
-                    //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
+                    if(playerName !== otherPlayerName && player.alive && otherPlayer.alive) player.availableButtons[otherPlayerName].whisper = true;
                 }
                 
                 player.addChatMessages(informationListMessage);
@@ -258,6 +258,8 @@ export const PHASES = {
 
                     player.availableButtons[otherPlayerName].target = false;
                     player.canVote(otherPlayer);
+                    if(playerName !== otherPlayerName && player.alive && otherPlayer.alive) player.availableButtons[otherPlayerName].whisper = true;
+                    
                 }
 
                 player.addChatMessages(informationListMessage);
@@ -299,11 +301,11 @@ export const PHASES = {
                 let player = GameManager.host.players[playerName];
 
                 for(let otherPlayerName in GameManager.host.players){
-                    //let otherPlayer = GameManager.host.players[otherPlayerName];
+                    let otherPlayer = GameManager.host.players[otherPlayerName];
 
                     player.availableButtons[otherPlayerName].target = false;
                     player.availableButtons[otherPlayerName].vote = false;
-                    //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
+                    if(playerName !== otherPlayerName && player.alive && otherPlayer.alive) player.availableButtons[otherPlayerName].whisper = true;
                 }
 
                 player.addChatMessages(informationListMessage);
@@ -344,11 +346,11 @@ export const PHASES = {
                 let player = GameManager.host.players[playerName];
 
                 for(let otherPlayerName in GameManager.host.players){
-                    //let otherPlayer = GameManager.host.players[otherPlayerName];
+                    let otherPlayer = GameManager.host.players[otherPlayerName];
 
                     player.availableButtons[otherPlayerName].target = false;
                     player.availableButtons[otherPlayerName].vote = false;
-                    //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
+                    if(playerName !== otherPlayerName && player.alive && otherPlayer.alive) player.availableButtons[otherPlayerName].whisper = true;
                 }
 
                 player.addChatMessages(informationListMessage);
@@ -434,11 +436,11 @@ export const PHASES = {
                 let player = GameManager.host.players[playerName];
 
                 for(let otherPlayerName in GameManager.host.players){
-                    //let otherPlayer = GameManager.host.players[otherPlayerName];
+                    let otherPlayer = GameManager.host.players[otherPlayerName];
 
                     player.availableButtons[otherPlayerName].target = false;
                     player.availableButtons[otherPlayerName].vote = false;
-                    //if(playerName !== otherPlayerName) player.availableButtons[otherPlayerName].whisper = true;
+                    if(playerName !== otherPlayerName && player.alive && otherPlayer.alive) player.availableButtons[otherPlayerName].whisper = true;
                 }
 
                 player.addChatMessages(informationListMessage);
