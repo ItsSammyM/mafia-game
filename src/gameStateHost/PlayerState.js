@@ -281,8 +281,8 @@ export class PlayerState{
         publicInformation.push(new ChatMessageState(this.name+" died", 
         "They were killed by "+killedByString+
         ". Their role was "+this.cycleVariables.shownRoleName.value+
-        ". Their final states: "+this.cycleVariables.shownWill.value,
-        GameManager.COLOR.GAME_TO_ALL));
+        ". Their final will states: "+this.cycleVariables.shownWill.value,
+        GameManager.COLOR.IMPORTANT));
 
         for(let playerName in GameManager.host.players){
             let player = GameManager.host.players[playerName];

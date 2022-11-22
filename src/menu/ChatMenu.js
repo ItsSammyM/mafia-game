@@ -114,6 +114,9 @@ export class ChatMenu extends React.Component {
                 this.changeEnteredMessage(e.target.value.substring(0,GameManager.MAX_MESSAGE_LENGTH));
         }}/><br/>
     </div>}
+    replaceWithBr(s){
+        return s.replace(/\n/g, "<br />");
+    }
     render() {return (<div className="Main">
         {/* <div className="Main-header">
             {this.state.title}<br/>
@@ -133,8 +136,7 @@ export class ChatMenu extends React.Component {
                             text={(()=>{return(
                                 <div>
                                     {(() => {if(e.title) return (<div>{"<"+e.title+">"}<br/></div>)})()}
-                                    {(() => {if(e.text) return (<div>{e.text}<br/></div>)})()}
-                                    
+                                    {(() => {if(e.text) return (<div dangerouslySetInnerHTML={{ __html: this.replaceWithBr(e.text) }}/>)})()}
                                 </div>
                             )})()}
                         />

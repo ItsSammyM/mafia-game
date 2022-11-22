@@ -163,24 +163,29 @@ export class PlayerListMenu extends React.Component {
 
         for(let playerName in this.state.players){
             let player = this.state.players[playerName];
+
+            let numButtons = player.availableButtons.whisper+player.availableButtons.target+player.availableButtons.vote;
+
             out.push([player,
                 (<div key={playerName} className="Main-box">
                     {playerName}<br/>
-                    {player.suffixes.map((s,i)=>(<div key={i}>({s})</div>))}<br/>
+                    {player.suffixes.map((s,i)=>(<div key={i}>({s})</div>))}
+                    <div>
                     {(()=>{
                         if(player.availableButtons.whisper)
-                            return (<div><Button text="Whisper" onClick={() => {GameManager.client.clickWhisper(playerName)}}/><br/></div>);
+                            return (<Button width={`${90/numButtons}%`} text="Whisper" onClick={() => {GameManager.client.clickWhisper(playerName)}}/>);
                     })()}
 
                     {(()=>{
                         if(player.availableButtons.target)
-                            return (<div><Button text="Target" onClick={() => {GameManager.client.clickTarget(playerName)}}/><br/></div>);
+                            return (<Button width={`${90/numButtons}%`} text="Target" onClick={() => {GameManager.client.clickTarget(playerName)}}/>);
                     })()}
 
                     {(()=>{
                         if(player.availableButtons.vote)
-                            return (<div><Button text="Vote" onClick={()=>{GameManager.client.clickVote(playerName)}}/><br/></div>);
+                            return (<Button width={`${90/numButtons}%`} text="Vote" onClick={()=>{GameManager.client.clickVote(playerName)}}/>);
                     })()}
+                    </div>
 
                 </div>)]
             );
