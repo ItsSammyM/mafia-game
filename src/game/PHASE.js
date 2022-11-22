@@ -409,7 +409,7 @@ export const PHASES = {
                 //innocent and no more trials
                 for(let playerName in GameManager.host.players){
                     let player = GameManager.host.players[playerName];
-                    player.addMessage(new ChatMessageState(null, "No trials left today", GameManager.COLOR.GAME_TO_ALL));
+                    player.addChatMessage(new ChatMessageState(null, "No trials left today", GameManager.COLOR.GAME_TO_ALL));
                 }
                 PhaseStateMachine.startPhase("Night");
             }
