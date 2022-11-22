@@ -672,11 +672,8 @@ export const ROLES = {
                 }
             }
             
-            
             if(player.roleExtra.lastPlayerUsed){
                 player.roleExtra.lastPlayerUsed.getRoleObject().doRole(priority, player);
-                console.log(player.roleExtra.lastPlayerUsed.getRoleObject().name+' '+priority);
-            console.log(player.cycleVariables.targeting.value);
             }
         },
         (myPlayer, otherPlayer)=>{
@@ -720,7 +717,7 @@ export const ROLES = {
                 for(let mafiosoName in GameManager.host.players){
                     let mafioso = GameManager.host.players[mafiosoName];
 
-                    if(!(mafioso.roleName === "Mafioso" && mafioso.cycleVariables.aliveTonight.value && !mafioso.cycleVariables.roleblockedTonight.value)) return;
+                    if(!(mafioso.roleName === "Mafioso" && mafioso.cycleVariables.aliveTonight.value && !mafioso.cycleVariables.roleblockedTonight.value)) continue;
                         //change mafioso target
                     mafioso.cycleVariables.targeting.value = [];
                     mafioso.cycleVariables.targeting.value.push(myTarget);
