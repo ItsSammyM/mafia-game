@@ -634,7 +634,7 @@ export const ROLES = {
         "When you use their ability, you are visiting, but you dont become their role. You can only use people whos roles are witchable.",
         "-7 > Choose who your using, Then their priority takes over.",
         "Town", "Support", null,
-        "Town", 1,
+        "Town", 0,
         0, 0,
         false, false, false,
         {
@@ -712,17 +712,22 @@ export const ROLES = {
             let myTarget = player.cycleVariables.targeting.value[0];
             if(!myTarget.cycleVariables.aliveTonight.value) return;
 
-            if(priority === -11){
+            if(priority === -4){
                 //find mafisoso (or more if there are for some reason)
+                let foundMafioso = false;
                 for(let mafiosoName in GameManager.host.players){
                     let mafioso = GameManager.host.players[mafiosoName];
 
-                    if(!(mafioso.roleName === "Mafioso" && mafioso.cycleVariables.aliveTonight.value && !mafioso.cycleVariables.roleblockedTonight.value)) continue;
+                    if(!(
+                        mafioso.roleName === "Mafioso" && 
+                        mafioso.cycleVariables.aliveTonight.value && 
+                        !mafioso.cycleVariables.roleblockedTonight.value
+                    )) continue;
+                    foundMafioso = true;
                         //change mafioso target
                     mafioso.cycleVariables.targeting.value = [];
                     mafioso.cycleVariables.targeting.value.push(myTarget);
-                        //clear myself
-                    player.cycleVariables.targeting.value=[];
+                        
                         //tell godfather what they have done
                     player.addNightInformation(new ChatMessageState(
                         null,
@@ -730,6 +735,8 @@ export const ROLES = {
                         GameManager.COLOR.GAME_TO_YOU
                     ), true);   
                 }
+                if(foundMafioso) //clear myself
+                    player.cycleVariables.targeting.value=[];
             }else if(priority === 6){
                 myTarget.tryNightKill(player, player.cycleVariables.attackTonight.value);
             }
@@ -1352,12 +1359,11 @@ Priority
 Everyones target is set first
 
 -12: Veteran(Decides Alert) Vigilante(Suicide) Jester(Kill) Arsonist(Clean self)
--11: Godfather(Swap mafioso target and clear self)
 -10: Transporter(Swaps)
 -8: Witch(Swaps, Activate sheild)
     -7: Retributionist(Choose to revive)
 -6: Escort / Consort(Roleblock)
--4: 
+-4: Godfather(Swap mafioso target and clear self)
 -2 bodyguard(swap)
  0: visits happen here
 +2: Doctor(Heal), Blackmailer(Decide), Crusader(Heal), Arsonist(Douse), Framer, Disguiser Werewolf(innos themself)
