@@ -1097,7 +1097,7 @@ export const ROLES = {
         (priority, player)=>{
             if(priority!==8) return;
             if(
-                (player.roleExtra.executionerTarget!==null &&
+                (   (player.roleExtra.executionerTarget!==null && player.roleExtra.executionerTarget!==undefined) &&
                 !player.roleExtra.executionerTarget.alive &&
                 player.roleExtra.executionerTarget.cycleVariables.diedTonight.value) ||
                 player.roleExtra.executionerTarget === null
