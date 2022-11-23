@@ -101,6 +101,7 @@ export const PHASES = {
 
                 player.cycleVariables.shownWill.reset();
                 player.cycleVariables.shownRoleName.reset();
+                player.cycleVariables.shownNote.reset();
             }
             
             //main loop 

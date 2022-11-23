@@ -67,6 +67,7 @@ export class PlayerState{
 
             shownRoleName : new CycleVariable('Morning', ()=>this.roleName?this.roleName:"No Role"),
             shownWill : new CycleVariable('Morning', ()=>this.savedNotePad['Will']?this.savedNotePad['Will']:"No Will"),
+            shownNote : new CycleVariable('Morning', ()=>this.savedNotePad['Note']?this.savedNotePad['Note']:""),
 
             isWhispering : new CycleVariable('Night', null),    //string of name of player whispering to
         };
