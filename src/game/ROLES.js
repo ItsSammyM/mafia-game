@@ -712,7 +712,7 @@ export const ROLES = {
             let myTarget = player.cycleVariables.targeting.value[0];
             if(!myTarget.cycleVariables.aliveTonight.value) return;
 
-            if(priority === -4){
+            if(priority === -11){
                 //find mafisoso (or more if there are for some reason)
                 for(let mafiosoName in GameManager.host.players){
                     let mafioso = GameManager.host.players[mafiosoName];
@@ -1352,11 +1352,12 @@ Priority
 Everyones target is set first
 
 -12: Veteran(Decides Alert) Vigilante(Suicide) Jester(Kill) Arsonist(Clean self)
+-11: Godfather(Swap mafioso target and clear self)
 -10: Transporter(Swaps)
 -8: Witch(Swaps, Activate sheild)
     -7: Retributionist(Choose to revive)
 -6: Escort / Consort(Roleblock)
--4 Godfather(Swap mafioso target and clear self)
+-4: 
 -2 bodyguard(swap)
  0: visits happen here
 +2: Doctor(Heal), Blackmailer(Decide), Crusader(Heal), Arsonist(Douse), Framer, Disguiser Werewolf(innos themself)
