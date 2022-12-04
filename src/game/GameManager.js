@@ -11,6 +11,7 @@ import { getRandomRole, TEAMS, Role, ROLES } from "./ROLES";
 import { PhaseStateMachine, PHASES } from "./PHASE";
 import { StartMenu } from "../menu/StartMenu";
 import { CycleVariable } from "./CycleVariable";
+import { GraveStateClient } from "../gameStateClient/GraveStateClient";
 /*
 weird stuff
 
@@ -57,9 +58,11 @@ let GameManager = {
 
     COLOR : {
         IMPORTANT : "#FFFF77",  //#fae457
+        IMPORTANT_RED: "#EE0000",
+        GREYED_OUT: "#999999", //grey obviously
 
-        GAME_TO_YOU : "#007800",    //light green
-        GAME_TO_ALL : "#005000",    //dark green
+        GAME_TO_YOU : "#009F00",    //light green
+        GAME_TO_ALL : "#006000",    //dark green
 
         MY_CHAT : "#00a0c0",    //light blue
         CHAT : "#00a0c8",   //dark blue
@@ -92,6 +95,8 @@ let GameManager = {
         roleList : null,
         phaseTimes : null,
         investigativeResults : null,
+
+        graves : {},
 
         chatGroups : {
             "Dead" : [],//list of all dead players
@@ -189,40 +194,7 @@ let GameManager = {
 
             //GIVE ROLES
             let roleList = _roleList;
-            shuffleList(roleList);
-
-            let alreadyPickedRolesList = [];
-            let index = 0;
-            for(let playerName in GameManager.host.players){
-                let player = GameManager.host.players[playerName];
-
-                player.setUpAvailableButtons(GameManager.host.players);
-
-                //give random role
-                let roleName = "";
-                if(!roleList[index]){
-                    roleName = getRandomRole("Random", "Random", alreadyPickedRolesList);
-                }else if(roleList[index][2]){
-                    roleName = roleList[index][2];
-                }else{
-                    roleName = getRandomRole(
-                        roleList[index][0] ? roleList[index][0] : "Random",
-                        roleList[index][1] ? roleList[index][1] : "Random",
-                        alreadyPickedRolesList
-                    );
-                }
-                //add to already picked role list
-                alreadyPickedRolesList.push(roleName);
-                player.createPlayerRole(roleName); //actually create role
-
-                //tell players whats going on
-                playerIndividual[playerName] = {
-                    roleName : player.roleName,
-                };
-                player.addChatMessages(informationList);
-                index++;
-            }
-            //sort and save rolelist
+            //sort rolelist
             GameManager.host.roleList = mergeSort(roleList, (a,b)=>{
 
                 if(a[2]) return 10000;
@@ -267,7 +239,41 @@ let GameManager = {
                     if(a[1] === "Deception")  return 500;
                     if(b[1] === "Deception")  return -500;
                 }
-                })
+            });
+
+            let shuffledPlayerNameList = shuffledList(Object.keys(GameManager.host.players));
+            let alreadyPickedRolesList = [];
+            let index = 0;
+            for(let i in shuffledPlayerNameList){
+                let player = GameManager.host.players[shuffledPlayerNameList[i]];
+
+                player.setUpAvailableButtons(GameManager.host.players);
+
+                //give random role
+                let roleName = "";
+                if(!roleList[index]){   //if entire thing is null, get random role
+                    roleName = getRandomRole("Random", "Random", alreadyPickedRolesList);
+                }else if(roleList[index][2]){   //if exact exists then just give it to them
+                    roleName = roleList[index][2];
+                }else{  //otherwise, get random role using rolelist
+                    roleName = getRandomRole(
+                        roleList[index][0] ? roleList[index][0] : "Random",
+                        roleList[index][1] ? roleList[index][1] : "Random",
+                        alreadyPickedRolesList
+                    );
+                }
+                //add to already picked role list
+                alreadyPickedRolesList.push(roleName);
+                player.createPlayerRole(roleName); //actually create role
+
+                //tell players whats going on
+                playerIndividual[player.name] = {
+                    roleName : player.roleName,
+                };
+                player.addChatMessages(informationList);
+                index++;
+            }
+            
 
             //CHAT GROUPS
             for(let teamName in TEAMS){
@@ -489,6 +495,8 @@ let GameManager = {
             }
 
         */
+
+        graves : {},
 
         addMessage(m, invokeListeners=true){
             GameManager.client.chatMessageList.push(m);
@@ -1222,6 +1230,23 @@ let GameManager = {
                 GameManager.client.chatGroupSendList = contents.playerIndividual[GameManager.client.playerName].chatGroupSendList;
                 GameManager.client.seeSelfAlive = contents.playerIndividual[GameManager.client.playerName].seeSelfAlive;
                 GameManager.client.savedNotePad = contents.playerIndividual[GameManager.client.playerName].savedNotePad;
+            }
+        ),
+        "SEND_GRAVES":new MessageType(true,
+            ()=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["SEND_GRAVES"], {
+                graves : GameManager.host.graves,
+            });},
+            (contents)=>{
+                GameManager.client.graves = {};
+                for(let playerName in contents.graves){
+                    GameManager.client.graves[playerName] = new GraveStateClient(
+                        contents.graves[playerName].playerName, 
+                        contents.graves[playerName].will, 
+                        contents.graves[playerName].roleName, 
+                        contents.graves[playerName].phaseDied, 
+                        contents.graves[playerName].cycleDied
+                    );
+                }
             }
         ),
         "TIME_LEFT":new MessageType(true,

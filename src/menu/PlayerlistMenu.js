@@ -6,6 +6,7 @@ import { mergeSort } from "../game/functions";
 import { WikiMenu } from "./WikiMenu"
 import { MainMenu } from "./MainMenu";
 import { NotePadMenu } from "./NotePadMenu";
+import { GraveyardMenu } from "./GraveyardMenu";
 
 export class PlayerListMenu extends React.Component {
     constructor(props){
@@ -23,6 +24,7 @@ export class PlayerListMenu extends React.Component {
             votedForName : null,
             judgementStatus : 0,
             playerOnTrialName : GameManager.client.cycle.playerOnTrialName,
+            chatGroupSendList: [],
 
             timeLeft : GameManager.client.timeLeft,
 
@@ -80,15 +82,16 @@ export class PlayerListMenu extends React.Component {
                 listener : (c)=>{
                     this.setState({
                         seeSelfAlive : GameManager.client.seeSelfAlive,
+                        chatGroupSendList : GameManager.client.chatGroupSendList,
                     });
                 }
             },
             TICK_LISTENER : {
                 listener : ()=>{
                     if(GameManager.client.timeLeftMs>0)
-                    this.setState({
-                        timeLeft : Math.ceil(GameManager.client.timeLeftMs/1000),
-                    });
+                        this.setState({
+                            timeLeft : Math.ceil(GameManager.client.timeLeftMs/1000),
+                        });
                 }
             },
             YOUR_ROLE_LISTENER : {
@@ -115,6 +118,7 @@ export class PlayerListMenu extends React.Component {
             judgementStatus : GameManager.client.cycle.judgementStatus,
 
             playerOnTrialName : GameManager.client.cycle.playerOnTrialName,
+            chatGroupSendList : GameManager.client.chatGroupSendList,
 
             seeSelfAlive : GameManager.client.seeSelfAlive,
             timeLeft : GameManager.client.timeLeft,
@@ -172,8 +176,9 @@ export class PlayerListMenu extends React.Component {
                     {player.suffixes.map((s,i)=>(<div key={i}>({s})</div>))}
                     <div>
                     {(()=>{
+                        let color = this.state.chatGroupSendList.includes(playerName)?(GameManager.COLOR.GREYED_OUT):null
                         if(player.availableButtons.whisper)
-                            return (<Button width={`${90/numButtons}%`} text="Whisper" onClick={() => {GameManager.client.clickWhisper(playerName)}}/>);
+                            return (<Button width={`${90/numButtons}%`} text="Whisper" color={color} onClick={() => {GameManager.client.clickWhisper(playerName)}}/>);
                     })()}
 
                     {(()=>{
@@ -264,6 +269,7 @@ export class PlayerListMenu extends React.Component {
                 Room Code: {this.state.roomCode}<br/>
                 <br/>
                 <Button text="Wiki" onClick={()=>MainMenu.instance.setRightPanel(<WikiMenu/>)}/><br/>
+                <Button text="Graveyard" onClick={()=>MainMenu.instance.setRightPanel(<GraveyardMenu/>)}/><br/>
                 <Button text="NotePad" onClick={()=>MainMenu.instance.setRightPanel(<NotePadMenu/>)}/><br/>
             </div>
             <br/>

@@ -2,6 +2,8 @@ import GameManager from "../game/GameManager";
 import { ROLES } from "../game/ROLES";
 import { ChatMessageState } from "./ChatMessageState";
 import { CycleVariable } from "../game/CycleVariable";
+import { GraveState } from "../gameStateHost/GraveState";
+import { PhaseStateMachine } from "../game/PHASE";
 
 export class PlayerState{
     constructor(_name){
@@ -280,9 +282,9 @@ export class PlayerState{
         if(killedByString.length > 2) killedByString = killedByString.substring(0, killedByString.length-2);
 
         publicInformation.push(new ChatMessageState(this.name+" died", 
-        "They were killed by "+killedByString+
-        ". Their role was "+this.cycleVariables.shownRoleName.value+
-        ". Their final will states: "+this.cycleVariables.shownWill.value,
+        "Killed by: "+killedByString+"\n"+
+        "Role: "+this.cycleVariables.shownRoleName.value+"\n"+
+        "Final Will: "+this.cycleVariables.shownWill.value,
         GameManager.COLOR.IMPORTANT));
 
         for(let playerName in GameManager.host.players){
@@ -293,6 +295,15 @@ export class PlayerState{
             player.addSuffix(this.name, this.cycleVariables.shownRoleName.value);
             player.addChatMessages(publicInformation);
         }
+
+        GameManager.host.graves[this.name] = new GraveState(
+            this.name, 
+            this.cycleVariables.shownWill.value, 
+            this.cycleVariables.shownRoleName.value, 
+            PhaseStateMachine.currentPhase, 
+            GameManager.host.cycleNumber
+        );
+        GameManager.HOST_TO_CLIENT["SEND_GRAVES"].send();
     }
 
     //[ChatMessageState, boolean]
