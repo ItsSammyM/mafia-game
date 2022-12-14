@@ -1469,4 +1469,3 @@ export function getRoleList(faction, alignment, alreadyPickedRolesList){
     }
     return allRoles;
 }
-
