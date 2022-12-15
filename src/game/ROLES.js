@@ -1285,7 +1285,7 @@ export const ROLES = {
 
                 for(let playerName in GameManager.host.players){
                     let dousedPlayer = GameManager.host.players[playerName];
-                    if(dousedPlayer.extra.doused)
+                    if(dousedPlayer.cycleVariables.aliveTonight.value && dousedPlayer.extra.doused)
                         dousedPlayer.tryNightKill(player, player.cycleVariables.attackTonight.value);
                 }
             }
