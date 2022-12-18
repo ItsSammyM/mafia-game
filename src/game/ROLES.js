@@ -1357,7 +1357,7 @@ export const ROLES = {
         "6 > Kill, \n"+
         "8 > Convert,",
         "Neutral", "Chaos", "Vampire",
-        "Vampire", 4,
+        "Vampire", 0,
         0, 1,
         true, true, false,
         {},
