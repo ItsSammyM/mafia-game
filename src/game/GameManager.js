@@ -1264,13 +1264,11 @@ let GameManager = {
     },
 };
 export default GameManager;
-/*
-{
+/*{
     channel : msgChannel,
     message : {
         toClient : toClient,
         type: msgType,
         contents: contents
     }
-}
-*/
+}*/

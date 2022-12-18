@@ -1350,6 +1350,41 @@ export const ROLES = {
             );
         },
         null
+    ),
+    "Vampire":new Role(
+        "Vampire", "Only the youngest vampire gets to visit. On odd nights you convert someone, on even nights you kill someone. You cant convert members of other factions.", "🧛",
+        "Vampires cant kill other vampires. ",
+        "6 > Kill, \n"+
+        "8 > Convert,",
+        "Neutral", "Chaos", "Vampire",
+        "Vampire", 4,
+        0, 1,
+        true, true, false,
+        {},
+        (priority, player)=>{
+            if(!player.cycleVariables.aliveTonight.value) return;
+            if(player.cycleVariables.targeting.value.length !== 1) return;
+            let myTarget = player.cycleVariables.targeting.value[0];
+
+            if(priority===6){ //kill
+                if(GameManager.host.cycleNumber % 2 == 0 ) return;  //not on even nights
+
+                //kill target
+                if(myTarget !== player && myTarget.getRoleObject().team === "Vampire"){
+                    myTarget.tryNightKill(player, player.cycleVariables.attackTonight.value);
+                }
+
+            }else if(priority===8){ //convert
+                if(GameManager.host.cycleNumber % 2 == 1 ) return; //not on odd nights
+                if(
+                    myTarget.cycleVariables.defenseTonight.value <= 0 && 
+                    myTarget.getRoleObject().team === null
+                    )
+                GameManager.host.changePlayerRole(myTarget, "Vampire");
+            }
+        },
+        null,
+        null
     )
     //#endregion
 }
