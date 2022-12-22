@@ -8,12 +8,11 @@ export class MainMenu extends React.Component {
     constructor(props){
         super(props);
 
-        
-
         this.state = {
             enteredMessage : "",
 
             rightPanel : <PlayerListMenu/>,
+            backgroundColor: "#2d3646",
         }
     }
     componentDidMount() {
@@ -25,6 +24,9 @@ export class MainMenu extends React.Component {
     onChangeMessageListener(msg){
         this.setState({enteredMessage : msg})
     }
+    setBackgroundColor(c){
+        this.setState({backgroundColor: c});
+    }
     setRightPanel(s){
         this.setState({rightPanel : s})
     }
@@ -32,6 +34,7 @@ export class MainMenu extends React.Component {
         
         <div style={{
             display: "grid",
+            backgroundColor: this.state.backgroundColor,
             gridTemplateColumns: "1fr 1fr",
             gridTemplateRows: "1fr",
         }}>

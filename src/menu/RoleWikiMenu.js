@@ -66,6 +66,10 @@ export class RoleWikiMenu extends React.Component {
         return out;
     }
     render() {return (<div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
         <div className="Main-header">
             Role Wiki<br/>
         </div>
@@ -77,5 +81,9 @@ export class RoleWikiMenu extends React.Component {
             <br/>
             {this.renderRoleList()}
         </div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
     </div>);}
 }

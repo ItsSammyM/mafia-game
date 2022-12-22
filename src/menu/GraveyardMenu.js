@@ -40,6 +40,10 @@ export class GraveyardMenu extends React.Component {
         return out;
     }
     render() {return(<div className="Main">
+        <br/>
+        <br/>
+        <br/>
+        <br/>
         <div className="Main-header">
             Graveyard<br/>
         </div><br/>
@@ -50,5 +54,9 @@ export class GraveyardMenu extends React.Component {
             <br/>
             {this.renderGraves()}<br/>
         </div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
     </div>);}
 }

@@ -25,10 +25,14 @@ export class StartJoinMenu extends React.Component {
     joinButton(){
         if(!this.state.roomCodeInput)
             return;
-        this.setState({connectionStatus : "Attempting to connect to a host with this roomcode"});
+        this.setState({connectionStatus : "Attempting to connect to a host with this roomcode. If you see this screen, you should probably try the room code again, or refresh the page."});
         GameManager.client.create(this.state.roomCodeInput, this.state.playerName);    
     }
     render() {return (<div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
         <div className="Main-header">
             Mafia
         </div><br/>
@@ -44,5 +48,9 @@ export class StartJoinMenu extends React.Component {
             }}/><br/>
 
         </div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
     </div>);}
 }

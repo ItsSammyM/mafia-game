@@ -1,16 +1,12 @@
 WHISPERING SOMEONE NAMED Mafia
 
-COLORS
-        -Dead people are red on playerlist
-MAKE MEDIUM SEANCE CLEAR
+COLORS!!!!!!!!!!!
+        - MAKE MEDIUM SEANCE CLEAR
 
 Retributionist target cant be transported for some reason
 Retributionist has an attack of 0 so cant kill anyone
 
-Suffixes arent intuitive
-
 make so enter roomcode first
-make it so when entered wrong room code, it tells you
 show players joined to non hosts
 
 redo setPhase and setCycle in client because theyre weird and wrong
@@ -25,13 +21,11 @@ fix mayor -- set non 0 amount of mayors, make mayor work
 
 skip phase button
 
-WIN CONDITIONS
-
 drop down for what role you think someone is on player list - The tyler thing
 
 text shows up weird on tefts phone. Font is weird
 
-
+WIN CONDItiONS
 
 --- SUGGESTIONS
 

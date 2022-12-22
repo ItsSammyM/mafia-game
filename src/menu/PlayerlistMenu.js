@@ -170,8 +170,10 @@ export class PlayerListMenu extends React.Component {
 
             let numButtons = player.availableButtons.whisper+player.availableButtons.target+player.availableButtons.vote;
 
+            let deadSuffix = player.suffixes.includes("Died");
+
             out.push([player,
-                (<div key={playerName} className="Main-box">
+                (<div key={playerName} className="Main-box" style={{"backgroundColor": deadSuffix?"#aaaaaa":undefined }}>
                     {playerName}<br/>
                     {player.suffixes.map((s,i)=>(<div key={i}>({s})</div>))}
                     <div>

@@ -88,7 +88,7 @@ export const ROLES = {
     //#region Town
     "Sheriff":new Role(
         "Sheriff", "Target a player to find out if they're innocent or suspicious", "🕵️",
-        "What you see isnt always true. A player could look suspicious if they're framed, doused, or other. A Godfather will also look innocent even though they're evil.\n"+
+        "What you see isn't always true. A player could look suspicious if they're framed, disguised, transported, or other. A Godfather will also look innocent even though they're evil.\n"+
         "Regardless, if you see someone as suspicious, thats alot of information, and you should tell the town immedietly.",
         "4 > Get Results",
         "Town", "Investigative", null,
@@ -174,8 +174,7 @@ export const ROLES = {
                 let investigativeResult = GameManager.host.investigativeResults[investigativeResultIndex];
 
                 if(investigativeResult.includes(
-                    myTarget.cycleVariables.disguisedAsTonight.
-                    value.cycleVariables.investigativeResultTonight.value)){
+                    myTarget.cycleVariables.disguisedAsTonight.value.cycleVariables.investigativeResultTonight.value)){
                     //found result
                     
                     //now loop through result and add them to list
@@ -791,7 +790,7 @@ export const ROLES = {
         null
     ),
     "Blackmailer":new Role(
-        "Blackmailer", "Target a player to blackmail them, they cannot speak for the whole next day.", "🤐",
+        "Blackmailer", "Target a player to blackmail them, they cannot speak for the whole next day. You can see other peoples whispers. Make sure you know when a whisper was directed at you.", "🤐",
         "You can read peoples whispers. You should try to target people who are most likely going to say something important the next day. Town Investigative roles often are huge targets for blackmailers.",
         "2 > Silence",
         "Mafia", "Support", "Mafia",
@@ -1104,9 +1103,11 @@ export const ROLES = {
         (priority, player)=>{
             if(priority!==8) return;
             if(
-                (   (player.roleExtra.executionerTarget!==null && player.roleExtra.executionerTarget!==undefined) &&
-                !player.roleExtra.executionerTarget.alive &&
-                player.roleExtra.executionerTarget.cycleVariables.diedTonight.value) ||
+                (   
+                    (player.roleExtra.executionerTarget!==null && player.roleExtra.executionerTarget!==undefined) &&
+                    //!player.roleExtra.executionerTarget.alive &&
+                    player.roleExtra.executionerTarget.cycleVariables.diedTonight.value
+                ) ||
                 player.roleExtra.executionerTarget === null
                 )
                 GameManager.host.changePlayerRole(player, "Jester");
@@ -1367,7 +1368,7 @@ export const ROLES = {
             let myTarget = player.cycleVariables.targeting.value[0];
 
             if(priority===6){ //kill
-                if(GameManager.host.cycleNumber % 2 == 0 ) return;  //not on even nights
+                if(GameManager.host.cycleNumber % 2 === 0 ) return;  //not on even nights
 
                 //kill target
                 if(myTarget !== player && myTarget.getRoleObject().team === "Vampire"){
@@ -1375,7 +1376,7 @@ export const ROLES = {
                 }
 
             }else if(priority===8){ //convert
-                if(GameManager.host.cycleNumber % 2 == 1 ) return; //not on odd nights
+                if(GameManager.host.cycleNumber % 2 === 1 ) return; //not on odd nights
                 if(
                     myTarget.cycleVariables.defenseTonight.value <= 0 && 
                     myTarget.getRoleObject().team === null
@@ -1404,7 +1405,7 @@ Everyones target is set first
 +2: Doctor(Heal), Blackmailer(Decide), Crusader(Heal), Arsonist(Douse), Framer, Disguiser Werewolf(innos themself)
 +4: Sheriff, Invest, Consig, Lookout, Tracker, Arsonist(Find who visited)
 +6: Mafioso/Godfather, SerialKiller, Werewolf, Veteran, Vampire, Arsonist, Crusader, Bodyguard, Vigilante (All kill)
-+8: Amnesiac(Convert) Vampire(Convert) Forger(Change info), Janitor(Clean & info), Doctor(Notify) Bodyguard(Notify)
++8: Amnesiac(Convert) Vampire(Convert) Forger(Change info), Janitor(Clean & info), Doctor(Notify) Bodyguard(Notify)  Executioner(convert)
 +10 Spy(Collect info)
 +12 Witch(Steal info & Remove sheild
     

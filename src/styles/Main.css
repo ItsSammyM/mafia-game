@@ -15,9 +15,12 @@
     text-align: center;
     overflow-y: hidden;
 }
+/* .Background {
+    background-color: #2d3646;
+} */
 .Main {
     /* text-align: center; */
-    background-color: #2d3646;
+    /* background-color: #2d3646; */
     height: 100vh;
     /*align-items: center;*/
     text-align: center;
