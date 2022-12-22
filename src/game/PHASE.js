@@ -4,10 +4,11 @@ import { shuffleList } from "./functions";
 import { CycleVariable } from "./CycleVariable";
 
 class Phase{
-    constructor(_maxTimeSeconds, _onStart, _onTimeOut){
+    constructor(_maxTimeSeconds, _onStart, _onTimeOut, _backgroundColor){
         this.maxTimeSeconds = _maxTimeSeconds;
         this.onStart = _onStart;
         this.onTimeOut = _onTimeOut;
+        this.backgroundColor = _backgroundColor;
     }
 }
 export let PhaseStateMachine = {
@@ -132,7 +133,8 @@ export const PHASES = {
             }
 
             PhaseStateMachine.startPhase("Morning");
-        }
+        },
+        "#24248f"
     ),
     "Morning":new Phase(1,
         ()=>{
@@ -187,7 +189,8 @@ export const PHASES = {
             GameManager.host.cycleNumber++;
 
             PhaseStateMachine.startPhase("Discussion");
-        }
+        },
+        "#2d3646"
     ),
     "Discussion":new Phase(1,
         ()=>{
@@ -230,7 +233,8 @@ export const PHASES = {
             }else{
                 PhaseStateMachine.startPhase("Night");
             }            
-        }
+        },
+        "#2d3646"
     ),
     "Voting":new Phase(1,
         ()=>{
@@ -278,7 +282,8 @@ export const PHASES = {
         ()=>{
             //if somebody is voted then voting wouldnt have timed out
             PhaseStateMachine.startPhase("Night");
-        } 
+        },
+        "#107d5c"
     ),
     "Testimony":new Phase(1,
         ()=>{
@@ -325,7 +330,8 @@ export const PHASES = {
         },
         ()=>{
             PhaseStateMachine.startPhase("Judgement");
-        }
+        },
+        "#2bc26a"
     ),
     "Judgement":new Phase(1, 
         ()=>{
@@ -415,7 +421,8 @@ export const PHASES = {
                 PhaseStateMachine.startPhase("Night");
             }
             GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
-        }
+        },
+        "#2b58c2"
     ),
     "Final Words":new Phase(1,
         ()=>{
@@ -472,6 +479,7 @@ export const PHASES = {
             
             
             PhaseStateMachine.startPhase("Night");
-        }
+        },
+        "#2d3646"
     )
 }

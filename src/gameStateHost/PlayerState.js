@@ -262,7 +262,7 @@ export class PlayerState{
         this.cycleVariables.isWhispering.value = null;
 
         GameManager.host.swapMafioso();
-        //GameManager.host.checkEndGame();
+        GameManager.host.checkEndGame();
     }
     showDied(){
         let publicInformation = [];

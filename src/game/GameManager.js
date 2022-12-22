@@ -282,13 +282,14 @@ let GameManager = {
 
             //find all blackmailers
             let blackmailers = GameManager.host.getPlayersWithFilter((p)=>p.getRoleObject().name==="Blackmailer");
-            //after roleList is picked, create extra chat groups
+            //after roleList is picked, create extra chat groups -and exe targets
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
                 //WHISPER
                 GameManager.host.chatGroups[playerName] = [];
-                GameManager.host.chatGroups[playerName].push(player);//.concat(blackmailers); //also add blackmailers
+                GameManager.host.chatGroups[playerName].push(player)
+                GameManager.host.chatGroups[playerName] = GameManager.host.chatGroups[playerName].concat(blackmailers); //also add blackmailers
                 //ALL
                 GameManager.host.chatGroups["All"].push(player);
                 //TEAMS
@@ -296,8 +297,6 @@ let GameManager = {
                     GameManager.host.chatGroups[player.getRoleObject().team].push(player);
 
 
-
-                
                 //also while were here give exe their target
                 if(player.getRoleObject().name === "Executioner"){
                     player.roleExtra.executionerTarget = ((player)=>{
@@ -305,23 +304,31 @@ let GameManager = {
                         
                         //get list of all townies
                         let allTownies = [];
-                        for(let playerName in GameManager.host.players){
-                            let player = GameManager.host.players[playerName];
+                        for(let townieName in GameManager.host.players){
+                            let townie = GameManager.host.players[townieName];
             
-                            if(player.getRoleObject().faction === "Town" && (
-                                player.getRoleObject().name !== "Mayor" || player.getRoleObject().name !== "Veteran"
+                            if(townie.getRoleObject().faction === "Town" && (
+                                townie.getRoleObject().name !== "Mayor" && townie.getRoleObject().name !== "Veteran"
                                 ))
-                                allTownies.push(player);
+                                allTownies.push(townie);
                         }
-            
-                        if(allTownies.length === 0) return null;
+
+                        if(allTownies.length === 0){
+                            player.addChatMessage(new ChatMessageState(
+                                null,
+                                "You have no target so you will become a Jester.",
+                                GameManager.COLOR.GAME_TO_YOU
+                            ));
+                            return null;
+                        }
                         let exeTarget = shuffledList(allTownies)[0];
-            
+
                         player.addChatMessage(new ChatMessageState(
                             null,
                             "Your target is "+exeTarget.name,
                             GameManager.COLOR.GAME_TO_YOU
                         ));
+                        return exeTarget;
                     })(player);
                 }
             }
@@ -438,6 +445,13 @@ let GameManager = {
             }
         },
         changePlayerRole(player, newRoleName){
+
+            for(let i = 0; i < player.suffixes[player.name].length; i++){
+                if (player.suffixes[player.name][i] === player.roleName){
+                    player.suffixes[player.name][i] = newRoleName;
+                }
+            }
+
             player.createPlayerRole(newRoleName);
             GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.roleName);
         },
@@ -986,6 +1000,7 @@ let GameManager = {
             ()=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["START_PHASE"], {
                 phaseName : PhaseStateMachine.currentPhase,
                 cycleNumber : GameManager.host.cycleNumber,
+                backgroundColor: PHASES[PhaseStateMachine.currentPhase].backgroundColor,
             })},
             (contents)=>{
                 //if phase actually changed
@@ -994,6 +1009,8 @@ let GameManager = {
 
                 GameManager.client.phaseName = contents.phaseName;
                 GameManager.client.cycleNumber = contents.cycleNumber;
+                if(MainMenu.instance)
+                    MainMenu.instance.setBackgroundColor(contents.backgroundColor);
                 
             }
         ),
