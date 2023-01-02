@@ -577,11 +577,18 @@ let GameManager = {
         timeLastButtonClickedms : 0,
         numOfPressesInTimeFrame : 0,
 
+        timeLastChatMesagems: 0,
+
         spamPreventer : function(){
             this.numOfPressesInTimeFrame++;
             if(Date.now() - this.timeLastButtonClickedms < 2000 && this.numOfPressesInTimeFrame > 2) return true;
             GameManager.client.timeLastButtonClickedms = Date.now();
             this.numOfPressesInTimeFrame=0;
+            return false;
+        },
+        spamMessagePreventer : function(){
+            if(Date.now() - GameManager.client.timeLastChatMesagems < 2000) return true;
+            GameManager.client.timeLastChatMesagems = Date.now();
             return false;
         },
         clickTarget : function(name){
@@ -612,7 +619,9 @@ let GameManager = {
             GameManager.CLIENT_TO_HOST["BUTTON_JUDGEMENT"].send(GameManager.client.playerName, judgement);
         },
         clickSendMessage : function(message){
+
             if(this.spamPreventer()) return;
+            if(this.spamMessagePreventer()) return;
 
 
             GameManager.CLIENT_TO_HOST["SEND_MESSAGE"].send(
