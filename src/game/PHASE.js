@@ -138,6 +138,14 @@ export const PHASES = {
     ),
     "Morning":new Phase(1,
         ()=>{
+            //ADD dead messages
+            for(let playerName in GameManager.host.players){
+                let player = GameManager.host.players[playerName];
+
+                if(!player.cycleVariables.diedTonight.value) continue;
+                player.showDied();
+            }
+            
             CycleVariable.objectResetIfPhase(GameManager.host.cycleVariables, PhaseStateMachine.currentPhase);
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
@@ -175,13 +183,7 @@ export const PHASES = {
                 }
             }
 
-            //ADD dead messages
-            for(let playerName in GameManager.host.players){
-                let player = GameManager.host.players[playerName];
-
-                if(!player.cycleVariables.diedTonight.value) continue;
-                player.showDied();
-            }
+            
 
             standardStartPhase();
         },
