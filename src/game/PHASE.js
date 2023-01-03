@@ -246,6 +246,9 @@ export const PHASES = {
                 player.resetCycleVariables(PhaseStateMachine.currentPhase);
             }
 
+            GameManager.HOST_TO_CLIENT["VOTED_NUMBER_CHANGE"].send();
+            GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
+
             GameManager.host.cycleVariables.numVotesNeeded.value = Math.floor(GameManager.host.getPlayersWithFilter((p)=>{return p.alive}).length / 2) + 1;
             GameManager.host.cycleVariables.playerOnTrial.value = null;
 

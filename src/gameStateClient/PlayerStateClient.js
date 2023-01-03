@@ -9,6 +9,7 @@ export class PlayerStateClient{
         this.votedForNumber = 0;
         this.alive = true;
         this.suffixes = [];
+        this.votedByNum = 0;
         //["Dead", "Mayor"]
     }
 }

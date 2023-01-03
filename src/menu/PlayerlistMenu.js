@@ -13,10 +13,10 @@ export class PlayerListMenu extends React.Component {
         super(props);
 
         this.state = {
-            roomCode: "",
-            roleName: "",
+            roomCode : "",
+            roleName : "",
 
-            players: {},
+            players : {},
             header : "Mafia",
             phaseName : "",
 
@@ -24,7 +24,7 @@ export class PlayerListMenu extends React.Component {
             votedForName : null,
             judgementStatus : 0,
             playerOnTrialName : GameManager.client.cycle.playerOnTrialName,
-            chatGroupSendList: [],
+            chatGroupSendList : [],
 
             timeLeft : GameManager.client.timeLeft,
 
@@ -100,7 +100,7 @@ export class PlayerListMenu extends React.Component {
                         roleName : GameManager.client.roleName,
                     });
                 }
-            }
+            },
         };
     }
     componentDidMount() {
@@ -173,25 +173,32 @@ export class PlayerListMenu extends React.Component {
             let deadSuffix = player.suffixes.includes("Died");
 
             out.push([player,
-                (<div key={playerName} className="Main-box" style={{"backgroundColor": deadSuffix?"#aaaaaa":undefined }}>
+                (<div key={playerName} className="Main-box" style={{"backgroundColor": deadSuffix?"#aaaaaa":undefined}}>
+
                     {playerName}<br/>
+                    {(()=>{
+                        if(this.state.phaseName === "Voting" && player.votedByNum !== 0)
+                            return (<div>{player.votedByNum}<br/></div>)
+                    })()}
+                    
+                    
                     {player.suffixes.map((s,i)=>(<div key={i}>({s})</div>))}
                     <div>
-                    {(()=>{
-                        let color = this.state.chatGroupSendList.includes(playerName)?(GameManager.COLOR.GREYED_OUT):null
-                        if(player.availableButtons.whisper)
-                            return (<Button width={`${90/numButtons}%`} text="Whisper" color={color} onClick={() => {GameManager.client.clickWhisper(playerName)}}/>);
-                    })()}
+                        {(()=>{
+                            let color = this.state.chatGroupSendList.includes(playerName)?(GameManager.COLOR.GREYED_OUT):null
+                            if(player.availableButtons.whisper)
+                                return (<Button width={`${90/numButtons}%`} text="Whisper" color={color} onClick={() => {GameManager.client.clickWhisper(playerName)}}/>);
+                        })()}
 
-                    {(()=>{
-                        if(player.availableButtons.target)
-                            return (<Button width={`${90/numButtons}%`} text="Target" onClick={() => {GameManager.client.clickTarget(playerName)}}/>);
-                    })()}
+                        {(()=>{
+                            if(player.availableButtons.target)
+                                return (<Button width={`${90/numButtons}%`} text="Target" onClick={() => {GameManager.client.clickTarget(playerName)}}/>);
+                        })()}
 
-                    {(()=>{
-                        if(player.availableButtons.vote)
-                            return (<Button width={`${90/numButtons}%`} text="Vote" onClick={()=>{GameManager.client.clickVote(playerName)}}/>);
-                    })()}
+                        {(()=>{
+                            if(player.availableButtons.vote)
+                                return (<Button width={`${90/numButtons}%`} text="Vote" onClick={()=>{GameManager.client.clickVote(playerName)}}/>);
+                        })()}
                     </div>
 
                 </div>)]

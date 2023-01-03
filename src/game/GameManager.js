@@ -623,7 +623,6 @@ let GameManager = {
             if(this.spamPreventer()) return;
             if(this.spamMessagePreventer()) return;
 
-
             GameManager.CLIENT_TO_HOST["SEND_MESSAGE"].send(
                 GameManager.client.playerName, GameManager.client.chatGroupSendList, 
                 new ChatMessageStateClient(
@@ -817,7 +816,9 @@ let GameManager = {
                 
                 let playerOnTrial = GameManager.host.someoneVoted();
 
-                
+                GameManager.HOST_TO_CLIENT["VOTED_NUMBER_CHANGE"].send();
+                GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
+
                 if(playerOnTrial){
                     GameManager.host.cycleVariables.playerOnTrial.value = playerOnTrial;
                     PhaseStateMachine.startPhase("Testimony");
@@ -844,7 +845,11 @@ let GameManager = {
 
                 GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].send(contents.playerName, player.canVoteList());
                 GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
-                                
+
+                GameManager.host.someoneVoted();
+                
+                GameManager.HOST_TO_CLIENT["VOTED_NUMBER_CHANGE"].send();
+                GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
             }
         ),
         "BUTTON_JUDGEMENT":new MessageType(false,
@@ -1186,6 +1191,24 @@ let GameManager = {
                 }
 
                 GameManager.client.cycle.votedForName = null;
+            }
+        ),
+        "VOTED_NUMBER_CHANGE":new MessageType(true, 
+            ()=>{
+                let obj = {};
+                
+                for(let playerName in GameManager.host.players){
+                    let player = GameManager.host.players[playerName];
+                    obj[playerName] = player.cycleVariables.votedBy.value.length;
+                }
+                GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["VOTED_NUMBER_CHANGE"], {
+                    playersToVotedByNum : obj,
+                });
+            },
+            (contents)=>{
+                for(let playerName in contents.playersToVotedByNum){
+                    GameManager.client.players[playerName].votedByNum = contents.playersToVotedByNum[playerName];
+                }
             }
         ),
         "BUTTON_JUDGEMENT_RESPONSE":new MessageType(true,
