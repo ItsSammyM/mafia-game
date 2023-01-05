@@ -57,18 +57,22 @@ weird stuff
 let GameManager = {
 
     COLOR : {
-        IMPORTANT : "#FFFF77",  //#fae457
+        GREYED_OUT: "#555555",
+
+        IMPORTANT: "#FFFF77",
         IMPORTANT_RED: "#EE0000",
-        GREYED_OUT: "#999999", //grey obviously
 
-        GAME_TO_YOU : "#009F00",    //light green
-        GAME_TO_ALL : "#006000",    //dark green
+        DISCUSSION_CHAT: "#9daafa",
+        DEAD_CHAT: "#0c1a75",
+        TEAM_CHAT: "#752f71",
 
-        MY_CHAT : "#00a0c0",    //light blue
-        CHAT : "#00a0c8",   //dark blue
+        WHISPER_CHAT: "#ff00fb",
+        NIGHT_SPECIAL_CHAT: "#4f0694",   //medium seance
+        
+        VOTE_CHAT: "#ffa159",
 
-        DEAD_CHAT : "#7a0078", //dark purple
-        WHISPER_CHAT: "#ff00fb"   //magenta
+        PHASE_CHANGE_CHAT: "#036e21",
+        NIGHT_INFORMATION_CHAT: "#36f76d",
     },
     MAX_NAME_LENGTH : 20,
     MAX_MESSAGE_LENGTH : 300,
@@ -184,8 +188,6 @@ let GameManager = {
 
             let informationList = [];
             let playerIndividual = {};
-
-            //informationList.push(new ChatMessageState("NoTitle", "All Player", GameManager.COLOR.GAME_TO_ALL));
 
             //SET PHASE TIMES
             for(let phaseName in PHASES){
@@ -317,7 +319,7 @@ let GameManager = {
                             player.addChatMessage(new ChatMessageState(
                                 null,
                                 "You have no target so you will become a Jester.",
-                                GameManager.COLOR.GAME_TO_YOU
+                                GameManager.COLOR.IMPORTANT
                             ));
                             return null;
                         }
@@ -326,7 +328,7 @@ let GameManager = {
                         player.addChatMessage(new ChatMessageState(
                             null,
                             "Your target is "+exeTarget.name,
-                            GameManager.COLOR.GAME_TO_YOU
+                            GameManager.COLOR.IMPORTANT
                         ));
                         return exeTarget;
                     })(player);
@@ -418,7 +420,7 @@ let GameManager = {
         endGame(){
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
-                player.addChatMessage(new ChatMessageState("Game Over", "Win conditions not implemented yet", GameManager.COLOR.GAME_TO_YOU));
+                player.addChatMessage(new ChatMessageState("Game Over", "Win conditions not implemented yet", GameManager.COLOR.IMPORTANT_RED));
             }
             GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
         },
@@ -501,7 +503,6 @@ let GameManager = {
         starTimeMs : 0,
         timeLeftMs : 0,
 
-        savedNotePad : {},
         /*
             savedNotePad:{
                 Will: "Sus",
@@ -509,6 +510,7 @@ let GameManager = {
             }
 
         */
+        savedNotePad : {},
 
         graves : {},
 
@@ -629,8 +631,12 @@ let GameManager = {
                     GameManager.client.playerName,
                     message,
                     (
-                        GameManager.client.chatGroupSendList.includes("All")?GameManager.COLOR.CHAT:
+                        GameManager.client.chatGroupSendList.includes("All")?GameManager.COLOR.DISCUSSION_CHAT:
                         GameManager.client.chatGroupSendList.includes("Dead")?GameManager.COLOR.DEAD_CHAT:
+
+                        GameManager.client.chatGroupSendList.includes("Mafia")?GameManager.COLOR.TEAM_CHAT:
+                        GameManager.client.chatGroupSendList.includes("Vampire")?GameManager.COLOR.TEAM_CHAT:
+                        GameManager.client.chatGroupSendList.includes("Coven")?GameManager.COLOR.TEAM_CHAT:
                         GameManager.COLOR.WHISPER_CHAT
                     )
                 ));
@@ -764,7 +770,7 @@ let GameManager = {
                     targetedPlayer
                 );
 
-                player.addChatMessage(new ChatMessageStateClient("Target", "You targeted "+targetedPlayer.name, GameManager.COLOR.GAME_TO_YOU));
+                player.addChatMessage(new ChatMessageStateClient("Target", "You targeted "+targetedPlayer.name, GameManager.COLOR.NIGHT_INFORMATION_CHAT));
                 
                 //GameManager.client.addMessage(new ChatMessageStateClient("Target", "You targeted "+contents.playerTargetedName, GameManager.COLOR.GAME_TO_YOU));
                 GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONSE"].send(contents.playerName, player.cycleVariables.targeting.value.map((p)=>p.name), player.canTargetList());
@@ -782,7 +788,7 @@ let GameManager = {
                 if(!player.cycleVariables.targeting.value.length>0) return;
                 player.clearTarget();
 
-                player.addChatMessage(new ChatMessageStateClient("Clear Targets", "Your targets have been reset", GameManager.COLOR.GAME_TO_YOU));
+                player.addChatMessage(new ChatMessageStateClient("Clear Targets", "Your targets have been reset", GameManager.COLOR.NIGHT_INFORMATION_CHAT));
 
                 GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].send(contents.playerName, player.canTargetList());
                 GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
@@ -808,7 +814,7 @@ let GameManager = {
 
                 for(let otherPlayerName in GameManager.host.players){
                     let otherPlayer = GameManager.host.players[otherPlayerName]
-                    otherPlayer.addChatMessage(new ChatMessageStateClient("Vote", contents.playerName+" voted for "+contents.playerVotedName, GameManager.COLOR.CHAT));
+                    otherPlayer.addChatMessage(new ChatMessageStateClient("Vote", contents.playerName+" voted for "+contents.playerVotedName, GameManager.COLOR.VOTE_CHAT));
                 }
 
                 GameManager.HOST_TO_CLIENT["BUTTON_VOTE_RESPONSE"].send(contents.playerName, contents.playerVotedName, player.canVoteList());
@@ -840,7 +846,7 @@ let GameManager = {
                 
                 for(let otherPlayerName in GameManager.host.players){
                     let otherPlayer = GameManager.host.players[otherPlayerName];
-                    otherPlayer.addChatMessage(new ChatMessageStateClient("Clear Votes", contents.playerName+" stopped voting for "+playerVotingName, GameManager.COLOR.CHAT));
+                    otherPlayer.addChatMessage(new ChatMessageStateClient("Clear Votes", contents.playerName+" stopped voting for "+playerVotingName, GameManager.COLOR.VOTE_CHAT));
                 }
 
                 GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].send(contents.playerName, player.canVoteList());
@@ -873,6 +879,7 @@ let GameManager = {
                 chatMessage:chatMessage,
             })},
             (contents)=>{
+                //trim message, fix it up
                 contents.chatMessage.text = contents.chatMessage.text.substring(0,GameManager.MAX_MESSAGE_LENGTH).trim();
                 if(contents.chatMessage.text===""||!contents.chatMessage.text) return;
 
@@ -890,7 +897,7 @@ let GameManager = {
                         //if its a whisper chat then loop through players and tell them whats happened
                         for(let playerName in GameManager.host.players){
                             let player = GameManager.host.players[playerName];
-                            player.addChatMessage(new ChatMessageState(null, contents.playerName+" is whispering to "+chatGroup, GameManager.COLOR.GAME_TO_ALL));
+                            player.addChatMessage(new ChatMessageState(null, "\""+contents.playerName+"\" is whispering to \""+chatGroup+"\"", GameManager.COLOR.IMPORTANT));
                         }
                     }
 
@@ -1146,7 +1153,6 @@ let GameManager = {
                     player.availableButtons.target = contents.canTargetList.includes(playerName);
                 }
                 
-                //GameManager.client.addMessage(new ChatMessageStateClient("Clear Targets", "Your targets have been reset", GameManager.COLOR.GAME_TO_YOU));
                 GameManager.client.cycle.targetedPlayerNames = [];
             }
         ),
@@ -1157,10 +1163,6 @@ let GameManager = {
                 canVoteList : canVoteList,
             })},
             (contents)=>{
-                //create message saying someone was voted for in chat
-
-                //GameManager.client.addMessage(new ChatMessageStateClient("Vote", contents.playerName+" voted for "+contents.playerVotedName, GameManager.COLOR.CHAT));
-
                 if(contents.playerName !== GameManager.client.playerName)
                     return;
 
@@ -1179,8 +1181,6 @@ let GameManager = {
             })},
             (contents)=>{
                 //create message saying someone was voted for in chat
-
-                //GameManager.client.addMessage(new ChatMessageStateClient("Clear Votes", contents.playerName+" stopped voting for "+contents.currentPlayerVotedName, GameManager.COLOR.CHAT));
 
                 if(contents.playerName !== GameManager.client.playerName)
                     return;

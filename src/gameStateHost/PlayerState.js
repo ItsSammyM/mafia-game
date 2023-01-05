@@ -123,7 +123,7 @@ export class PlayerState{
         this.addChatMessage(new ChatMessageState(
             this.getRoleObject().faction+" "+this.getRoleObject().alignment+", "+this.roleName, 
             this.getRoleObject().basicDescription, 
-            GameManager.COLOR.GAME_TO_YOU
+            GameManager.COLOR.IMPORTANT
         ));
     }
     getRoleObject(){
@@ -218,10 +218,10 @@ export class PlayerState{
         this.cycleVariables.roleblockedTonight.value = true;
         if(!this.getRoleObject().roleblockable)
             this.addNightInformation(
-                new ChatMessageState(null, "Someone attempted to roleblock you but you were immune", GameManager.COLOR.GAME_TO_YOU), false
+                new ChatMessageState(null, "Someone attempted to roleblock you but you were immune", GameManager.COLOR.NIGHT_INFORMATION_CHAT), false
             );
         else 
-            this.addNightInformation(new ChatMessageState(null, "You were roleblocked", GameManager.COLOR.GAME_TO_YOU), false);
+            this.addNightInformation(new ChatMessageState(null, "You were roleblocked", GameManager.COLOR.NIGHT_INFORMATION_CHAT), false);
     }
     tryNightKill(attacker, attackPower){
         /*
@@ -240,14 +240,14 @@ export class PlayerState{
         this.cycleVariables.extra.value.attackedTonight = true;
         if(this.cycleVariables.defenseTonight.value >= attackPower){
             //safe
-            attacker.addNightInformation(new ChatMessageState(null, "Your target had defense and survived", GameManager.COLOR.GAME_TO_YOU), false);
-            this.addNightInformation(new ChatMessageState(null, "You were attacked but had defense and survived", GameManager.COLOR.GAME_TO_YOU), false);
+            attacker.addNightInformation(new ChatMessageState(null, "Your target had defense and survived", GameManager.COLOR.NIGHT_INFORMATION_CHAT), false);
+            this.addNightInformation(new ChatMessageState(null, "You were attacked but had defense and survived", GameManager.COLOR.NIGHT_INFORMATION_CHAT), false);
             
         }else{
             //die
             this.cycleVariables.attackedBy.value.push(attacker);
 
-            this.addNightInformation(new ChatMessageState(null, "You were attacked and died", GameManager.COLOR.GAME_TO_YOU), false);
+            this.addNightInformation(new ChatMessageState(null, "You were attacked and died", GameManager.COLOR.IMPORTANT_RED), false);
             this.cycleVariables.diedTonight.value = true;
             this.die();
         }

@@ -1,10 +1,12 @@
+Show trials left
+notes on people
+
+meme button
+
 WHISPERING SOMEONE NAMED Mafia
 
 COLORS!!!!!!!!!!!
         - MAKE MEDIUM SEANCE CLEAR
-
-Retributionist target cant be transported for some reason
-Retributionist has an attack of 0 so cant kill anyone
 
 make so enter roomcode first
 show players joined to non hosts
@@ -46,8 +48,7 @@ Thomas thing
 //JOURNALIST -- can write in a journal and anonymously post to town every morning
 //LEEROY JENKINS -- You pick someone during the day and they die instantly revealing your name to everyone
         i reveal as mayor /// NO YOU DONT!
-// --Hides what everyone is voting for and gives themself 3x vote
-//Jounralist
+//NO NAME YET --Hides what everyone is voting for and gives themself 3x vote
 //KIRBY -- you pick someone and you swap roles. you litterally cannot win with this role. Obviously neutral chaos
 
 

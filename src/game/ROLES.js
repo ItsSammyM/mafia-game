@@ -108,7 +108,7 @@ export const ROLES = {
             player.addNightInformation(new ChatMessageState(
                 null,
                 "Your target seems to be " + (myTarget.cycleVariables.disguisedAsTonight.value.cycleVariables.isSuspiciousTonight.value ? "suspicious." : "innocent."),
-                GameManager.COLOR.GAME_TO_YOU
+                GameManager.COLOR.NIGHT_INFORMATION_CHAT
             ), true);
         },
         null,
@@ -143,7 +143,7 @@ export const ROLES = {
             player.addNightInformation(new ChatMessageState(
                 null,
                 "This is who visited your target: " + outString,
-                GameManager.COLOR.GAME_TO_YOU
+                GameManager.COLOR.NIGHT_INFORMATION_CHAT
             ), true);
         },
         null,
@@ -194,14 +194,14 @@ export const ROLES = {
                 player.addNightInformation(new ChatMessageState(
                     null,
                     "Your target could be one of these roles: " + outString,
-                    GameManager.COLOR.GAME_TO_YOU
+                    GameManager.COLOR.NIGHT_INFORMATION_CHAT
                 ), true);
             }
             if(!foundResult)
                 player.addNightInformation(new ChatMessageState(
                     null,
                     "Your target is: " + myTarget.cycleVariables.disguisedAsTonight.value.roleName,
-                    GameManager.COLOR.GAME_TO_YOU
+                    GameManager.COLOR.NIGHT_INFORMATION_CHAT
                 ), true);            
         },
         null,
@@ -241,11 +241,11 @@ export const ROLES = {
 
             if(mafiaVisitedSomeone){
                 player.addNightInformation(new ChatMessageState(
-                    null, outString, GameManager.COLOR.GAME_TO_YOU
+                    null, outString, GameManager.COLOR.NIGHT_INFORMATION_CHAT
                 ),true);
             }else{
                 player.addNightInformation(new ChatMessageState(
-                    null, "The mafia didn't visit anyone", GameManager.COLOR.GAME_TO_YOU
+                    null, "The mafia didn't visit anyone", GameManager.COLOR.NIGHT_INFORMATION_CHAT
                 ),true);
             }
 
@@ -264,7 +264,7 @@ export const ROLES = {
                     player.addNightInformation(new ChatMessageState(
                         information[0].title,
                         "Targets message: "+information[0].text,
-                        GameManager.COLOR.GAME_TO_YOU
+                        GameManager.COLOR.NIGHT_INFORMATION_CHAT
                     ), true);
             }
         },
@@ -298,7 +298,7 @@ export const ROLES = {
                 player.addNightInformation(new ChatMessageState(
                     null,
                     "You went on alert tonight, you now have "+player.roleExtra.alertsLeft+" alerts left",
-                    GameManager.COLOR.GAME_TO_YOU
+                    GameManager.COLOR.NIGHT_INFORMATION_CHAT
                 ), true);
 
                 if(player.cycleVariables.defenseTonight.value < 2) player.cycleVariables.defenseTonight.value = 2;
@@ -312,7 +312,7 @@ export const ROLES = {
                         player.addNightInformation(new ChatMessageState(
                             null,
                             "You attacked someone who visited you",
-                            GameManager.COLOR.GAME_TO_YOU
+                            GameManager.COLOR.NIGHT_INFORMATION_CHAT
                         ), true);
                     }
                 }
@@ -350,7 +350,7 @@ export const ROLES = {
                 player.addNightInformation(new ChatMessageState(
                     null,
                     "You attempt suicide due to the guilt of killing a town member",
-                    GameManager.COLOR.GAME_TO_YOU
+                    GameManager.COLOR.NIGHT_INFORMATION_CHAT
                 ), true);
 
             }else if(priority === 6){
@@ -413,9 +413,9 @@ export const ROLES = {
                     player.addNightInformation(new ChatMessageState(
                         null,
                         "You healed your target",
-                        GameManager.COLOR.GAME_TO_YOU
+                        GameManager.COLOR.NIGHT_INFORMATION_CHAT
                     ), true);
-                    myTarget.addNightInformation(new ChatMessageState(null, "You were healed by a Doctor", GameManager.COLOR.GAME_TO_YOU), false);
+                    myTarget.addNightInformation(new ChatMessageState(null, "You were healed by a Doctor", GameManager.COLOR.NIGHT_INFORMATION_CHAT), false);
                 }
             }
         },
@@ -489,9 +489,9 @@ export const ROLES = {
                 player.addNightInformation(new ChatMessageState(
                     null,
                     "You redirected an attack from your target",
-                    GameManager.COLOR.GAME_TO_YOU
+                    GameManager.COLOR.NIGHT_INFORMATION_CHAT
                 ), true);
-                myTarget.addNightInformation(new ChatMessageState(null, "A Bodyguard redirected an attack off you.", GameManager.COLOR.GAME_TO_YOU), false);
+                myTarget.addNightInformation(new ChatMessageState(null, "A Bodyguard redirected an attack off you.", GameManager.COLOR.NIGHT_INFORMATION_CHAT), false);
             }
         },
         (myPlayer, otherPlayer)=>{
@@ -588,12 +588,12 @@ export const ROLES = {
             myTarget1.addNightInformation(new ChatMessageState(
                 null,
                 "You were transported",
-                GameManager.COLOR.GAME_TO_YOU
+                GameManager.COLOR.NIGHT_INFORMATION_CHAT
             ), false);
             myTarget2.addNightInformation(new ChatMessageState(
                 null,
                 "You were transported",
-                GameManager.COLOR.GAME_TO_YOU
+                GameManager.COLOR.GAME_TNIGHT_INFORMATION_CHATO_YOU
             ), false);
 
             for(let otherPlayerName in GameManager.host.players){
@@ -661,7 +661,7 @@ export const ROLES = {
                     player.addNightInformation(new ChatMessageState(
                         null,
                         "Your targets role could not be used.",
-                        GameManager.COLOR.GAME_TO_YOU
+                        GameManager.COLOR.NIGHT_INFORMATION_CHAT
                     ), true);
                 }else{
                     player.cycleVariables.targeting.value = [];
@@ -731,7 +731,7 @@ export const ROLES = {
                     player.addNightInformation(new ChatMessageState(
                         null,
                         "You forced a mafioso to target your target",
-                        GameManager.COLOR.GAME_TO_YOU
+                        GameManager.COLOR.NIGHT_INFORMATION_CHAT
                     ), true);   
                 }
                 if(foundMafioso) //clear myself
@@ -810,7 +810,7 @@ export const ROLES = {
             myTarget.addNightInformation(new ChatMessageState(
                 "BLACKMAILED",
                 "You were blackmailed. Do not under any circumstances speak during the next day. You can not write in chat. You can still vote.",
-                GameManager.COLOR.GAME_TO_YOU
+                GameManager.COLOR.IMPORTANT_RED
             ), false);
         },
         null,
@@ -836,7 +836,7 @@ export const ROLES = {
             player.addNightInformation(new ChatMessageState(
                 null,
                 "Your targets role was "+myTarget.cycleVariables.investigativeResultTonight.value,
-                GameManager.COLOR.GAME_TO_YOU
+                GameManager.COLOR.NIGHT_INFORMATION_CHAT
             ), true);
         },
         null,
@@ -875,7 +875,7 @@ export const ROLES = {
                 outString = outString.substring(0, outString.length-2);
 
                 player.addNightInformation(new ChatMessageState(null,
-                    "You framed these visitors: "+outString, GameManager.COLOR.GAME_TO_YOU), true);
+                    "You framed these visitors: "+outString, GameManager.COLOR.NIGHT_INFORMATION_CHAT), true);
 
                 
             }else{
@@ -959,12 +959,12 @@ export const ROLES = {
                 player.addNightInformation(new ChatMessageState(
                     null,
                     "Your targets role was "+myTarget.roleName,
-                    GameManager.COLOR.GAME_TO_YOU
+                    GameManager.COLOR.NIGHT_INFORMATION_CHAT
                 ), true);
                 player.addNightInformation(new ChatMessageState(
                     null,
                     "Your targets will was :"+myTarget.savedNotePad['Will'],
-                    GameManager.COLOR.GAME_TO_YOU
+                    GameManager.COLOR.NIGHT_INFORMATION_CHAT
                 ), true);
             }
         },
@@ -1030,13 +1030,13 @@ export const ROLES = {
             if(!myTarget.alive){
                 player.addNightInformation(new ChatMessageState(
                     null,
-                    "Your targets real role was "+myTarget.roleName,
-                    GameManager.COLOR.GAME_TO_YOU
+                    "Your targets role was "+myTarget.roleName,
+                    GameManager.COLOR.NIGHT_INFORMATION_CHAT
                 ), true);
                 player.addNightInformation(new ChatMessageState(
                     null,
-                    "Your targets real will was :"+myTarget.savedNotePad['Will'],
-                    GameManager.COLOR.GAME_TO_YOU
+                    "Your targets will was :"+myTarget.savedNotePad['Will'],
+                    GameManager.COLOR.NIGHT_INFORMATION_CHAT
                 ), true);
             }
         },
@@ -1148,13 +1148,13 @@ export const ROLES = {
                     player.addNightInformation(new ChatMessageState(
                         null,
                         "Your target was immune to being controlled",
-                        GameManager.COLOR.GAME_TO_YOU
+                        GameManager.COLOR.NIGHT_INFORMATION_CHAT
                     ), true);
 
                     myTarget1.addNightInformation(new ChatMessageState(
                         null,
                         "A witch tried to control you but you are immune",
-                        GameManager.COLOR.GAME_TO_YOU
+                        GameManager.COLOR.NIGHT_INFORMATION_CHAT
                     ), false);
                     return;
                 }
@@ -1162,13 +1162,13 @@ export const ROLES = {
                 myTarget1.addNightInformation(new ChatMessageState(
                     null,
                     "You were controlled by a witch",
-                    GameManager.COLOR.GAME_TO_YOU
+                    GameManager.COLOR.NIGHT_INFORMATION_CHAT
                 ), false);
                 myTarget1.cycleVariables.targeting.value = [myTarget2];
                 player.addNightInformation(new ChatMessageState(
                     null,
                     "Your first targets role was "+myTarget1.roleName,
-                    GameManager.COLOR.GAME_TO_YOU),
+                    GameManager.COLOR.NIGHT_INFORMATION_CHAT),
                     true
                 );
             }
@@ -1197,7 +1197,7 @@ export const ROLES = {
                         new ChatMessageState(
                             myTarget1.cycleVariables.nightInformation.value[i][0].title,
                             "Targets message: "+myTarget1.cycleVariables.nightInformation.value[i][0].text,
-                            GameManager.COLOR.GAME_TO_YOU
+                            GameManager.COLOR.NIGHT_INFORMATION_CHAT
                         ),
                         myTarget1.cycleVariables.nightInformation.value[i][1]
                     );
@@ -1239,7 +1239,7 @@ export const ROLES = {
                     player.addNightInformation(new ChatMessageState(
                         null,
                         "You cleaned the gas off yourself",
-                        GameManager.COLOR.GAME_TO_YOU),
+                        GameManager.COLOR.NIGHT_INFORMATION_CHAT),
                         true
                     );
                 player.extra.doused = false;
@@ -1253,7 +1253,7 @@ export const ROLES = {
                     player.addNightInformation(new ChatMessageState(
                         null,
                         "You doused a visitor named "+player.cycleVariables.targetedBy.value[i].name,
-                        GameManager.COLOR.GAME_TO_YOU
+                        GameManager.COLOR.NIGHT_INFORMATION_CHAT
                     ), true);
                     
                     player.cycleVariables.targetedBy.value[i].extra.doused = true;
@@ -1275,7 +1275,7 @@ export const ROLES = {
                 player.addNightInformation(new ChatMessageState(
                     null,
                     "You doused "+myTarget.name,
-                    GameManager.COLOR.GAME_TO_YOU
+                    GameManager.COLOR.NIGHT_INFORMATION_CHAT
                 ), true);
             }
             else if(priority === 6){    //ignite

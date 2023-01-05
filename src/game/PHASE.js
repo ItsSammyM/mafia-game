@@ -62,7 +62,7 @@ export const PHASES = {
 
             let informationListMessage = [];
 
-            informationListMessage.push(new ChatMessageState("Night "+GameManager.host.cycleNumber, null, GameManager.COLOR.GAME_TO_ALL));
+            informationListMessage.push(new ChatMessageState("Night "+GameManager.host.cycleNumber, null, GameManager.COLOR.PHASE_CHANGE_CHAT));
 
             //give players target buttons
             for(let playerName in GameManager.host.players){
@@ -134,7 +134,7 @@ export const PHASES = {
 
             PhaseStateMachine.startPhase("Morning");
         },
-        "#24248f"
+        "#555555"
     ),
     "Morning":new Phase(1,
         ()=>{
@@ -154,7 +154,7 @@ export const PHASES = {
 
             let informationListMessage = [];
 
-            informationListMessage.push(new ChatMessageState("Morning "+GameManager.host.cycleNumber, null, GameManager.COLOR.GAME_TO_ALL));
+            informationListMessage.push(new ChatMessageState("Morning "+GameManager.host.cycleNumber, null, GameManager.COLOR.PHASE_CHANGE_CHAT));
             
             //main loop
             for(let playerName in GameManager.host.players){
@@ -192,7 +192,7 @@ export const PHASES = {
 
             PhaseStateMachine.startPhase("Discussion");
         },
-        "#2d3646"
+        "#2b58c2"
     ),
     "Discussion":new Phase(1,
         ()=>{
@@ -203,7 +203,7 @@ export const PHASES = {
             }
             let informationListMessage = [];
 
-            informationListMessage.push(new ChatMessageState("Discussion "+GameManager.host.cycleNumber, null, GameManager.COLOR.GAME_TO_ALL));
+            informationListMessage.push(new ChatMessageState("Discussion "+GameManager.host.cycleNumber, null, GameManager.COLOR.PHASE_CHANGE_CHAT));
 
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
@@ -257,7 +257,7 @@ export const PHASES = {
             informationListMessage.push(new ChatMessageState(
                 "Voting "+GameManager.host.cycleNumber,
                 "You need at least "+GameManager.host.cycleVariables.numVotesNeeded.value+" votes to trial someone.",
-                GameManager.COLOR.GAME_TO_ALL
+                GameManager.COLOR.PHASE_CHANGE_CHAT
             ));
 
             for(let playerName in GameManager.host.players){
@@ -288,7 +288,7 @@ export const PHASES = {
             //if somebody is voted then voting wouldnt have timed out
             PhaseStateMachine.startPhase("Night");
         },
-        "#107d5c"
+        "#2b58c2"
     ),
     "Testimony":new Phase(1,
         ()=>{
@@ -305,7 +305,7 @@ export const PHASES = {
             informationListMessage.push(new ChatMessageState(
                 "Testimony "+GameManager.host.cycleNumber,
                 GameManager.host.cycleVariables.playerOnTrial.value.name+" is on trial.", 
-                GameManager.COLOR.GAME_TO_ALL
+                GameManager.COLOR.PHASE_CHANGE_CHAT
             ));
 
             for(let playerName in GameManager.host.players){
@@ -351,7 +351,7 @@ export const PHASES = {
             informationListMessage.push(new ChatMessageState(
                 "Judgement "+GameManager.host.cycleNumber,
                 GameManager.host.cycleVariables.playerOnTrial.value.name+" is on trial.", 
-                GameManager.COLOR.GAME_TO_ALL
+                GameManager.COLOR.PHASE_CHANGE_CHAT
             ));
 
             for(let playerName in GameManager.host.players){
@@ -402,7 +402,7 @@ export const PHASES = {
                 whoVotedMessages.push(new ChatMessageState(
                     null,
                     player.name+out, 
-                    GameManager.COLOR.GAME_TO_ALL
+                    GameManager.COLOR.VOTE_CHAT
                 ));
             }
             for(let playerName in GameManager.host.players){
@@ -421,7 +421,7 @@ export const PHASES = {
                 //innocent and no more trials
                 for(let playerName in GameManager.host.players){
                     let player = GameManager.host.players[playerName];
-                    player.addChatMessage(new ChatMessageState(null, "No trials left today", GameManager.COLOR.GAME_TO_ALL));
+                    player.addChatMessage(new ChatMessageState(null, "No trials left today", GameManager.COLOR.PHASE_CHANGE_CHAT));
                 }
                 PhaseStateMachine.startPhase("Night");
             }
@@ -442,7 +442,7 @@ export const PHASES = {
             informationListMessage.push(new ChatMessageState(
                 "Final Words " + GameManager.host.cycleNumber,
                 null, 
-                GameManager.COLOR.GAME_TO_ALL
+                GameManager.COLOR.PHASE_CHANGE_CHAT
             ));
 
             for(let playerName in GameManager.host.players){
@@ -485,6 +485,6 @@ export const PHASES = {
             
             PhaseStateMachine.startPhase("Night");
         },
-        "#2d3646"
+        "#2bc26a"
     )
 }

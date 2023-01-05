@@ -21,15 +21,18 @@ export class MainMenu extends React.Component {
     componentWillUnmount() {
         MainMenu.instance = undefined;
     }
+
     onChangeMessageListener(msg){
         this.setState({enteredMessage : msg})
     }
     setBackgroundColor(c){
         this.setState({backgroundColor: c});
     }
+
     setRightPanel(s){
         this.setState({rightPanel : s})
     }
+
     render(){return(
         
         <div style={{
@@ -46,14 +49,14 @@ export class MainMenu extends React.Component {
                     overflowX: "hidden",
                     borderRight: "1px solid black",
                     maxHeight : "100vh",
-                    width: !(!msg || msg==="") ? "100vw" : "50vw",
+                    //width: !(!msg || msg==="") ? "100vw" : "50vw",
                 }}>
                     <ChatMenu onChangeMessageListener={(msg) => this.onChangeMessageListener(msg)}/>
                 </div>)
             })(this.state.enteredMessage)}
 
             {((msg)=>{
-                if(!msg || msg==="")
+                //if(!msg || msg==="")
                     return(<div style={{
                         gridColumn: 2,
                         gridRow: 1,

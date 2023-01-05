@@ -45,6 +45,7 @@ export class NotePadMenu extends React.Component {
 
             <div style={{width:"90%", display:"inline-block"}}>
                 <Button width="50%" onClick={()=>{
+                    this.clickSave();
                     this.loadNotePad("Will");
                 }}>
                     <div style={this.state.notePadName==="Will"?{
@@ -54,6 +55,7 @@ export class NotePadMenu extends React.Component {
                 </Button>
 
                 <Button width="50%" onClick={()=>{
+                    this.clickSave();
                     this.loadNotePad("Note");
                 }}>
                     <div style={this.state.notePadName==="Note"?{
@@ -67,11 +69,12 @@ export class NotePadMenu extends React.Component {
 
             <div style={{width:"90%", display:"inline-block"}}>
                 <Button width="50%" text="Back" onClick={()=>{
+                    this.clickSave();
                     MainMenu.instance.setRightPanel(<PlayerListMenu/>);
                 }}/>
-                <Button width="50%" text="Save" color={this.state.saved?null:GameManager.COLOR.IMPORTANT} onClick={()=>{
+                {/* <Button width="50%" text="Save" color={this.state.saved?null:GameManager.COLOR.IMPORTANT} onClick={()=>{
                     this.clickSave();
-                }}/>
+                }}/> */}
             </div><br/>
 
         </div>
