@@ -1,5 +1,4 @@
 import PubNub from "pubnub"
-import { generateRandomString } from "./functions";
 
 /*
 {

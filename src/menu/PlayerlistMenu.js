@@ -168,7 +168,7 @@ export class PlayerListMenu extends React.Component {
         for(let playerName in this.state.players){
             let player = this.state.players[playerName];
 
-            let numButtons = player.availableButtons.whisper+player.availableButtons.target+player.availableButtons.vote;
+            let numButtons = player.availableButtons.whisper+player.availableButtons.target+player.availableButtons.vote+player.availableButtons.dayTarget;
 
             let deadSuffix = player.suffixes.includes("Died");
 
@@ -193,6 +193,11 @@ export class PlayerListMenu extends React.Component {
                         {(()=>{
                             if(player.availableButtons.target)
                                 return (<Button width={`${90/numButtons}%`} text="Target" onClick={() => {GameManager.client.clickTarget(playerName)}}/>);
+                        })()}
+
+                        {(()=>{
+                            if(player.availableButtons.dayTarget)
+                                return (<Button width={`${90/numButtons}%`} text="Day Target" onClick={() => {GameManager.client.clickDayTarget(playerName)}}/>);
                         })()}
 
                         {(()=>{

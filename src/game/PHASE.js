@@ -76,6 +76,7 @@ export const PHASES = {
                     player.availableButtons[otherPlayerName].target = player.getRoleObject().canTargetFunction(player, otherPlayer);
                     player.availableButtons[otherPlayerName].vote = false;
                     player.availableButtons[otherPlayerName].whisper = false;
+                    player.availableButtons[otherPlayerName].dayTarget = false;
                 }
                 player.addChatMessages(informationListMessage);
 
@@ -165,7 +166,12 @@ export const PHASES = {
 
                     player.availableButtons[otherPlayerName].target = false;
                     player.availableButtons[otherPlayerName].vote = false;
-                    if(playerName !== otherPlayerName && player.alive && otherPlayer.alive) player.availableButtons[otherPlayerName].whisper = true;
+                    player.availableButtons[otherPlayerName].dayTarget = player.getRoleObject().canDayTargetFunction(player, otherPlayer);
+                    player.availableButtons[otherPlayerName].whisper = 
+                        playerName !== otherPlayerName && 
+                        player.alive && otherPlayer.alive && 
+                        player.getRoleObject().name !=="Mayor" && otherPlayer.getRoleObject().name !=="Mayor"
+                    ;
                 }
                 
                 player.addChatMessages(informationListMessage);
@@ -213,7 +219,12 @@ export const PHASES = {
 
                     player.availableButtons[otherPlayerName].target = false;
                     player.availableButtons[otherPlayerName].vote = false;
-                    if(playerName !== otherPlayerName && player.alive && otherPlayer.alive) player.availableButtons[otherPlayerName].whisper = true;
+                    player.availableButtons[otherPlayerName].dayTarget = player.getRoleObject().canDayTargetFunction(player, otherPlayer);
+                    player.availableButtons[otherPlayerName].whisper = 
+                        playerName !== otherPlayerName && 
+                        player.alive && otherPlayer.alive && 
+                        player.getRoleObject().name !=="Mayor" && otherPlayer.getRoleObject().name !=="Mayor"
+                    ;
                 }
                 
                 player.addChatMessages(informationListMessage);
@@ -267,8 +278,13 @@ export const PHASES = {
                     let otherPlayer = GameManager.host.players[otherPlayerName];
 
                     player.availableButtons[otherPlayerName].target = false;
+                    player.availableButtons[otherPlayerName].dayTarget = player.getRoleObject().canDayTargetFunction(player, otherPlayer);
                     player.canVote(otherPlayer);
-                    if(playerName !== otherPlayerName && player.alive && otherPlayer.alive) player.availableButtons[otherPlayerName].whisper = true;
+                    player.availableButtons[otherPlayerName].whisper = 
+                        playerName !== otherPlayerName && 
+                        player.alive && otherPlayer.alive && 
+                        player.getRoleObject().name !=="Mayor" && otherPlayer.getRoleObject().name !=="Mayor"
+                    ;
                     
                 }
 
@@ -316,7 +332,12 @@ export const PHASES = {
 
                     player.availableButtons[otherPlayerName].target = false;
                     player.availableButtons[otherPlayerName].vote = false;
-                    if(playerName !== otherPlayerName && player.alive && otherPlayer.alive) player.availableButtons[otherPlayerName].whisper = true;
+                    player.availableButtons[otherPlayerName].dayTarget = player.getRoleObject().canDayTargetFunction(player, otherPlayer);
+                    player.availableButtons[otherPlayerName].whisper = 
+                        playerName !== otherPlayerName && 
+                        player.alive && otherPlayer.alive && 
+                        player.getRoleObject().name !=="Mayor" && otherPlayer.getRoleObject().name !=="Mayor"
+                    ;
                 }
 
                 player.addChatMessages(informationListMessage);
@@ -362,7 +383,12 @@ export const PHASES = {
 
                     player.availableButtons[otherPlayerName].target = false;
                     player.availableButtons[otherPlayerName].vote = false;
-                    if(playerName !== otherPlayerName && player.alive && otherPlayer.alive) player.availableButtons[otherPlayerName].whisper = true;
+                    player.availableButtons[otherPlayerName].dayTarget = player.getRoleObject().canDayTargetFunction(player, otherPlayer);
+                    player.availableButtons[otherPlayerName].whisper = 
+                        playerName !== otherPlayerName && 
+                        player.alive && otherPlayer.alive && 
+                        player.getRoleObject().name !=="Mayor" && otherPlayer.getRoleObject().name !=="Mayor"
+                    ;
                 }
 
                 player.addChatMessages(informationListMessage);
@@ -382,12 +408,23 @@ export const PHASES = {
             let whoVotedMessages = [];
             let totalJudgement = 0;
 
+            let innocentJudgement = 0;
+            let guiltyJudgement = 0;
+
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
 
                 if(!player.alive) continue;
                 if(player === GameManager.host.cycleVariables.playerOnTrial.value) continue;
 
+                if(player.getRoleObject().name === "Mayor" && player.roleExtra.revealed){
+                    //litterally the worst code ever written
+                    if(player.cycleVariables.judgement.value>0)innocentJudgement+=2;
+                    if(player.cycleVariables.judgement.value<0)guiltyJudgement+=2;
+                    totalJudgement += 2*player.cycleVariables.judgement.value;
+                }
+                if(player.cycleVariables.judgement.value>0)innocentJudgement++;
+                if(player.cycleVariables.judgement.value<0)guiltyJudgement++;
                 totalJudgement += player.cycleVariables.judgement.value;
 
                 let out = "";
@@ -409,6 +446,11 @@ export const PHASES = {
                 let player = GameManager.host.players[playerName];
 
                 player.addChatMessages(whoVotedMessages);
+                player.addChatMessage(new ChatMessageState(
+                    `Results`,
+                    `Innocent Votes: ${innocentJudgement}\nGuilty Votes: ${guiltyJudgement}`, 
+                    GameManager.COLOR.VOTE_CHAT
+                ))
             }
 
             if(totalJudgement < 0){
@@ -452,8 +494,13 @@ export const PHASES = {
                     let otherPlayer = GameManager.host.players[otherPlayerName];
 
                     player.availableButtons[otherPlayerName].target = false;
+                    player.availableButtons[otherPlayerName].dayTarget = player.getRoleObject().canDayTargetFunction(player, otherPlayer);
                     player.availableButtons[otherPlayerName].vote = false;
-                    if(playerName !== otherPlayerName && player.alive && otherPlayer.alive) player.availableButtons[otherPlayerName].whisper = true;
+                    player.availableButtons[otherPlayerName].whisper = 
+                        playerName !== otherPlayerName && 
+                        player.alive && otherPlayer.alive && 
+                        player.getRoleObject().name !=="Mayor" && otherPlayer.getRoleObject().name !=="Mayor"
+                    ;
                 }
 
                 player.addChatMessages(informationListMessage);
@@ -470,12 +517,9 @@ export const PHASES = {
         },
         ()=>{
             if(GameManager.host.cycleVariables.playerOnTrial.value){
-                GameManager.host.cycleVariables.playerOnTrial.value.
-                    cycleVariables.shownRoleName.reset();
-                GameManager.host.cycleVariables.playerOnTrial.value.
-                    cycleVariables.shownWill.reset();
-                GameManager.host.cycleVariables.playerOnTrial.value.
-                    cycleVariables.attackedBy.value.push("Lynching");
+                GameManager.host.cycleVariables.playerOnTrial.value.cycleVariables.shownRoleName.reset();
+                GameManager.host.cycleVariables.playerOnTrial.value.cycleVariables.shownWill.reset();
+                GameManager.host.cycleVariables.playerOnTrial.value.cycleVariables.attackedBy.value.push("Lynching");
 
                 GameManager.host.cycleVariables.playerOnTrial.value.die();
                 GameManager.host.cycleVariables.playerOnTrial.value.showDied();

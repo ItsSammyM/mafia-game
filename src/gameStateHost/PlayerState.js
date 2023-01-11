@@ -16,7 +16,7 @@ export class PlayerState{
         this.chatGroupSendList = [];
 
         /*{
-            "otherPlayerName":{target:false,whisper:false,vote:false}
+            "otherPlayerName":{target:false,whisper:false,vote:false,dayTarget:false}
         }*/ this.availableButtons = {};
         /*{
             "otherPlayerName":["Dead", "Mayor"]
@@ -76,7 +76,7 @@ export class PlayerState{
     }
     setUpAvailableButtons(players){
         for(let playerName in players){
-            this.availableButtons[playerName] = {target:false, whisper: false, vote:false};
+            this.availableButtons[playerName] = {target:false, whisper: false, vote:false, dayTarget:false};
             this.suffixes[playerName] = [];
         }
     }

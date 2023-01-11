@@ -1,4 +1,5 @@
 import { ChatMessageState } from "../gameStateHost/ChatMessageState";
+import { ChatMessageStateClient } from "../gameStateClient/ChatMessageStateClient";
 import { shuffledList } from "./functions";
 import GameManager from "./GameManager"
 
@@ -14,7 +15,9 @@ export class Role{
      * @param {bool} _isSuspicious
      * @param {Object} _extraPersist
      * @param {function} _doRole
+     * @param {function} _doDayTarget
      * @param {function} _canTargetFunction
+     * @param {function} _canDayTargetFunction
      * @param {Array} _astralVisitsList
      */
     constructor(
@@ -26,8 +29,10 @@ export class Role{
         _defense, _attack, 
         _roleblockable, _witchable, _isSuspicious, 
         _extraPersist, 
-        _doRole, 
+        _doRole,
+        _doDayTarget,
         _canTargetFunction,
+        _canDayTargetFunction,
         _astralVisitsList,
         ){
         this.name = _name;
@@ -53,6 +58,7 @@ export class Role{
 
         this.extraPersist=_extraPersist;
         this.doRole=_doRole;
+        this.doDayTarget = _doDayTarget?_doDayTarget:(myPlayer, otherPlayer)=>{};
 
         this.canTargetFunction = _canTargetFunction ? _canTargetFunction : (myPlayer, otherPlayer)=>{
             let otherInMyTeam = Role.onSameTeam(myPlayer, otherPlayer);
@@ -63,6 +69,9 @@ export class Role{
                 !otherInMyTeam && //not on same team
                 myPlayer.cycleVariables.targeting.value.length < 1    //havent already targeted at least 1 person
             );
+        };
+        this.canDayTargetFunction = _canDayTargetFunction ? _canDayTargetFunction : (myPlayer, otherPlayer)=>{
+            return false;
         };
         this.astralVisitsList = _astralVisitsList;
     }
@@ -112,6 +121,8 @@ export const ROLES = {
             ), true);
         },
         null,
+        null,
+        null,
         null
     ),
     "Lookout":new Role(
@@ -146,6 +157,8 @@ export const ROLES = {
                 GameManager.COLOR.NIGHT_INFORMATION_CHAT
             ), true);
         },
+        null,
+        null,
         null,
         null
     ),
@@ -204,6 +217,7 @@ export const ROLES = {
                     GameManager.COLOR.NIGHT_INFORMATION_CHAT
                 ), true);            
         },
+        null,
         null,
         null
     ),
@@ -269,6 +283,8 @@ export const ROLES = {
             }
         },
         null,
+        null,
+        null,
         null
     ),
     "Veteran":new Role(
@@ -318,6 +334,7 @@ export const ROLES = {
                 }
             }
         },
+        null,
         (myPlayer, otherPlayer)=>{
             return (
                 myPlayer.cycleVariables.aliveTonight.value && //im alive
@@ -326,6 +343,7 @@ export const ROLES = {
                 myPlayer.roleExtra.alertsLeft > 0
             );
         },
+        null,
         [true]
     ),
     "Vigilante":new Role(
@@ -367,6 +385,7 @@ export const ROLES = {
                     player.roleExtra.didShootTownie = true;
             }
         },
+        null,
         (myPlayer, otherPlayer)=>{
             return (
                 myPlayer.name!==otherPlayer.name && //Not targeting myself
@@ -378,6 +397,7 @@ export const ROLES = {
                 !myPlayer.roleExtra.didShootTownie  //didnt shoot a townie
             );
         },
+        null,
         null
     ),
     "Doctor":new Role(
@@ -399,6 +419,7 @@ export const ROLES = {
             if(!myTarget.cycleVariables.aliveTonight.value) return;
 
             if(player.roleExtra.selfHealed && player === myTarget) return; //if already self healed and trying it again
+            if(myTarget.getRoleObject().name === "Mayor" && myTarget.roleExtra.revealed) return;    //cant heal revealed mayor
 
             if(priority === 2){
                 if(player === myTarget) player.roleExtra.selfHealed=true;
@@ -419,6 +440,7 @@ export const ROLES = {
                 }
             }
         },
+        null,
         (myPlayer, otherPlayer)=>{
             return (
                 otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
@@ -430,6 +452,7 @@ export const ROLES = {
                 ) 
             );
         },
+        null,
         null
     ),
     "Bodyguard":new Role(
@@ -494,6 +517,7 @@ export const ROLES = {
                 myTarget.addNightInformation(new ChatMessageState(null, "A Bodyguard redirected an attack off you.", GameManager.COLOR.NIGHT_INFORMATION_CHAT), false);
             }
         },
+        null,
         (myPlayer, otherPlayer)=>{
             return (
                 otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
@@ -506,21 +530,32 @@ export const ROLES = {
             );
         },
         null,
+        null,
     ),
     "Mayor":new Role(
-        "Mayor", "Reveal any time during the day, from that moment forward you will get 3 times the voting power", "🏛️",
-        "You can't do anyhting during night, but revealing will confirm to everyone what your role is without question.",
+        "Mayor", "Target yourself during the day to reveal. From that moment forward you will get 3 times the voting power.", "🏛️",
+        "You can't do anyhting during night, but revealing will confirm to everyone what your role is without question. Other players cant whisper you and Doctors cant heal you.",
         "No night ability",
         "Town", "Support", null, 
-        "Town", 0,  //this should be 1
+        "Town", 1,
         0, 0,
         true, true, false,
         {revealed : false},
-        (priority, player)=>{
-
-        },
+        (priority, player)=>{},
         (myPlayer, otherPlayer)=>{
-            return false;
+            if(myPlayer.roleExtra.revealed) return
+            myPlayer.roleExtra.revealed = true;
+            for(let anyPlayerName in GameManager.host.players){
+                let anyPlayer = GameManager.host.players[anyPlayerName];
+                anyPlayer.addChatMessage(new ChatMessageStateClient("MAYOR", myPlayer.name+" has revealed as the Mayor!", GameManager.COLOR.IMPORTANT));
+                anyPlayer.addSuffix(myPlayer.name, "Revealed Mayor");
+                GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
+                GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
+            }
+        },
+        (myPlayer, otherPlayer)=>false,
+        (myPlayer, otherPlayer)=>{
+            return myPlayer===otherPlayer && !myPlayer.roleExtra.revealed
         },
         null
     ),
@@ -537,9 +572,9 @@ export const ROLES = {
         (priority, player)=>{
 
         },
-        (myPlayer, otherPlayer)=>{
-            return false;
-        },
+        null,
+        (myPlayer, otherPlayer)=>false,
+        null,
         null
     ),
     "Escort":new Role(
@@ -561,6 +596,8 @@ export const ROLES = {
 
             myTarget.roleblock();
         },
+        null,
+        null,
         null,
         null
     ),
@@ -617,6 +654,7 @@ export const ROLES = {
                 
             }
         },
+        null,
         (myPlayer, otherPlayer)=>{
 
             return (
@@ -626,70 +664,8 @@ export const ROLES = {
                 (myPlayer.cycleVariables.targeting.value[0] !== otherPlayer)
             );
         },
+        null,
         null
-    ),
-    "Retributionist":new Role(
-        "Retributionist", "Raise a player from the dead and use their ability. One use per player", "🧟",
-        "When you use their ability, you are visiting, but you dont become their role. You can only use people whos roles are witchable.",
-        "-7 > Choose who your using, Then their priority takes over.",
-        "Town", "Support", null,
-        "Town", 0,
-        0, 0,
-        false, false, false,
-        {
-            playersUsed : [],
-            lastPlayerUsed : null,
-        },
-        (priority, player)=>{
-            if(priority === -7){
-                //remove lastPlayerUsed at start of night
-                player.roleExtra.lastPlayerUsed = null;
-
-                //then normal stuff
-                if(player.cycleVariables.targeting.value.length !== 2) return;  //if i didnt target 2 people then no
-                if(!player.cycleVariables.aliveTonight.value) return;   //if im dead then no
-
-                let myTarget1 = player.cycleVariables.targeting.value[0];
-                let myTarget2 = player.cycleVariables.targeting.value[1];
-
-                if(myTarget1.cycleVariables.aliveTonight.value) return; //if first target is alive then no
-                if(!myTarget2.cycleVariables.aliveTonight.value) return;    //if second target is dead then no
-
-                if(player.roleExtra.playersUsed.includes(myTarget1)) return; //if first target was used then no
-
-                if(!myTarget1.getRoleObject().witchable){
-                    player.addNightInformation(new ChatMessageState(
-                        null,
-                        "Your targets role could not be used.",
-                        GameManager.COLOR.NIGHT_INFORMATION_CHAT
-                    ), true);
-                }else{
-                    player.cycleVariables.targeting.value = [];
-                    player.cycleVariables.targeting.value.push(myTarget2);
-                    player.roleExtra.lastPlayerUsed = myTarget1;
-                    player.roleExtra.playersUsed.push(myTarget1);
-                }
-            }
-            
-            if(player.roleExtra.lastPlayerUsed){
-                player.roleExtra.lastPlayerUsed.getRoleObject().doRole(priority, player);
-            }
-        },
-        (myPlayer, otherPlayer)=>{
-            return(
-                myPlayer.cycleVariables.aliveTonight.value && //im alive
-                ((
-                    !otherPlayer.cycleVariables.aliveTonight.value && //theyre dead
-                    myPlayer.cycleVariables.targeting.value.length === 0 &&  //targeting 0 people so far
-                    !myPlayer.roleExtra.playersUsed.includes(otherPlayer)   //didnt already use them
-                ) 
-                ||
-                (
-                    otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
-                    myPlayer.cycleVariables.targeting.value.length === 1  //targeting 1 person so far
-                ))
-            )
-        }
     ),
     //#endregion
     //#region Mafia
@@ -741,6 +717,8 @@ export const ROLES = {
             }
         },
         null,
+        null,
+        null,
         null
     ),
     "Mafioso":new Role(
@@ -764,6 +742,8 @@ export const ROLES = {
             myTarget.tryNightKill(player, player.cycleVariables.attackTonight.value);
         },
         null,
+        null,
+        null,
         null
     ),
     "Consort":new Role(
@@ -786,6 +766,8 @@ export const ROLES = {
 
             myTarget.roleblock();
         },
+        null,
+        null,
         null,
         null
     ),
@@ -814,6 +796,8 @@ export const ROLES = {
             ), false);
         },
         null,
+        null,
+        null,
         null
     ),
     "Consigliere":new Role(
@@ -839,6 +823,8 @@ export const ROLES = {
                 GameManager.COLOR.NIGHT_INFORMATION_CHAT
             ), true);
         },
+        null,
+        null,
         null,
         null
     ),
@@ -885,6 +871,7 @@ export const ROLES = {
                 myTarget.cycleVariables.investigativeResultTonight.value = "Framer";
             }
         },
+        null,
         (myPlayer, otherPlayer)=>{
             let otherInMyTeam = Role.onSameTeam(myPlayer, otherPlayer);
             return (
@@ -895,6 +882,7 @@ export const ROLES = {
                 myPlayer.cycleVariables.targeting.value.length < 1    //havent already targeted at least 1 person
             );
         },
+        null,
         null
     ),
     "Disguiser":new Role(
@@ -922,6 +910,7 @@ export const ROLES = {
             myTarget1.cycleVariables.disguisedAsTonight.value = myTarget2;
             myTarget2.cycleVariables.disguisedAsTonight.value = myTarget1;
         },
+        null,
         (myPlayer, otherPlayer)=>{
             return (
                 otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
@@ -930,6 +919,7 @@ export const ROLES = {
                 (myPlayer.cycleVariables.targeting.value[0] !== otherPlayer)  //cant target same person twice
             );
         },
+        null,
         null
     ),
     "Janitor":new Role(
@@ -968,6 +958,7 @@ export const ROLES = {
                 ), true);
             }
         },
+        null,
         (myPlayer, otherPlayer)=>{
             let otherInMyTeam = Role.onSameTeam(myPlayer, otherPlayer);
             return(
@@ -979,6 +970,7 @@ export const ROLES = {
                 myPlayer.roleExtra.cleansLeft > 0  //has cleans left
             );
         },
+        null,
         null
     ),
     "Forger":new Role(
@@ -1040,6 +1032,7 @@ export const ROLES = {
                 ), true);
             }
         },
+        null,
         (myPlayer, otherPlayer)=>{
             let otherInMyTeam = Role.onSameTeam(myPlayer, otherPlayer);
             return(
@@ -1051,6 +1044,7 @@ export const ROLES = {
                 myPlayer.roleExtra.forgesLeft > 0  //has forges left
             );
         },
+        null,
         null
     ),
     //#endregion
@@ -1080,6 +1074,7 @@ export const ROLES = {
             
             myTarget.tryNightKill(player, 3);
         },
+        null,
         (myPlayer, otherPlayer)=>{
             return(
                 otherPlayer.cycleVariables.judgement.value <= 0 && //voted guilty
@@ -1089,6 +1084,7 @@ export const ROLES = {
                 myPlayer.cycleVariables.targeting.value.length < 1    //i didnt already target someone
             );
         },
+        null,
         null
     ),
     "Executioner":new Role(
@@ -1112,7 +1108,9 @@ export const ROLES = {
                 )
                 GameManager.host.changePlayerRole(player, "Jester");
         },
+        null,
         (myPlayer, otherPlayer)=>false,
+        null,
         null
     ),
     "Witch":new Role(
@@ -1204,6 +1202,7 @@ export const ROLES = {
                 }
             }
         },
+        null,
         (myPlayer, otherPlayer)=>{
             return (
                 otherPlayer.cycleVariables.aliveTonight.value && //theyre alive
@@ -1215,6 +1214,7 @@ export const ROLES = {
                 )
             );
         },
+        null,
         [false, true]
     ),
     "Arsonist":new Role(
@@ -1292,6 +1292,7 @@ export const ROLES = {
             }
 
         },
+        null,
         (myPlayer, otherPlayer)=>{
             return (
                 //myPlayer.name!==otherPlayer.name && //Not targeting myself
@@ -1301,6 +1302,7 @@ export const ROLES = {
                 myPlayer.cycleVariables.targeting.value.length < 1    //havent already targeted at least 1 person
             );
         },
+        null,
         null
     ),
     "Werewolf":new Role(
@@ -1340,6 +1342,7 @@ export const ROLES = {
                 }
             }
         },
+        null,
         (myPlayer, otherPlayer)=>{
             return (
                 !(GameManager.host.cycleNumber === 1 || GameManager.host.cycleNumber === 3) &&   //its not night 1 or 3
@@ -1350,6 +1353,7 @@ export const ROLES = {
                 myPlayer.cycleVariables.targeting.value.length < 1    //havent already targeted at least 1 person
             );
         },
+        null,
         null
     ),
     "Vampire":new Role(
@@ -1384,6 +1388,8 @@ export const ROLES = {
                 GameManager.host.changePlayerRole(myTarget, "Vampire");
             }
         },
+        null,
+        null,
         null,
         null
     )

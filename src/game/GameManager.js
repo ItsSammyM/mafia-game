@@ -1,5 +1,5 @@
 import { PubNubWrapper } from "./PubNubWrapper"
-import { generateRandomString, shuffleList, shuffledList, mergeSort} from "./functions"
+import { generateRandomString, shuffledList, mergeSort} from "./functions"
 import { PlayerState } from "../gameStateHost/PlayerState";
 import { PlayerStateClient } from "../gameStateClient/PlayerStateClient";
 import { Main } from "../Main"
@@ -148,10 +148,12 @@ let GameManager = {
                 let player = GameManager.host.players[playerName];
 
                 if(player.cycleVariables.voting.value){
+                    if(player.getRoleObject().name === "Mayor" && player.roleExtra.revealed){
+                        player.cycleVariables.voting.value.cycleVariables.votedBy.value.push(player);
+                        player.cycleVariables.voting.value.cycleVariables.votedBy.value.push(player);
+                    }
                     player.cycleVariables.voting.value.cycleVariables.votedBy.value.push(player);
                 }
-
-                
             }
             //check if someone voted
             for(let playerName in GameManager.host.players){
@@ -598,6 +600,11 @@ let GameManager = {
 
             GameManager.CLIENT_TO_HOST["BUTTON_TARGET"].send(GameManager.client.playerName, name);
         },
+        clickDayTarget : function(name){
+            if(this.spamPreventer()) return;
+
+            GameManager.CLIENT_TO_HOST["BUTTON_DAY_TARGET"].send(GameManager.client.playerName, name);
+        },
         clickClearTarget : function(){
             if(this.spamPreventer()) return;
 
@@ -750,6 +757,34 @@ let GameManager = {
                 GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
             }
         ),
+        "BUTTON_DAY_TARGET":new MessageType(false,
+            /**
+             * 
+             * @param {String} playerName
+             * @param {String} targetingName
+             */
+            (playerName, targetingName)=>{GameManager.client.sendMessage(GameManager.CLIENT_TO_HOST["BUTTON_DAY_TARGET"], {
+                playerName: playerName,
+                targetingName: targetingName
+            })},
+            (contents)=>{
+                if(PhaseStateMachine.currentPhase === "Night") return;
+
+                let player = GameManager.host.players[contents.playerName];
+                let targetedPlayer = GameManager.host.players[contents.targetingName];
+
+                player.addChatMessage(new ChatMessageStateClient("Day Target", "You targeted "+targetedPlayer.name, GameManager.COLOR.IMPORTANT));
+                player.getRoleObject().doDayTarget(player, targetedPlayer);
+                for(let otherPlayerName in GameManager.host.players){
+                    let otherPlayer = GameManager.host.players[otherPlayerName];
+
+                    player.availableButtons[otherPlayerName].dayTarget = player.getRoleObject().canDayTargetFunction(player, otherPlayer);
+                }
+
+                GameManager.HOST_TO_CLIENT["AVAILABLE_BUTTONS"].send(contents.playerName);
+                GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
+            }
+        ),
         "BUTTON_TARGET":new MessageType(false,
             /**
              * 
@@ -771,6 +806,13 @@ let GameManager = {
                 );
 
                 player.addChatMessage(new ChatMessageStateClient("Target", "You targeted "+targetedPlayer.name, GameManager.COLOR.NIGHT_INFORMATION_CHAT));
+                //also tell teammates
+                for(let anyPlayerName in GameManager.host.players){
+                    let anyPlayer = GameManager.host.players[anyPlayerName];
+                    if (Role.onSameTeam(anyPlayer, player) && anyPlayer!==player){
+                        anyPlayer.addChatMessage(new ChatMessageStateClient("Teammate Target", player.name+" targeted "+targetedPlayer.name, GameManager.COLOR.NIGHT_INFORMATION_CHAT));
+                    }
+                }
                 
                 //GameManager.client.addMessage(new ChatMessageStateClient("Target", "You targeted "+contents.playerTargetedName, GameManager.COLOR.GAME_TO_YOU));
                 GameManager.HOST_TO_CLIENT["BUTTON_TARGET_RESPONSE"].send(contents.playerName, player.cycleVariables.targeting.value.map((p)=>p.name), player.canTargetList());
@@ -789,6 +831,14 @@ let GameManager = {
                 player.clearTarget();
 
                 player.addChatMessage(new ChatMessageStateClient("Clear Targets", "Your targets have been reset", GameManager.COLOR.NIGHT_INFORMATION_CHAT));
+
+                //also tell teammates
+                for(let anyPlayerName in GameManager.host.players){
+                    let anyPlayer = GameManager.host.players[anyPlayerName];
+                    if (Role.onSameTeam(anyPlayer, player) && anyPlayer!==player){
+                        anyPlayer.addChatMessage(new ChatMessageStateClient("Teammate Clear Targets", player.name+" reset targets", GameManager.COLOR.NIGHT_INFORMATION_CHAT));
+                    }
+                }
 
                 GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].send(contents.playerName, player.canTargetList());
                 GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
