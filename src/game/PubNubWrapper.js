@@ -15,8 +15,8 @@ import { generateRandomString } from "./functions";
 export class PubNubWrapper{
     constructor(){
         this.pubnub = new PubNub({
-            publishKey : "pub-c-f6860906-b4ba-4702-8e65-2b88b0026fdf",
-            subscribeKey : "sub-c-253627e6-df37-4bd4-ba07-57e843d14d3d",
+            publishKey : "pub-c-8abb7529-d03c-4cfa-8e7a-ec593711850a",
+            subscribeKey : "sub-c-091aa3b6-b945-497a-8886-962e2c254230",
             uuid: "this-is-a-test-uuid-for-pubnub"// Date.now().toString() + " " + generateRandomString(5)
         });
 
