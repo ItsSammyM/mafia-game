@@ -357,15 +357,7 @@ let GameManager = {
                 player.resetCycleVariables(true);
                 GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.roleName);
             }
-            GameManager.HOST_TO_CLIENT["ROLE_LIST_AND_PLAYERS"].send(
-                GameManager.host.roleList, 
-                ((()=>{
-                    let out = [];
-                    for(let playerName in GameManager.host.players){
-                        out.push(playerName);
-                    }
-                    return out;
-                })()));
+            GameManager.HOST_TO_CLIENT["ROLE_LIST_AND_PLAYERS"].send();
 
             GameManager.HOST_TO_CLIENT["INVESTIGATIVE_RESULTS"].send();
             GameManager.HOST_TO_CLIENT["START_GAME"].send();
@@ -481,6 +473,7 @@ let GameManager = {
         kickPlayer(playerName){
             delete GameManager.host.players[playerName];
             GameManager.HOST_TO_CLIENT["KICK"].send(playerName);
+            GameManager.HOST_TO_CLIENT["PLAYER_NAME_LIST"].send();
         }
     },
     client : {
@@ -708,23 +701,18 @@ let GameManager = {
                 if(!GameManager.host.gameStarted){
                     if(!alreadyJoined)
                         GameManager.host.players[contents.playerName] = (new PlayerState(contents.playerName));
-
+                    
                     GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, true);
+                    setTimeout(()=>{GameManager.HOST_TO_CLIENT["PLAYER_NAME_LIST"].send();}, 1000);
+                    
+                    
                 }else{
                     // LATE JOINING IMPLEment LAteR
                     if(alreadyJoined){
                         let player = GameManager.host.players[contents.playerName];
 
                         GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(player.name, true, true);
-                        GameManager.HOST_TO_CLIENT["ROLE_LIST_AND_PLAYERS"].send(GameManager.host.roleList, 
-                            ((()=>{
-                                let out = [];
-                                for(let playerName in GameManager.host.players){
-                                    out.push(playerName);
-                                }
-                                return out;
-                            })()) 
-                        );
+                        GameManager.HOST_TO_CLIENT["ROLE_LIST_AND_PLAYERS"].send();
                         
                         GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.roleName);
                         GameManager.HOST_TO_CLIENT["AVAILABLE_BUTTONS"].send(player.name);  //This didnt work once. giving people who rejoin vote buttons that didnt work anyway
@@ -1013,9 +1001,15 @@ let GameManager = {
             }
         ),
         "ROLE_LIST_AND_PLAYERS":new MessageType(true,
-            (roleList, allPlayerNames)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["ROLE_LIST_AND_PLAYERS"], {
-                roleList: roleList,
-                allPlayerNames: allPlayerNames,
+            ()=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["ROLE_LIST_AND_PLAYERS"], {
+                roleList: GameManager.host.roleList,
+                allPlayerNames: ((()=>{
+                    let out = [];
+                    for(let playerName in GameManager.host.players){
+                        out.push(playerName);
+                    }
+                    return out;
+                })()),
             })},
             (contents)=>{
                 GameManager.client.roleList = contents.roleList;
@@ -1025,6 +1019,18 @@ let GameManager = {
                         GameManager.client.players[contents.allPlayerNames[i]] = new PlayerStateClient(contents.allPlayerNames[i]);
                 }
             }
+        ),
+        "PLAYER_NAME_LIST":new MessageType(true,
+            ()=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["PLAYER_NAME_LIST"], {
+                allPlayerNames: ((()=>{
+                    let out = [];
+                    for(let playerName in GameManager.host.players){
+                        out.push(playerName);
+                    }
+                    return out;
+                })()),
+            })},
+            (contents)=>{}
         ),
         "YOUR_ROLE":new MessageType(true,
             (playerName, roleName)=>{GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["YOUR_ROLE"], {

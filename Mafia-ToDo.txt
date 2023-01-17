@@ -4,12 +4,10 @@ notes on people
 meme button
 
 WHISPERING SOMEONE NAMED Mafia
-
-COLORS!!!!!!!!!!!
-        - MAKE MEDIUM SEANCE CLEAR
+MAKE MEDIUM CLEAR
+ADD MEDIUM SEANCE
 
 make so enter roomcode first
-show players joined to non hosts
 
 redo setPhase and setCycle in client because theyre weird and wrong
 
@@ -17,9 +15,6 @@ EACH TARGET SHOULD BE AN OBJECT
 TARGET WILL STORE WEATHER IT IS ASTRAL, AN ATTACK, ATTACK POWER, TARGETER, TARGETED
 
 add way to refresh page while waiting
-
-fix mayor -- set non 0 amount of mayors, make mayor work
---- add medium seance
 
 skip phase button
 
