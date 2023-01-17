@@ -631,7 +631,8 @@ let GameManager = {
 
             if(this.spamPreventer()) return;
             if(this.spamMessagePreventer()) return;
-
+            
+            
             GameManager.CLIENT_TO_HOST["SEND_MESSAGE"].send(
                 GameManager.client.playerName, GameManager.client.chatGroupSendList, 
                 new ChatMessageStateClient(
@@ -1082,6 +1083,8 @@ let GameManager = {
                 GameManager.client.cycleNumber = contents.cycleNumber;
                 if(MainMenu.instance)
                     MainMenu.instance.setBackgroundColor(contents.backgroundColor);
+                if(Main.instance)
+                    Main.instance.playSound();
                 
             }
         ),

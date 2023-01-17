@@ -72,9 +72,9 @@ export class NotePadMenu extends React.Component {
                     this.clickSave();
                     MainMenu.instance.setRightPanel(<PlayerListMenu/>);
                 }}/>
-                {/* <Button width="50%" text="Save" color={this.state.saved?null:GameManager.COLOR.IMPORTANT} onClick={()=>{
+                { <Button width="50%" text="Save" color={this.state.saved?null:GameManager.COLOR.IMPORTANT} onClick={()=>{
                     this.clickSave();
-                }}/> */}
+                }}/> }
             </div><br/>
 
         </div>

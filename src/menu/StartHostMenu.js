@@ -147,6 +147,7 @@ export class StartHostMenu extends React.Component {
         <br/>
         <br/>
         <br/>
+
         <div className="Main-header">
             Mafia
         </div><br/>

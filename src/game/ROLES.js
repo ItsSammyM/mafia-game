@@ -544,6 +544,7 @@ export const ROLES = {
         (priority, player)=>{},
         (myPlayer, otherPlayer)=>{
             if(myPlayer.roleExtra.revealed) return
+            if(!myPlayer.alive) return
             myPlayer.roleExtra.revealed = true;
             for(let anyPlayerName in GameManager.host.players){
                 let anyPlayer = GameManager.host.players[anyPlayerName];
