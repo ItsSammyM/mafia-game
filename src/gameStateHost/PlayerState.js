@@ -13,7 +13,7 @@ export class PlayerState{
         this.unsentChatMessageStream = [];
         this.unsentChatMessageStreamBufferLength = 10;
 
-        this.chatGroupSendList = [];
+        this.chatGroupSendList = [];    //current chat groups theyre sending in
 
         /*{
             "otherPlayerName":{target:false,whisper:false,vote:false,dayTarget:false}
@@ -61,9 +61,8 @@ export class PlayerState{
                 attackedTonight : false,
                 isVeteranOnAlert : false,
                 blackmailed : false,
-                //savedByBodyguard : false,
-                //killedTonight : false
             }}),
+            talkWithTonight : new CycleVariable('Morning', ()=>[]), //set to another playerName and then you can whisper them during night
 
             nightInformation : new CycleVariable('Night', ()=>[]),
 

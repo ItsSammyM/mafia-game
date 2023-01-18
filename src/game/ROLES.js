@@ -533,7 +533,7 @@ export const ROLES = {
         null,
     ),
     "Mayor":new Role(
-        "Mayor", "Target yourself during the day to reveal. From that moment forward you will get 3 times the voting power.", "🏛️",
+        "Mayor", "Day Target yourself to reveal. From that moment forward you will get 3 times the voting power.", "🏛️",
         "You can't do anyhting during night, but revealing will confirm to everyone what your role is without question. Other players cant whisper you and Doctors cant heal you.",
         "No night ability",
         "Town", "Support", null, 
@@ -562,7 +562,7 @@ export const ROLES = {
     ),
     "Medium":new Role(
         "Medium", "You can talk with the dead during the night. After you die, you can seance one living person.", "🔮",
-        "You can only speak with the dead during the night so try to get as much information as possible during the night. After you die, you can use your seance ability one time to chat with a lviing player during the night. \n"+
+        "You can only speak with the dead during the night so try to get as much information as possible during the night. After you die, Day Target someone to confirm that you will senace them during the night. You can then speak with them during the following night. \n"+
         "Its good to write down quotes from dead players so you can use them when trying to proove your innocence. Remember your simply a medium for the dead to speak with the living.",
         "No night ability. Exept seance.",
         "Town", "Support", null,
@@ -570,12 +570,18 @@ export const ROLES = {
         0, 0,
         true, true, false,
         {seancesLeft : 1},
-        (priority, player)=>{
-
+        (priority, player)=>{},
+        (myPlayer, otherPlayer)=>{
+            //day ability
+            myPlayer.roleExtra.seancesLeft--;
+            myPlayer.cycleVariables.talkWithTonight.value.push(otherPlayer.name);
+            otherPlayer.cycleVariables.talkWithTonight.value.push(myPlayer.name);
         },
-        null,
         (myPlayer, otherPlayer)=>false,
-        null,
+        (myPlayer, otherPlayer)=>{
+            //if were not the same person and i have seances left and im dead and your alive
+            return myPlayer!==otherPlayer && myPlayer.roleExtra.seancesLeft >= 1 && !myPlayer.alive && otherPlayer.cycleVariables.aliveTonight.value
+        },
         null
     ),
     "Escort":new Role(

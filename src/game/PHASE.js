@@ -91,6 +91,13 @@ export const PHASES = {
                 if(player.getRoleObject().name === "Medium" && player.cycleVariables.aliveTonight.value){
                     GameManager.host.chatGroups["Dead"].push(player);
                 }
+
+                //add talkWithTonight chats
+                for(let i in player.cycleVariables.talkWithTonight.value){
+                    let chatGroupName = player.cycleVariables.talkWithTonight.value[i];
+                    
+                    player.chatGroupSendList.push(chatGroupName);
+                }
             }
             
             standardStartPhase();
