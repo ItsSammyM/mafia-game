@@ -926,53 +926,24 @@ let GameManager = {
                 contents.message = contents.message.substring(0,GameManager.MAX_MESSAGE_LENGTH).trim();
                 if(contents.message===""||!contents.message) return;
 
-                let chatGroupNameToColor = {
-                    "Vampire" : GameManager.COLOR.TEAM_CHAT,
-                    "Mafia" : GameManager.COLOR.TEAM_CHAT,
-                    "Coven" : GameManager.COLOR.TEAM_CHAT,
-
-                    "Dead" : GameManager.COLOR.DEAD_CHAT,
-                    "All" : GameManager.COLOR.DISCUSSION_CHAT,
-                }
-                let messageColor = GameManager.COLOR.WHISPER_CHAT;
-                for(let chatGroupName in chatGroupNameToColor){
-                    if(contents.chatGroups.includes(chatGroupName)){
-                        messageColor = chatGroupNameToColor[chatGroupName];
-                    }
-                }
-
-                //medium talking to dead, no matter what unless whisper
-                if(contents.chatGroups.includes("Dead") && GameManager.host.players[contents.playerName].getRoleObject().name === "Medium"){
-                    messageColor = GameManager.COLOR.IMPORTANT;
-                }
                 
-                //if we are in a whisper chat then make it whisper color no matter what.
-                for(let i in contents.chatGroups){
-                    if(!Object.keys(chatGroupNameToColor).includes(contents.chatGroups[i])){
-                        messageColor = GameManager.COLOR.WHISPER_CHAT;
-                        break;
-                    }
-
-                }
-                // let messageColor = (
-                //     contents.chatGroups.includes("All")?GameManager.COLOR.DISCUSSION_CHAT:
-                //     contents.chatGroups.includes("Dead") && GameManager.host.players[contents.playerName].getRoleObject().name === "Medium"?GameManager.COLOR.IMPORTANT:
-                //     contents.chatGroups.includes("Dead")?GameManager.COLOR.DEAD_CHAT:
-
-                //     contents.chatGroups.includes("Mafia")?GameManager.COLOR.TEAM_CHAT:
-                //     contents.chatGroups.includes("Vampire")?GameManager.COLOR.TEAM_CHAT:
-                //     contents.chatGroups.includes("Coven")?GameManager.COLOR.TEAM_CHAT:
-                //     GameManager.COLOR.WHISPER_CHAT
-                // )
-
                 let playersWhoGotMessageAlready = [];
 
                 for(let chatGroup in GameManager.host.chatGroups){
-                    let playerList = GameManager.host.chatGroups[chatGroup];
-
                     if(!contents.chatGroups.includes(chatGroup)) continue;
-                    if(!GameManager.host.players[contents.playerName].chatGroupSendList.includes(chatGroup) && !GameManager.host.players[contents.playerName].cycleVariables.isWhispering.value) continue;
+                        //if were not sending in this group then ignore
+                    if(!GameManager.host.players[contents.playerName].chatGroupSendList.includes(chatGroup) && 
+                        !GameManager.host.players[contents.playerName].cycleVariables.isWhispering.value) continue;
+                        //if were not alloed to be sending in chatgroup AND were not whispering then continue, therefore
+                        //if we are allowed to send in this group or were whispering, then skip
 
+                        //i have no idea what this line means but im not going to delete it because everything works rn.
+
+
+                    let playerList = GameManager.host.chatGroups[chatGroup];
+                        //list of all people we should send to
+
+                    
                     //if this is a whisper chat then also send a message saying a whisper happened
                     //if chatGroup === name of any player, then it is a whisper chat, but dont tell everyone if it night
                     if(PhaseStateMachine.currentPhase !== "Night" && GameManager.host.getAllPlayerNames().includes(chatGroup)){
@@ -983,6 +954,47 @@ let GameManager = {
                         }
                     }
 
+
+                    //now set the color of the message BASED on what group its being sent to
+                    //#region color
+                    let chatGroupNameToColor = {
+                        "Vampire" : GameManager.COLOR.TEAM_CHAT,
+                        "Mafia" : GameManager.COLOR.TEAM_CHAT,
+                        "Coven" : GameManager.COLOR.TEAM_CHAT,
+
+                        "Dead" : GameManager.COLOR.DEAD_CHAT,
+                        "All" : GameManager.COLOR.DISCUSSION_CHAT,
+                    }
+                    let messageColor = GameManager.COLOR.WHISPER_CHAT;
+                    for(let chatGroupName in chatGroupNameToColor){
+                        if(chatGroup === chatGroupName){
+                            messageColor = chatGroupNameToColor[chatGroupName];
+                        }
+                    }
+
+                    //medium talking to dead, no matter what unless whisper
+                    if(chatGroup === "Dead" && GameManager.host.players[contents.playerName].getRoleObject().name === "Medium"){
+                        messageColor = GameManager.COLOR.IMPORTANT;
+                    }
+                    
+                    //if we are in a whisper chat then make it whisper color no matter what.
+                    //looking back at this it seems it is useless but im keeping it just in case
+                    if(!Object.keys(chatGroupNameToColor).includes(chatGroup)){
+                        messageColor = GameManager.COLOR.WHISPER_CHAT;
+                    }
+
+                    //#endregion
+
+                    
+
+
+                    //send to yourself, but grey, only if we didnt already
+                    if(!playersWhoGotMessageAlready.includes(GameManager.host.players[contents.playerName])){
+                        GameManager.host.players[contents.playerName].addChatMessage(new ChatMessageState(contents.playerName, contents.message, GameManager.COLOR.GREYED_OUT));
+                        playersWhoGotMessageAlready.push(GameManager.host.players[contents.playerName]);
+                    }
+
+                    //send to every player in this group if they didnt already get the message.
                     for(let playerName in GameManager.host.players){
                         let player = GameManager.host.players[playerName];
 
