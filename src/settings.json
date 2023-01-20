@@ -271,6 +271,141 @@
         "Vampire":[
             [],
             [
+                [null, null, "Vampire"]
+            ],
+            [
+                [null, null, "Vampire"],
+                [null, null, "Veteran"]
+            ],
+            [
+                [null, null, "Vampire"],
+                [null, null, "Veteran"],
+                [null, null, "Vigilante"]
+            ],
+            [
+                [null, null, "Vampire"],
+                [null, null, "Veteran"],
+                [null, null, "Vigilante"],
+                [null, null, "Lookout"]
+            ],
+            [
+                [null, null, "Vampire"],
+
+                [null, null, "Veteran"],
+                [null, null, "Vigilante"],
+                [null, null, "Lookout"],
+                [null, null, "Medium"]
+            ],
+            [
+                [null, null, "Vampire"],
+
+                [null, null, "Vigilante"],
+                [null, null, "Investigator"],
+                [null, null, "Lookout"],
+                [null, null, "Medium"],
+                ["Town", "Support", null]
+            ],
+            [
+                [null, null, "Vampire"],
+                [null, null, "Jester"],
+
+                [null, null, "Vigilante"],
+                [null, null, "Investigator"],
+                [null, null, "Lookout"],
+                [null, null, "Medium"],
+                ["Town", "Support", null]
+            ],
+            [
+                [null, null, "Vampire"],
+                [null, null, "Jester"],
+
+                [null, null, "Medium"],
+                [null, null, "Lookout"],
+                [null, null, "Vigilante"],
+
+                ["Town", "Investigative", null],
+                ["Town", "Killing", null],
+                ["Town", "Support", null]
+            ],
+            [
+                [null, null, "Vampire"],
+                [null, null, "Executioner"],
+                [null, null, "Jester"],
+
+                [null, null, "Medium"],
+                [null, null, "Lookout"],
+                [null, null, "Vigilante"],
+                
+                ["Town", "Investigative", null],
+                ["Town", "Killing", null],
+                ["Town", "Support", null]
+            ],
+            [
+                [null, null, "Vampire"],
+                [null, null, "Executioner"],
+                [null, null, "Jester"],
+
+                [null, null, "Medium"],
+                [null, null, "Lookout"],
+                [null, null, "Bodyguard"],
+                [null, null, "Vigilante"],
+                
+                ["Town", "Investigative", null],
+                ["Town", "Killing", null],
+                ["Town", "Support", null]
+            ],
+            [
+                [null, null, "Vampire"],
+
+                [null, null, "Executioner"],
+                [null, null, "Jester"],
+
+                [null, null, "Lookout"],
+                [null, null, "Lookout"],
+                [null, null, "Vigilante"],
+                [null, null, "Medium"],
+                
+                ["Town", "Investigative", null],
+                ["Town", "Protective", null],
+                ["Town", "Killing", null],
+                ["Town", "Support", null]
+            ],
+            [
+                [null, null, "Vampire"],
+
+                [null, null, "Witch"],
+                [null, null, "Executioner"],
+                [null, null, "Jester"],
+
+                [null, null, "Lookout"],
+                [null, null, "Lookout"],
+                [null, null, "Vigilante"],
+                [null, null, "Medium"],
+                
+                ["Town", "Investigative", null],
+                ["Town", "Protective", null],
+                ["Town", "Killing", null],
+                ["Town", "Support", null]
+            ],
+            [
+                [null, null, "Vampire"],
+                [null, null, "Vampire"],
+                [null, null, "Vampire"],
+
+                [null, null, "Jester"],
+
+                [null, null, "Lookout"],
+                [null, null, "Lookout"],
+                [null, null, "Vigilante"],
+                [null, null, "Doctor"],
+                
+                ["Town", "Protective", null],
+                ["Town", "Killing", null],
+                ["Town", "Killing", null],
+                ["Town", "Support", null],
+                ["Town", "Support", null]
+            ],
+            [
                 [null, null, "Vampire"],
                 [null, null, "Vampire"],
                 [null, null, "Vampire"],
@@ -297,21 +432,19 @@
                 [null, null, "Vampire"],
                 [null, null, "Vampire"],
 
+                [null, null, "Jester"],
+                [null, null, "Witch"],
+
                 [null, null, "Lookout"],
                 [null, null, "Lookout"],
                 [null, null, "Vigilante"],
                 [null, null, "Doctor"],
 
                 ["Town", "Protective", null],
-
                 ["Town", "Killing", null],
                 ["Town", "Killing", null],
-
                 ["Town", "Support", null],
-                ["Town", "Support", null],
-
-                [null, null, "Jester"],
-                [null, null, "Witch"]
+                ["Town", "Support", null]
             ],
             [
                 [null, null, "Vampire"],

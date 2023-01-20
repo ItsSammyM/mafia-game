@@ -453,6 +453,19 @@ let GameManager = {
 
             player.createPlayerRole(newRoleName);
             GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.roleName);
+
+            //Add new suffixes
+            //if player is now on a team, then tell teammates their role using suffixes
+            if(player.getRoleObject().team){
+                for(let otherPlayerName in GameManager.host.players){
+                    let otherPlayer = GameManager.host.players[otherPlayerName];
+                    //if were on the same team
+                    if(Role.onSameTeam(player, otherPlayer)){
+                        otherPlayer.suffixes[player.name].push(player.getRoleObject().name);
+                        player.suffixes[otherPlayer.name].push(otherPlayer.getRoleObject().name);
+                    }
+                }
+            }
         },
         rolePossibleToExist(roleName){
             let roleObject = ROLES[roleName];

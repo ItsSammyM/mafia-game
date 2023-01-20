@@ -92,6 +92,7 @@ class TEAM{
 }
 export const TEAMS = {
     "Mafia":new TEAM("Mafia", true),
+    "Vampire":new TEAM("Vampire", true),
 };
 export const ROLES = {
     //#region Town
@@ -457,7 +458,7 @@ export const ROLES = {
     ),
     "Bodyguard":new Role(
         "Bodyguard", "Target a player to redirect attacks from them to you and attack them back, you can sheild yourself once", "👮🏿",
-        "This redirects killing roles. Every role that has 'Killing' alignment will be redirected towards you and you will attack them. When you use your self sheild. You will be granted powerfull(2) defense. You can't protect another bodyguard.",
+        "This redirects killing roles. Every role that has 'Killing' or 'Chaos' alignment will be redirected towards you and you will attack them. When you use your self sheild. You will be granted powerfull(2) defense. You can't protect another bodyguard.",
         "-2 > redirect killer,\n"+
         "2 > grant self vest,\n"+
         "8 > tell both players that an attack was redirected,",
@@ -481,7 +482,10 @@ export const ROLES = {
                 
                 for(let attackerName in GameManager.host.players){
                     let attacker = GameManager.host.players[attackerName];
-                    if(attacker.getRoleObject().alignment!=="Killing") continue;
+                    if(!(
+                        attacker.getRoleObject().alignment==="Killing" || 
+                        attacker.getRoleObject().alignment==="Chaos"
+                        )) continue;
 
                     let attackRedirected = false;
 
@@ -678,8 +682,8 @@ export const ROLES = {
     //#region Mafia
     "Godfather":new Role(
         "Godfather", "Target a player to kill them. If there is a mafioso, they will do whatever kill you commanded them to do", "👴",
-        "If theres is a mafioso in the game. Your visit will be an astral visit. And the mafioso will instead do the killing. Otherwise you will do the killing.\n"+
-        "Because the mafioso does the killing, you appear as innocent, and you have defense, you might have an easier time decieving the town and pretending to be a townie.",
+        "If theres is a mafioso in the game and they werent roleblocked, you wont visit the target, only the mafioso will. Otherwise you will do the killing.\n"+
+        "Your defense and innocent status will make it easier for you to make riskier plays",
         "-4 > Direct mafioso and clear yourself,\n"+
         "6 > if theres no mafioso, you kill",
         "Mafia", "Killing", "Mafia",
@@ -1364,35 +1368,80 @@ export const ROLES = {
         null
     ),
     "Vampire":new Role(
-        "Vampire", "Only the youngest vampire gets to visit. On odd nights you convert someone, on even nights you kill someone. You cant convert members of other factions.", "🧛",
-        "Vampires cant kill other vampires. ",
+        "Vampire", "On odd nights you convert someone, on even nights you kill someone. You cant convert members of other factions. Only the Leader will visit.", "🧛",
+        "The leader is chosen randomly each night. Make sure you target every night because you don't know if you are the leader.",
+        "-12 > Leader Chosen, \n+"+
         "6 > Kill, \n"+
-        "8 > Convert,",
+        "8 > Convert,  \n"+
+        "10 > Inform Leader \n",
         "Neutral", "Chaos", "Vampire",
-        "Vampire", 0,
+        "Vampire", Infinity,
         0, 1,
-        true, true, false,
-        {},
+        true, true, true,
+        {isVampireLeader : false},
         (priority, player)=>{
             if(!player.cycleVariables.aliveTonight.value) return;
             if(player.cycleVariables.targeting.value.length !== 1) return;
             let myTarget = player.cycleVariables.targeting.value[0];
 
-            if(priority===6){ //kill
-                if(GameManager.host.cycleNumber % 2 === 0 ) return;  //not on even nights
 
-                //kill target
-                if(myTarget !== player && myTarget.getRoleObject().team === "Vampire"){
-                    myTarget.tryNightKill(player, player.cycleVariables.attackTonight.value);
+            if(priority===-12){ //choose leader
+
+                //this will be run for every vamp but its okay because it will still be 1 leader and that will be random
+
+                //make list of vampires and pick a random one
+                let allVamps = [];
+                for(let anyVampName in GameManager.host.players){
+                    let anyVamp = GameManager.host.players[anyVampName];
+                    anyVamp.roleExtra.isVampireLeader = false;
+                    allVamps.push(anyVamp);
                 }
 
+                //choose random
+                allVamps[Math.floor(allVamps.length*Math.random())].roleExtra.isVampireLeader = true;
+            }
+            else if(priority===6){ //kill
+                if(!player.roleExtra.isVampireLeader) return;
+                if(GameManager.host.cycleNumber % 2 === 1 ) return;  //not on odd nights
+                
+
+                //kill target
+                myTarget.tryNightKill(player, player.cycleVariables.attackTonight.value);
+
             }else if(priority===8){ //convert
-                if(GameManager.host.cycleNumber % 2 === 1 ) return; //not on odd nights
+                if(!player.roleExtra.isVampireLeader) return;
+                if(GameManager.host.cycleNumber % 2 === 0 ) return; //not on even nights
+
+                //if my target has no defense and has no team
                 if(
-                    myTarget.cycleVariables.defenseTonight.value <= 0 && 
+                    //myTarget.cycleVariables.defenseTonight.value <= 0 && 
                     myTarget.getRoleObject().team === null
                     )
                 GameManager.host.changePlayerRole(myTarget, "Vampire");
+
+            }else if(priority===10){    //inform
+
+                //find leader(s)
+                let leader = "";
+                let allVampires = "";
+                for(let anyVampName in GameManager.host.players){
+                    let anyVamp = GameManager.host.players[anyVampName];
+                    if(anyVamp.getRoleObject().name === "Vampire")
+                        allVampires+=anyVampName+", ";
+                    if(anyVamp.roleExtra.isVampireLeader)
+                        leader+=anyVampName+" ";
+                }
+
+                player.addNightInformation(new ChatMessageState(
+                    null,
+                    "The leader was "+leader,
+                    GameManager.COLOR.NIGHT_INFORMATION_CHAT
+                ), true);
+                player.addNightInformation(new ChatMessageState(
+                    null,
+                    "A list of all the vampires is: "+allVampires,
+                    GameManager.COLOR.NIGHT_INFORMATION_CHAT
+                ), true);
             }
         },
         null,
@@ -1407,7 +1456,7 @@ export const ROLES = {
 Priority
 Everyones target is set first
 
--12: Veteran(Decides Alert) Vigilante(Suicide) Jester(Kill) Arsonist(Clean self)
+-12: Veteran(Decides Alert) Vigilante(Suicide) Jester(Kill) Arsonist(Clean self) Vampire(Choose Leader)
 -10: Transporter(Swaps)
 -8: Witch(Swaps, Activate sheild)
     -7: Retributionist(Choose to revive)
@@ -1419,9 +1468,10 @@ Everyones target is set first
 +4: Sheriff, Invest, Consig, Lookout, Tracker, Arsonist(Find who visited)
 +6: Mafioso/Godfather, SerialKiller, Werewolf, Veteran, Vampire, Arsonist, Crusader, Bodyguard, Vigilante (All kill)
 +8: Amnesiac(Convert) Vampire(Convert) Forger(Change info), Janitor(Clean & info), Doctor(Notify) Bodyguard(Notify)  Executioner(convert)
-+10 Spy(Collect info)
++10 Spy(Collect info) Vampire(Inform of leader)
 +12 Witch(Steal info & Remove sheild
     
+IN LAST GAME, VAMP AND AMNE CONVERTED ON PRIORITY 2!!!!!
 --------
 */
 
