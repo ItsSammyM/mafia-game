@@ -389,6 +389,7 @@ let GameManager = {
             PhaseStateMachine.tick();
         },
         checkEndGame : function(){
+
             let livingRoleNamesList = [];
             for(let playerName in GameManager.host.players){
                 let player = GameManager.host.players[playerName];
@@ -459,8 +460,9 @@ let GameManager = {
             if(player.getRoleObject().team){
                 for(let otherPlayerName in GameManager.host.players){
                     let otherPlayer = GameManager.host.players[otherPlayerName];
+
                     //if were on the same team
-                    if(Role.onSameTeam(player, otherPlayer)){
+                    if(Role.onSameTeam(player, otherPlayer) && player !== otherPlayer){
                         otherPlayer.suffixes[player.name].push(player.getRoleObject().name);
                         player.suffixes[otherPlayer.name].push(otherPlayer.getRoleObject().name);
                     }

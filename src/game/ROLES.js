@@ -802,7 +802,7 @@ export const ROLES = {
             myTarget.cycleVariables.extra.value.blackmailed = true;
             myTarget.addNightInformation(new ChatMessageState(
                 "BLACKMAILED",
-                "You were blackmailed. Do not under any circumstances speak during the next day. You can not write in chat. You can still vote.",
+                "You were blackmailed. Do not under any circumstances speak OR COMMUNICATE during the next day. You can not write in chat. You can still vote.",
                 GameManager.COLOR.IMPORTANT_RED
             ), false);
         },
@@ -1071,7 +1071,7 @@ export const ROLES = {
         true, true, false,
         {},
         (priority, player)=>{
-            if(priority===-12) return;
+            if(priority!==-12) return;
             if(player.cycleVariables.aliveTonight.value) return;
 
             if(player.cycleNumberDied !== GameManager.host.cycleNumber)  return;
@@ -1229,12 +1229,13 @@ export const ROLES = {
         [false, true]
     ),
     "Arsonist":new Role(
-        "Arsonist", "Target a player to douse them in gasoline, target yourself to ignite and kill all doused players.", "🔥",
-        "If there is another arsonist, you will also ignite the people they doused. Doused players appear as an arsonist to investigative roles. You get to know who visits you at night. If you target nobody, you will clean gasoline off yourself. \n"+
+        "Arsonist", "Target a player to douse them in gasoline, target yourself to ignite and kill all doused players. Target nobody to clean the gas off yourself.", "🔥",
+        "If there is another arsonist, you will also ignite the people they doused. Doused players appear as an arsonist to investigative roles. You get to know who visits you at night. You will know who is doused. \n"+
         "Try to douse people you think will stay alive till late game, so you when you ignite, all the doused players arent already dead. This means dousing quiet people. Try to stay hidden, as you pose a large threat to the town and the mafia",
         "-12 > clean gas off yourself, \n"+
         "2 > Douse and douse visitors, \n"+
-        "6 > Ignition",
+        "6 > Ignition, \n"+
+        "10 > Learn who is doused, ",
         "Neutral", "Killing", null,
         "Arsonist", Infinity,
         1, 3, 
@@ -1255,22 +1256,27 @@ export const ROLES = {
                     );
                 player.extra.doused = false;
             }
-            if(priority === 2){ //douse
+            else if(priority === 2){ //douse
 
                 //visit douse
+                let dousedVisitorsNameString = "";
                 for(let i in player.cycleVariables.targetedBy.value){
                     if(player.cycleVariables.targetedBy.value[i] === player) continue;
 
-                    player.addNightInformation(new ChatMessageState(
-                        null,
-                        "You doused a visitor named "+player.cycleVariables.targetedBy.value[i].name,
-                        GameManager.COLOR.NIGHT_INFORMATION_CHAT
-                    ), true);
+                    dousedVisitorsNameString += player.cycleVariables.targetedBy.value[i].name+", ";
                     
                     player.cycleVariables.targetedBy.value[i].extra.doused = true;
                     player.cycleVariables.targetedBy.value[i].cycleVariables.isSuspiciousTonight.value = false;
                     player.cycleVariables.targetedBy.value[i].cycleVariables.investigativeResultTonight.value = "Arsonist";
                 }
+                if(dousedVisitorsNameString!==""){
+                    player.addNightInformation(new ChatMessageState(
+                        null,
+                        "You doused these visitors: "+dousedVisitorsNameString,
+                        GameManager.COLOR.NIGHT_INFORMATION_CHAT
+                    ), true);
+                }
+                
 
                 //regular douse
                 if(player.cycleVariables.targeting.value.length !== 1) return;
@@ -1297,11 +1303,27 @@ export const ROLES = {
 
                 for(let playerName in GameManager.host.players){
                     let dousedPlayer = GameManager.host.players[playerName];
-                    if(dousedPlayer.cycleVariables.aliveTonight.value && dousedPlayer.extra.doused)
+                    if(dousedPlayer.cycleVariables.aliveTonight.value && dousedPlayer.extra.doused){
                         dousedPlayer.tryNightKill(player, player.cycleVariables.attackTonight.value);
+                        dousedPlayer.extra.doused = false;
+                    }
                 }
             }
+            else if(priority === 10){   //inform of doused players
+                let whosDousedString = "";
+                for(let dousedPlayerName in GameManager.host.players){
+                    let dousedPlayer = GameManager.host.players[dousedPlayerName];
 
+                    if(dousedPlayer.extra.doused)
+                        whosDousedString+=dousedPlayerName+", ";
+                }
+
+                player.addNightInformation(new ChatMessageState(
+                    null,
+                    "Doused players: "+whosDousedString,
+                    GameManager.COLOR.NIGHT_INFORMATION_CHAT
+                ), true);
+            }
         },
         null,
         (myPlayer, otherPlayer)=>{
@@ -1322,10 +1344,10 @@ export const ROLES = {
         "2 > make self suspicious, \n"+
         "6 > attack and rampage,",
         "Neutral", "Killing", null,
-        "Werewolf", 1,
+        "Werewolf", 0,  //should be 1 but removing werewolf temporarily //i think werewolf causes the game to crash because when jamin was werewolf it crashed.
         1, 2,
         false, true, false, //fix roleblock stuff later
-        {},
+        {}, 
         (priority, player)=>{
             if(!player.cycleVariables.aliveTonight.value) return;
             if((GameManager.host.cycleNumber === 1 || GameManager.host.cycleNumber === 3)) return;  //doesnt work on wrong nights
@@ -1371,8 +1393,8 @@ export const ROLES = {
         "Vampire", "On odd nights you convert someone, on even nights you kill someone. You cant convert members of other factions. Only the Leader will visit.", "🧛",
         "The leader is chosen randomly each night. Make sure you target every night because you don't know if you are the leader.",
         "-12 > Leader Chosen, \n+"+
+        "1 > Convert,  \n"+
         "6 > Kill, \n"+
-        "8 > Convert,  \n"+
         "10 > Inform Leader \n",
         "Neutral", "Chaos", "Vampire",
         "Vampire", Infinity,
@@ -1394,21 +1416,13 @@ export const ROLES = {
                 for(let anyVampName in GameManager.host.players){
                     let anyVamp = GameManager.host.players[anyVampName];
                     anyVamp.roleExtra.isVampireLeader = false;
-                    allVamps.push(anyVamp);
+                    if(anyVamp.cycleVariables.aliveTonight.value)
+                        allVamps.push(anyVamp);
                 }
 
                 //choose random
                 allVamps[Math.floor(allVamps.length*Math.random())].roleExtra.isVampireLeader = true;
-            }
-            else if(priority===6){ //kill
-                if(!player.roleExtra.isVampireLeader) return;
-                if(GameManager.host.cycleNumber % 2 === 1 ) return;  //not on odd nights
-                
-
-                //kill target
-                myTarget.tryNightKill(player, player.cycleVariables.attackTonight.value);
-
-            }else if(priority===8){ //convert
+            }else if(priority===1){ //convert
                 if(!player.roleExtra.isVampireLeader) return;
                 if(GameManager.host.cycleNumber % 2 === 0 ) return; //not on even nights
 
@@ -1418,6 +1432,14 @@ export const ROLES = {
                     myTarget.getRoleObject().team === null
                     )
                 GameManager.host.changePlayerRole(myTarget, "Vampire");
+
+            }else if(priority===6){ //kill
+                if(!player.roleExtra.isVampireLeader) return;
+                if(GameManager.host.cycleNumber % 2 === 1 ) return;  //not on odd nights
+                
+
+                //kill target
+                myTarget.tryNightKill(player, player.cycleVariables.attackTonight.value);
 
             }else if(priority===10){    //inform
 
@@ -1464,14 +1486,16 @@ Everyones target is set first
 -4: Godfather(Swap mafioso target and clear self)
 -2 bodyguard(swap)
  0: visits happen here
+
++1: Amnesiac(Convert) Vampire(Convert)
+
 +2: Doctor(Heal), Blackmailer(Decide), Crusader(Heal), Arsonist(Douse), Framer, Disguiser Werewolf(innos themself)
 +4: Sheriff, Invest, Consig, Lookout, Tracker, Arsonist(Find who visited)
 +6: Mafioso/Godfather, SerialKiller, Werewolf, Veteran, Vampire, Arsonist, Crusader, Bodyguard, Vigilante (All kill)
-+8: Amnesiac(Convert) Vampire(Convert) Forger(Change info), Janitor(Clean & info), Doctor(Notify) Bodyguard(Notify)  Executioner(convert)
-+10 Spy(Collect info) Vampire(Inform of leader)
-+12 Witch(Steal info & Remove sheild
-    
-IN LAST GAME, VAMP AND AMNE CONVERTED ON PRIORITY 2!!!!!
++8: Forger(Change info), Janitor(Clean & info), Doctor(Notify) Bodyguard(Notify) Executioner(convert)
++10 Spy(Collect info) Vampire(Inform of leader) Arsonist(Inform who is doused)
++12 Witch(Steal info & Remove sheild)
+
 --------
 */
 

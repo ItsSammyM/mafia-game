@@ -194,7 +194,6 @@ export class StartHostMenu extends React.Component {
             <DropDown onChange={(e)=>{
                 this.setDefaultInvestigativeResults(e.target.value);
             }}>
-                <option>Random</option>
                 {(()=>{
                     let defaultInvestigativeResultsOptions = [];
                     for(let investigativeResultsName in settings.defaultInvestigativeResults){
@@ -202,6 +201,7 @@ export class StartHostMenu extends React.Component {
                     }
                     return defaultInvestigativeResultsOptions;
                 })()}
+                <option>Random</option>
             </DropDown><br/>
         </div>
         <br/>
