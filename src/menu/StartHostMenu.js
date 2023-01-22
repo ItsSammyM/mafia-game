@@ -42,7 +42,7 @@ export class StartHostMenu extends React.Component {
             break;
         }
 
-        this.setDefaultInvestigativeResults("Random");
+        this.setDefaultInvestigativeResults("Default");
         
     }
     componentWillUnmount() {

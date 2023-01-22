@@ -177,7 +177,7 @@ export const PHASES = {
                     player.availableButtons[otherPlayerName].whisper = 
                         playerName !== otherPlayerName && 
                         player.alive && otherPlayer.alive && 
-                        player.getRoleObject().name !=="Mayor" && otherPlayer.getRoleObject().name !=="Mayor"
+                        !(player.getRoleObject().name ==="Mayor" && player.roleExtra.revealed) && !(otherPlayer.getRoleObject().name ==="Mayor" && otherPlayer.roleExtra.revealed)
                     ;
                 }
                 
@@ -230,7 +230,7 @@ export const PHASES = {
                     player.availableButtons[otherPlayerName].whisper = 
                         playerName !== otherPlayerName && 
                         player.alive && otherPlayer.alive && 
-                        player.getRoleObject().name !=="Mayor" && otherPlayer.getRoleObject().name !=="Mayor"
+                        !(player.getRoleObject().name ==="Mayor" && player.roleExtra.revealed) && !(otherPlayer.getRoleObject().name ==="Mayor" && otherPlayer.roleExtra.revealed)
                     ;
                 }
                 
@@ -290,7 +290,7 @@ export const PHASES = {
                     player.availableButtons[otherPlayerName].whisper = 
                         playerName !== otherPlayerName && 
                         player.alive && otherPlayer.alive && 
-                        player.getRoleObject().name !=="Mayor" && otherPlayer.getRoleObject().name !=="Mayor"
+                        !(player.getRoleObject().name ==="Mayor" && player.roleExtra.revealed) && !(otherPlayer.getRoleObject().name ==="Mayor" && otherPlayer.roleExtra.revealed)
                     ;
                     
                 }
@@ -343,7 +343,7 @@ export const PHASES = {
                     player.availableButtons[otherPlayerName].whisper = 
                         playerName !== otherPlayerName && 
                         player.alive && otherPlayer.alive && 
-                        player.getRoleObject().name !=="Mayor" && otherPlayer.getRoleObject().name !=="Mayor"
+                        !(player.getRoleObject().name ==="Mayor" && player.roleExtra.revealed) && !(otherPlayer.getRoleObject().name ==="Mayor" && otherPlayer.roleExtra.revealed)
                     ;
                 }
 
@@ -394,7 +394,7 @@ export const PHASES = {
                     player.availableButtons[otherPlayerName].whisper = 
                         playerName !== otherPlayerName && 
                         player.alive && otherPlayer.alive && 
-                        player.getRoleObject().name !=="Mayor" && otherPlayer.getRoleObject().name !=="Mayor"
+                        !(player.getRoleObject().name ==="Mayor" && player.roleExtra.revealed) && !(otherPlayer.getRoleObject().name ==="Mayor" && otherPlayer.roleExtra.revealed)
                     ;
                 }
 
@@ -506,7 +506,7 @@ export const PHASES = {
                     player.availableButtons[otherPlayerName].whisper = 
                         playerName !== otherPlayerName && 
                         player.alive && otherPlayer.alive && 
-                        player.getRoleObject().name !=="Mayor" && otherPlayer.getRoleObject().name !=="Mayor"
+                        !(player.getRoleObject().name ==="Mayor" && player.roleExtra.revealed) && !(otherPlayer.getRoleObject().name ==="Mayor" && otherPlayer.roleExtra.revealed)
                     ;
                 }
 

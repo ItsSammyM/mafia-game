@@ -149,10 +149,10 @@ let GameManager = {
 
                 if(player.cycleVariables.voting.value){
                     if(player.getRoleObject().name === "Mayor" && player.roleExtra.revealed){
-                        player.cycleVariables.voting.value.cycleVariables.votedBy.value.push(player);
-                        player.cycleVariables.voting.value.cycleVariables.votedBy.value.push(player);
+                        player.cycleVariables.voting.value.cycleVariables.votedBy.value.push(player.name);
+                        player.cycleVariables.voting.value.cycleVariables.votedBy.value.push(player.name);
                     }
-                    player.cycleVariables.voting.value.cycleVariables.votedBy.value.push(player);
+                    player.cycleVariables.voting.value.cycleVariables.votedBy.value.push(player.name);
                 }
             }
             //check if someone voted

@@ -641,7 +641,7 @@ export const ROLES = {
             myTarget2.addNightInformation(new ChatMessageState(
                 null,
                 "You were transported",
-                GameManager.COLOR.GAME_TNIGHT_INFORMATION_CHATO_YOU
+                GameManager.COLOR.NIGHT_INFORMATION_CHAT
             ), false);
 
             for(let otherPlayerName in GameManager.host.players){
@@ -1239,7 +1239,7 @@ export const ROLES = {
         "Neutral", "Killing", null,
         "Arsonist", Infinity,
         1, 3, 
-        false, true, false, //fix roleblock stuff later
+        false, false, false, //fix roleblock stuff later
         {},
         (priority, player)=>{
             if(!player.cycleVariables.aliveTonight.value) return;
@@ -1344,7 +1344,7 @@ export const ROLES = {
         "2 > make self suspicious, \n"+
         "6 > attack and rampage,",
         "Neutral", "Killing", null,
-        "Werewolf", 0,  //should be 1 but removing werewolf temporarily //i think werewolf causes the game to crash because when jamin was werewolf it crashed.
+        "Werewolf", 1,  //should be 1 but removing werewolf temporarily //i think werewolf causes the game to crash because when jamin was werewolf it crashed.
         1, 2,
         false, true, false, //fix roleblock stuff later
         {}, 
@@ -1355,11 +1355,12 @@ export const ROLES = {
             if(priority === 2){ //make suspicious
 
                 if(player.cycleVariables.targeting.value.length !== 1) return;
-                player.cycleVariables.isSuspiciousTonight.value = true;
 
+                player.cycleVariables.isSuspiciousTonight.value = true;
             }
             else if(priority === 6){    //attack and rampage
                 if(player.cycleVariables.targeting.value.length !== 1) return;
+
                 let myTarget = player.cycleVariables.targeting.value[0];
 
                 //kill target
@@ -1372,6 +1373,12 @@ export const ROLES = {
                     //exept yourself 
                     if(player === myTarget.cycleVariables.targetedBy.value[i]) continue;
                     myTarget.cycleVariables.targetedBy.value[i].tryNightKill(player, player.cycleVariables.attackTonight.value);
+
+                    player.addNightInformation(new ChatMessageState(
+                        null,
+                        "You attacked a visitor",
+                        GameManager.COLOR.NIGHT_INFORMATION_CHAT
+                    ), true);
                 }
             }
         },
@@ -1403,9 +1410,6 @@ export const ROLES = {
         {isVampireLeader : false},
         (priority, player)=>{
             if(!player.cycleVariables.aliveTonight.value) return;
-            if(player.cycleVariables.targeting.value.length !== 1) return;
-            let myTarget = player.cycleVariables.targeting.value[0];
-
 
             if(priority===-12){ //choose leader
 
@@ -1416,13 +1420,18 @@ export const ROLES = {
                 for(let anyVampName in GameManager.host.players){
                     let anyVamp = GameManager.host.players[anyVampName];
                     anyVamp.roleExtra.isVampireLeader = false;
-                    if(anyVamp.cycleVariables.aliveTonight.value)
+                    if(anyVamp.cycleVariables.aliveTonight.value && anyVamp.getRoleObject().team === "Vampire")
                         allVamps.push(anyVamp);
                 }
 
                 //choose random
                 allVamps[Math.floor(allVamps.length*Math.random())].roleExtra.isVampireLeader = true;
             }else if(priority===1){ //convert
+
+                
+                if(player.cycleVariables.targeting.value.length !== 1) return;
+                let myTarget = player.cycleVariables.targeting.value[0];
+
                 if(!player.roleExtra.isVampireLeader) return;
                 if(GameManager.host.cycleNumber % 2 === 0 ) return; //not on even nights
 
@@ -1434,6 +1443,10 @@ export const ROLES = {
                 GameManager.host.changePlayerRole(myTarget, "Vampire");
 
             }else if(priority===6){ //kill
+                
+                if(player.cycleVariables.targeting.value.length !== 1) return;
+                let myTarget = player.cycleVariables.targeting.value[0];
+
                 if(!player.roleExtra.isVampireLeader) return;
                 if(GameManager.host.cycleNumber % 2 === 1 ) return;  //not on odd nights
                 
