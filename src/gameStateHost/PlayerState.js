@@ -192,7 +192,8 @@ export class PlayerState{
             this.name !== otherPlayer.name &&
             this.alive &&
             otherPlayer.alive &&
-            this.cycleVariables.voting.value !== otherPlayer
+            this.cycleVariables.voting.value !== otherPlayer &&
+            PhaseStateMachine.currentPhase === "Voting"
         ){
             this.availableButtons[otherPlayer.name].vote = true;
         }else{

@@ -726,28 +726,29 @@ let GameManager = {
                     
                     
                 }else{
-                    // LATE JOINING IMPLEment LAteR
                     if(alreadyJoined){
                         let player = GameManager.host.players[contents.playerName];
 
                         GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(player.name, true, true);
-                        GameManager.HOST_TO_CLIENT["ROLE_LIST_AND_PLAYERS"].send();
-                        
-                        GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.roleName);
-                        GameManager.HOST_TO_CLIENT["AVAILABLE_BUTTONS"].send(player.name);  //This didnt work once. giving people who rejoin vote buttons that didnt work anyway
-                        GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
-                        GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycleVariables.playerOnTrial.value);
-                        GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
-                        GameManager.HOST_TO_CLIENT["INVESTIGATIVE_RESULTS"].send();
 
-                        //resend messages
-                        player.copyChatMessagesToUnsentMessages();
-                        GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
-                        GameManager.HOST_TO_CLIENT["START_PHASE"].send();
-                        GameManager.HOST_TO_CLIENT["TIME_LEFT"].send();
-                        GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].send(player.name, player.canTargetList());
-                        GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].send(player.name, player.canVoteList());
+                        setTimeout(()=>{
+                            GameManager.HOST_TO_CLIENT["ROLE_LIST_AND_PLAYERS"].send();
+                            
+                            GameManager.HOST_TO_CLIENT["YOUR_ROLE"].send(player.name, player.roleName);
+                            GameManager.HOST_TO_CLIENT["AVAILABLE_BUTTONS"].send(player.name);  //This didnt work once. giving people who rejoin vote buttons that didnt work anyway
+                            GameManager.HOST_TO_CLIENT["UPDATE_PLAYERS"].send();
+                            GameManager.HOST_TO_CLIENT["PLAYER_ON_TRIAL"].send(GameManager.host.cycleVariables.playerOnTrial.value);
+                            GameManager.HOST_TO_CLIENT["UPDATE_CLIENT"].send();
+                            GameManager.HOST_TO_CLIENT["INVESTIGATIVE_RESULTS"].send();
 
+                            //resend messages
+                            player.copyChatMessagesToUnsentMessages();
+                            GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
+                            GameManager.HOST_TO_CLIENT["START_PHASE"].send();
+                            GameManager.HOST_TO_CLIENT["TIME_LEFT"].send();
+                            GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_TARGETS_RESPONSE"].send(player.name, player.canTargetList());
+                            GameManager.HOST_TO_CLIENT["BUTTON_CLEAR_VOTE_RESPONSE"].send(player.name, player.canVoteList()); //weirdest problem ever
+                        },500);
                     }else{
                         GameManager.HOST_TO_CLIENT["ASK_JOIN_RESPONSE"].send(contents.playerName, false);
                     }    
@@ -1354,9 +1355,22 @@ let GameManager = {
             ()=>{
                 
                 let playerIndividual = {};
+                let sendAgain = false;
                 for(let playerName in GameManager.host.players){
                     playerIndividual[playerName] = GameManager.host.players[playerName].getUnsentChatMessages();
+                    if(GameManager.host.players[playerName].unsentChatMessageStream.length > 0){
+                        sendAgain = true;
+                    }
                 }
+
+                if(sendAgain){
+                    setTimeout(()=>{
+                        GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
+                    }, 500);
+                }
+                
+                
+
                 GameManager.host.sendMessage(GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"], {
                 /**
                  * playerIndividual : {
@@ -1375,6 +1389,7 @@ let GameManager = {
                     // }catch{}
                     return new ChatMessageStateClient(p.title, p.text, p.color)
                 }));
+                
             }
         ),
         "UPDATE_CLIENT":new MessageType(true,
