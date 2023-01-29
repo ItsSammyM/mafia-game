@@ -1358,11 +1358,15 @@ let GameManager = {
                 let sendAgain = false;
                 for(let playerName in GameManager.host.players){
                     playerIndividual[playerName] = GameManager.host.players[playerName].getUnsentChatMessages();
+
+                    //if not all messages have been sent to everyone
                     if(GameManager.host.players[playerName].unsentChatMessageStream.length > 0){
                         sendAgain = true;
                     }
                 }
 
+                //recursivly calls send unsent messages untill all messages are sent to everyone
+                //this code is horrendus but okay
                 if(sendAgain){
                     setTimeout(()=>{
                         GameManager.HOST_TO_CLIENT["SEND_UNSENT_MESSAGES"].send();
