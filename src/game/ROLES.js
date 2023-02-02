@@ -1101,14 +1101,14 @@ export const ROLES = {
     "Executioner":new Role(
         "Executioner", "Your goal is to get your target lynched, If your target dies by other means. You will become a Jester.", "🪓",
         "You have no night ability. Your target will always be a town member, but never a mayor. If your target is lynched, you win, and get to stay in the game.",
-        "8 > Convert to jester when target died",
+        "11 > Convert to jester when target died",
         "Neutral", "Evil", null,
         null, Infinity,
         1, 0,
         true, true, false,
         {executionerTarget : null},
         (priority, player)=>{
-            if(priority!==8) return;
+            if(priority!==11) return;
             if(
                 (   
                     (player.roleExtra.executionerTarget!==null && player.roleExtra.executionerTarget!==undefined) &&
@@ -1400,9 +1400,9 @@ export const ROLES = {
         "Vampire", "On odd nights you convert someone, on even nights you kill someone. You cant convert members of other factions. Only the Leader will visit.", "🧛",
         "The leader is chosen randomly each night. Make sure you target every night because you don't know if you are the leader.",
         "-12 > Leader Chosen, \n+"+
-        "1 > Convert,  \n"+
         "6 > Kill, \n"+
-        "10 > Inform Leader \n",
+        "10 > Inform Leader \n"+
+        "11 > Convert,  \n",
         "Neutral", "Chaos", "Vampire",
         "Vampire", Infinity,
         0, 1,
@@ -1426,7 +1426,7 @@ export const ROLES = {
 
                 //choose random
                 allVamps[Math.floor(allVamps.length*Math.random())].roleExtra.isVampireLeader = true;
-            }else if(priority===1){ //convert
+            }else if(priority===11){ //convert
 
                 
                 if(player.cycleVariables.targeting.value.length !== 1) return;
