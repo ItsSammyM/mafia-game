@@ -190,8 +190,8 @@ export const PHASES = {
                 if(!player.alive)
                     player.chatGroupSendList.push("Dead");
 
-                //if theyre a living medium stop them from reading dead chat
-                if(player.getRoleObject().name === "Medium" && player.alive && GameManager.host.chatGroups["Dead"].indexOf(player)!==-1){
+                //if there any living role stop them from seeing dead chat
+                if(player.alive && GameManager.host.chatGroups["Dead"].indexOf(player)!==-1){
                     GameManager.host.chatGroups["Dead"].splice(GameManager.host.chatGroups["Dead"].indexOf(player), 1);
                 }
             }

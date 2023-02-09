@@ -159,6 +159,7 @@
                 ["Town", "Killing", null],
                 ["Town", null, null],
                 ["Town", null, null],
+                [null, null, null],
                 
                 [null, null, "Witch"]
             ],

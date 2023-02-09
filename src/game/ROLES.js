@@ -560,7 +560,7 @@ export const ROLES = {
         },
         (myPlayer, otherPlayer)=>false,
         (myPlayer, otherPlayer)=>{
-            return myPlayer===otherPlayer && !myPlayer.roleExtra.revealed
+            return myPlayer===otherPlayer && !myPlayer.roleExtra.revealed && myPlayer.alive
         },
         null
     ),
@@ -889,7 +889,7 @@ export const ROLES = {
                 //myPlayer.name!==otherPlayer.name && //Not targeting myself
                 otherPlayer.cycleVariables.aliveTonight.value && //theyre alives
                 myPlayer.cycleVariables.aliveTonight.value && //im alive
-                !otherInMyTeam && //not on same team
+                (!otherInMyTeam || myPlayer === otherPlayer) && //not on same team OR are same player
                 myPlayer.cycleVariables.targeting.value.length < 1    //havent already targeted at least 1 person
             );
         },
@@ -1400,6 +1400,7 @@ export const ROLES = {
         "Vampire", "On odd nights you convert someone, on even nights you kill someone. You cant convert members of other factions. Only the Leader will visit.", "🧛",
         "The leader is chosen randomly each night. Make sure you target every night because you don't know if you are the leader.",
         "-12 > Leader Chosen, \n+"+
+        "-1 > clear target of non leader\n"+
         "6 > Kill, \n"+
         "10 > Inform Leader \n"+
         "11 > Convert,  \n",
@@ -1426,6 +1427,10 @@ export const ROLES = {
 
                 //choose random
                 allVamps[Math.floor(allVamps.length*Math.random())].roleExtra.isVampireLeader = true;
+            }else if(priority===-1){
+                if(!player.roleExtra.isVampireLeader){
+                    player.cycleVariables.targeting.value = [];
+                }
             }else if(priority===11){ //convert
 
                 
@@ -1498,7 +1503,8 @@ Everyones target is set first
 -6: Escort / Consort(Roleblock)
 -4: Godfather(Swap mafioso target and clear self)
 -2 bodyguard(swap)
- 0: visits happen here
+-1:Vampire(clear non leader targets)
+ 0:Visits happen here
 
 +1: Amnesiac(Convert) Vampire(Convert)
 
