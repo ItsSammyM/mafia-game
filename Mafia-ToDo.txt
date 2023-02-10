@@ -45,6 +45,8 @@ Thomas thing
         i reveal as mayor /// NO YOU DONT!
 //NO NAME YET --Hides what everyone is voting for and gives themself 3x vote
 //KIRBY -- you pick someone and you swap roles. you litterally cannot win with this role. Obviously neutral chaos
+//Stalker -- like exe, given the name & role of an evil person. If you kill them night 5 or later, you win. - so basically your goal is to keep them alive, and then kill them later. 
+Neutral role
 
 
 
