@@ -1,3 +1,10 @@
+Mafia
+vampire
+All any
+CIA gamemomde (Regualr but replace 3 mafia with executioners)
+Arsonist vs town
+
+
 Show trials left
 notes on people
 
@@ -46,6 +53,7 @@ Thomas thing
 //NO NAME YET --Hides what everyone is voting for and gives themself 3x vote
 //KIRBY -- you pick someone and you swap roles. you litterally cannot win with this role. Obviously neutral chaos
 //Stalker -- like exe, given the name & role of an evil person. If you kill them night 5 or later, you win. - so basically your goal is to keep them alive, and then kill them later. 
+You get to know their role and all messages they get and who they target
 Neutral role
 
 

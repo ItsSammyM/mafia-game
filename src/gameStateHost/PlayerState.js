@@ -49,7 +49,7 @@ export class PlayerState{
             attackTonight : new CycleVariable('Night', ()=>this.getRoleObject().attack),
             isSuspiciousTonight : new CycleVariable('Night', ()=>this.getRoleObject().isSuspicious||this.extra.framed),
             investigativeResultTonight : new CycleVariable('Night', ()=>this.extra.framed?"Framer":this.extra.doused?"Arsonist":this.getRoleObject().name),
-            disguisedAsTonight : new CycleVariable('Night', ()=>this),
+            disguisedAsNameTonight : new CycleVariable('Night', ()=>this.name),
 
             attackedBy : new CycleVariable('Night', ()=>[]),
             diedTonight : new CycleVariable('Night', false),

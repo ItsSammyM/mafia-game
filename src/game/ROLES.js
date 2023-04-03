@@ -115,9 +115,11 @@ export const ROLES = {
             let myTarget = player.cycleVariables.targeting.value[0];
             if(!myTarget.cycleVariables.aliveTonight.value) return;
 
+            let disguisedAs = GameManager.host.players[myTarget.cycleVariables.disguisedAsNameTonight.value];
+
             player.addNightInformation(new ChatMessageState(
                 null,
-                "Your target seems to be " + (myTarget.cycleVariables.disguisedAsTonight.value.cycleVariables.isSuspiciousTonight.value ? "suspicious." : "innocent."),
+                "Your target seems to be " + (disguisedAs.cycleVariables.isSuspiciousTonight.value ? "suspicious." : "innocent."),
                 GameManager.COLOR.NIGHT_INFORMATION_CHAT
             ), true);
         },
@@ -148,7 +150,7 @@ export const ROLES = {
             for(let visitorIndex in myTarget.cycleVariables.targetedBy.value){
                 let visitor = myTarget.cycleVariables.targetedBy.value[visitorIndex];
 
-                outString += visitor.cycleVariables.disguisedAsTonight.value.name + ", ";
+                outString += visitor.cycleVariables.disguisedAsNameTonight.value + ", ";
             }
             outString = outString.substring(0, outString.length-2);
 
@@ -187,8 +189,10 @@ export const ROLES = {
             for(let investigativeResultIndex in GameManager.host.investigativeResults){
                 let investigativeResult = GameManager.host.investigativeResults[investigativeResultIndex];
 
+                let disguisedAs = GameManager.host.players[myTarget.cycleVariables.disguisedAsNameTonight.value];
+
                 if(investigativeResult.includes(
-                    myTarget.cycleVariables.disguisedAsTonight.value.cycleVariables.investigativeResultTonight.value)){
+                    disguisedAs.cycleVariables.investigativeResultTonight.value)){
                     //found result
                     
                     //now loop through result and add them to list
@@ -211,12 +215,15 @@ export const ROLES = {
                     GameManager.COLOR.NIGHT_INFORMATION_CHAT
                 ), true);
             }
-            if(!foundResult)
+            if(!foundResult){
+                
+                let disguisedAs = GameManager.host.players[myTarget.cycleVariables.disguisedAsNameTonight.value];
                 player.addNightInformation(new ChatMessageState(
                     null,
-                    "Your target is: " + myTarget.cycleVariables.disguisedAsTonight.value.roleName,
+                    "Your target is: " + disguisedAs.roleName,
                     GameManager.COLOR.NIGHT_INFORMATION_CHAT
-                ), true);            
+                ), true);
+            }        
         },
         null,
         null,
@@ -912,14 +919,14 @@ export const ROLES = {
             if(player.cycleVariables.targeting.value.length !== 2) return;
             if(!player.cycleVariables.aliveTonight.value) return;
 
-            let myTarget1 = player.cycleVariables.targeting.value[0];
+            let myTarget1 = player.cycleVariables.targeting.value[0];   //SHOULD BE STRING
             let myTarget2 = player.cycleVariables.targeting.value[1];
 
             if(!myTarget1.cycleVariables.aliveTonight.value) return;
             if(!myTarget2.cycleVariables.aliveTonight.value) return;
-
-            myTarget1.cycleVariables.disguisedAsTonight.value = myTarget2;
-            myTarget2.cycleVariables.disguisedAsTonight.value = myTarget1;
+            
+            myTarget1.cycleVariables.disguisedAsNameTonight.value = myTarget2.name;
+            myTarget2.cycleVariables.disguisedAsNameTonight.value = myTarget1.name;
         },
         null,
         (myPlayer, otherPlayer)=>{
