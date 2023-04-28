@@ -12,6 +12,7 @@ export class Main extends React.Component {
             soundEffect: new Audio(),
             currentMenu: <StartMenu />,
             audioElement: null,
+            accessibilityFont: false,
         };
     }
     componentDidMount() {
@@ -64,14 +65,20 @@ export class Main extends React.Component {
         this.state.soundEffect.src = 'vine_boom.mp3';
         this.state.soundEffect.play();
     }
-    render() {return (<div className="body">
+    render() {
+        return (<div className={"body" + (this.state.accessibilityFont ? " clearer-text" : "")}>
         <br/>
         {this.state.currentMenu}
         {this.state.audioElement}
-        
     </div>);}
 
     changeMenu(menu){
         this.setState({currentMenu:menu});
+    }
+
+    static toggleAccessibilityFont() {
+        Main.instance.setState({
+            accessibilityFont: !Main.instance.state.accessibilityFont
+        });
     }
 }
