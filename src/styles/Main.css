@@ -54,3 +54,11 @@
     /* align-items: center;
     justify-content: center; */
 }
+.clearer-text * {
+    -webkit-text-stroke: unset !important;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', sans-serif !important;
+    letter-spacing: 0.35ch !important;
+    word-spacing: 1.225ch !important; /* 3.5x letter-spacing */
+    font-variant-ligatures: none; /* explicitly disable ligatures */
+    font-weight: 600; /* demi-bold */
+}

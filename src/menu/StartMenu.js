@@ -52,7 +52,10 @@ export class StartMenu extends React.Component {
             }}/><br/>
             <Button text="Host" onClick={()=>{
                 this.hostButton()
-            }}/><br/>
+            }}/><br/><br/><br/>
+            <Button text="Enable accessibility font" onClick={()=>{
+                Main.toggleAccessibilityFont();
+            }}/>
         </div>
     </div>);}
 }
